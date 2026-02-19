@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        working-directory: packages/typescript
+        run: npm ci
+      
+      - name: Lint check
+        working-directory: packages/typescript
+        run: npm run lint || echo "⚠️ Linter not configured"
+
+  test-typescript:
+    name: Test TypeScript (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      
+      - name: Install dependencies
+        working-directory: packages/typescript
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: packages/typescript
+        run: npm test
+      
+      - name: Build
+        working-directory: packages/typescript
+        run: npm run build
+      
+      - name: Upload coverage
+        if: matrix.node == 20
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./packages/typescript/coverage/coverage-final.json
+
+  test-go:
+    name: Test Go (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ['1.21', '1.22']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      
+      - name: Run tests
+        working-directory: packages/go
+        run: go test -v -race -coverprofile=coverage.out ./...
+      
+      - name: Build
+        working-directory: packages/go
+        run: go build ./...
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for internal references
+        run: |
+          echo "🔍 Checking for internal references..."
+          
+          # Check for local file paths
+          if grep -rE "/Users/|/home/|C:\\\\Users" *.md packages/*/README.md 2>/dev/null; then
+            echo "❌ Internal file paths found"
+            exit 1
+          fi
+          
+          # Check for internal domains (if any)
+          if grep -rE "internal\.oway|localhost|127\.0\.0\.1" *.md packages/*/README.md 2>/dev/null; then
+            echo "❌ Internal domains found"  
+            exit 1
+          fi
+          
+          # Verify no "External" types exposed in public API
+          if grep "External" packages/typescript/src/index.ts 2>/dev/null; then
+            echo "⚠️ Check: External types may be exposed in public API"
+          fi
+          
+          echo "✅ Security check passed"

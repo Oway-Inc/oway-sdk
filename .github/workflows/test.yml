@@ -1,0 +1,69 @@
+# Public CI workflow - safe to expose
+name: Test SDKs
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript:
+    name: Test TypeScript SDK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        working-directory: packages/typescript
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: packages/typescript
+        run: npm run lint || echo "Linter not configured yet"
+      
+      - name: Run tests
+        working-directory: packages/typescript
+        run: npm test
+      
+      - name: Build
+        working-directory: packages/typescript
+        run: npm run build
+
+  go:
+    name: Test Go SDK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache-dependency-path: packages/go/go.sum
+      
+      - name: Download dependencies
+        working-directory: packages/go
+        run: go mod download
+      
+      - name: Run tests
+        working-directory: packages/go
+        run: go test -v -race -cover ./...
+      
+      - name: Build
+        working-directory: packages/go
+        run: go build ./...
+      
+      - name: Verify no external references
+        working-directory: packages/go
+        run: |
+          if grep -r "ExternalOrder\|ExternalRequest" *.go; then
+            echo "Error: Public API should not expose 'External' types"
+            exit 1
+          fi

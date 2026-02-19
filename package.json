@@ -1,0 +1,35 @@
+{
+  "name": "@oway/sdk-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Official Oway SDKs for multiple languages",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate.js",
+    "generate:typescript": "npm run generate --workspace=packages/typescript",
+    "generate:all": "npm run generate:typescript",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oway/oway-sdk.git"
+  },
+  "keywords": [
+    "oway",
+    "sdk",
+    "shipping",
+    "logistics",
+    "freight"
+  ],
+  "author": "Oway",
+  "license": "MIT"
+}

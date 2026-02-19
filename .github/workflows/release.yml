@@ -1,0 +1,149 @@
+# Release workflow - creates GitHub releases and publishes packages
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'                  # TypeScript: v0.1.0
+      - 'packages/go/v*.*.*'      # Go: packages/go/v0.1.0
+
+jobs:
+  # Determine what's being released
+  detect:
+    name: Detect Release Type
+    runs-on: ubuntu-latest
+    outputs:
+      release_type: ${{ steps.detect.outputs.release_type }}
+      version: ${{ steps.detect.outputs.version }}
+    
+    steps:
+      - id: detect
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG" == packages/go/* ]]; then
+            echo "release_type=go" >> $GITHUB_OUTPUT
+            echo "version=${TAG#packages/go/}" >> $GITHUB_OUTPUT
+          else
+            echo "release_type=typescript" >> $GITHUB_OUTPUT
+            echo "version=$TAG" >> $GITHUB_OUTPUT
+          fi
+          echo "Releasing: $TAG"
+
+  release-typescript:
+    name: Release TypeScript SDK
+    needs: detect
+    if: needs.detect.outputs.release_type == 'typescript'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write  # For npm provenance
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        working-directory: packages/typescript
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: packages/typescript
+        run: npm test
+      
+      - name: Build
+        working-directory: packages/typescript
+        run: npm run build
+      
+      - name: Verify version matches tag
+        working-directory: packages/typescript
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION=${{ needs.detect.outputs.version }}
+          TAG_VERSION=${TAG_VERSION#v}
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch: package.json=$PKG_VERSION, tag=$TAG_VERSION"
+            exit 1
+          fi
+      
+      - name: Publish to npm
+        working-directory: packages/typescript
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: TypeScript SDK ${{ needs.detect.outputs.version }}
+          body: |
+            ## TypeScript SDK ${{ needs.detect.outputs.version }}
+            
+            ### Installation
+            ```bash
+            npm install @oway/sdk@${{ needs.detect.outputs.version }}
+            ```
+            
+            ### Changes
+            See [CHANGELOG.md](./packages/typescript/CHANGELOG.md)
+            
+            ### Documentation
+            - [README](./packages/typescript/README.md)
+            - [API Docs](https://docs.shipoway.com)
+          draft: false
+          prerelease: false
+
+  release-go:
+    name: Release Go SDK
+    needs: detect
+    if: needs.detect.outputs.release_type == 'go'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Run tests
+        working-directory: packages/go
+        run: go test -v ./...
+      
+      - name: Verify builds
+        working-directory: packages/go
+        run: go build ./...
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Go SDK ${{ needs.detect.outputs.version }}
+          body: |
+            ## Go SDK ${{ needs.detect.outputs.version }}
+            
+            ### Installation
+            ```bash
+            go get github.com/Oway-Inc/oway-sdk/packages/go@${{ needs.detect.outputs.version }}
+            ```
+            
+            ### Changes
+            See [CHANGELOG.md](./packages/go/CHANGELOG.md)
+            
+            ### Documentation
+            - [README](./packages/go/README.md)
+            - [pkg.go.dev](https://pkg.go.dev/github.com/Oway-Inc/oway-sdk/packages/go)
+            
+            **Note:** pkg.go.dev will index this release within ~15 minutes.
+          draft: false
+          prerelease: false

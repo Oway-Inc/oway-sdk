@@ -1,0 +1,39 @@
+# Publish Go SDK to pkg.go.dev
+# Triggered by Go version tags (e.g., packages/go/v0.1.0)
+name: Publish Go SDK
+
+on:
+  push:
+    tags:
+      - 'packages/go/v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Run tests
+        working-directory: packages/go
+        run: go test -v ./...
+      
+      - name: Verify builds
+        working-directory: packages/go
+        run: go build ./...
+      
+      # Go modules are published automatically via git tags
+      # pkg.go.dev will index this within ~15 minutes
+      
+      - name: Verify tag format
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "Publishing Go SDK: $TAG"
+          if [[ ! "$TAG" =~ ^packages/go/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag must match packages/go/vX.Y.Z format"
+            exit 1
+          fi
