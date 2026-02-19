@@ -55,19 +55,17 @@ jobs:
         working-directory: packages/go
         run: go build ./...
       
-      - name: Verify no External types in public API
+      - name: Verify no External types in SDK
         working-directory: packages/go
         run: |
-          echo "🔍 Checking public API doesn't expose 'External' types..."
-          
-          # Check all .go files EXCEPT types.go (types.go is allowed to reference External for aliasing)
-          if grep -r "ExternalOrder\|ExternalRequest" *.go | grep -v "types.go"; then
-            echo "❌ Error: Found 'External' types exposed in public API"
-            echo "ℹ️  Note: types.go is allowed to use External for type aliases"
+          echo "Checking SDK doesn't contain 'External' types..."
+
+          if grep -r "External" *.go client/*.go 2>/dev/null; then
+            echo "Error: Found 'External' types in SDK"
             exit 1
           fi
-          
-          echo "✅ Public API is clean - External types are internal only"
+
+          echo "SDK types are clean"
 
   security:
     name: Security Check

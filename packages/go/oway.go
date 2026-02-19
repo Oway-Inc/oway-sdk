@@ -42,7 +42,7 @@ type Config struct {
 // Client is the main Oway SDK client
 type Client struct {
 	config      Config
-	client      *client.Client
+	client      *client.ClientWithResponses
 	token       string
 	tokenExpiry time.Time
 	tokenMutex  sync.RWMutex
@@ -75,12 +75,12 @@ func New(config Config) (*Client, error) {
 		},
 	}
 
-	ogenClient, err := client.NewClient(config.BaseURL, client.WithClient(authHTTPClient))
+	oapiClient, err := client.NewClientWithResponses(config.BaseURL, client.WithHTTPClient(authHTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
-	c.client = ogenClient
+	c.client = oapiClient
 
 	if config.Debug {
 		fmt.Printf("[Oway] SDK initialized (M2M, default API key: %v)\n", config.APIKey != "")
@@ -89,8 +89,8 @@ func New(config Config) (*Client, error) {
 	return c, nil
 }
 
-// GetClient returns the underlying ogen client
-func (c *Client) GetClient() *client.Client {
+// GetClient returns the underlying oapi-codegen client
+func (c *Client) GetClient() *client.ClientWithResponses {
 	return c.client
 }
 
@@ -199,15 +199,17 @@ func (c *Client) refreshToken(ctx context.Context) (string, time.Time, error) {
 
 // RequestQuote requests a shipping quote
 func (c *Client) RequestQuote(ctx context.Context, req *QuoteRequest) (*Quote, error) {
-	res, err := c.client.RequestQuote(ctx, req)
+	res, err := c.client.RequestQuoteWithResponse(ctx, client.RequestQuoteJSONRequestBody(*req))
 	if err != nil {
 		return nil, err
 	}
-	if ok, success := res.(*client.RequestQuoteOK); success {
-		result := Quote(*ok)
-		return &result, nil
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("request quote failed: status %d", res.StatusCode())
 	}
-	return nil, fmt.Errorf("unexpected response: %T", res)
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
 }
 
 // RequestQuoteForCompany requests a quote for a specific company
@@ -218,15 +220,17 @@ func (c *Client) RequestQuoteForCompany(ctx context.Context, req *QuoteRequest, 
 
 // CreateShipment creates a shipment
 func (c *Client) CreateShipment(ctx context.Context, req *ShipmentRequest) (*Shipment, error) {
-	res, err := c.client.CreateShipment(ctx, req)
+	res, err := c.client.CreateShipmentWithResponse(ctx, client.CreateShipmentJSONRequestBody(*req))
 	if err != nil {
 		return nil, err
 	}
-	if ok, success := res.(*client.CreateShipmentOK); success {
-		result := Shipment(*ok)
-		return &result, nil
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("create shipment failed: status %d", res.StatusCode())
 	}
-	return nil, fmt.Errorf("unexpected response: %T", res)
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
 }
 
 // CreateShipmentForCompany creates a shipment for a specific company
@@ -237,17 +241,17 @@ func (c *Client) CreateShipmentForCompany(ctx context.Context, req *ShipmentRequ
 
 // ConfirmShipment confirms a shipment by order number
 func (c *Client) ConfirmShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
-	res, err := c.client.ConfirmShipmentByOrderNumber(ctx, client.ConfirmShipmentByOrderNumberParams{
-		OrderNumber: orderNumber,
-	})
+	res, err := c.client.ConfirmShipmentByOrderNumberWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
-	if ok, success := res.(*client.ConfirmShipmentByOrderNumberOK); success {
-		result := Shipment(*ok)
-		return &result, nil
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("confirm shipment failed: status %d", res.StatusCode())
 	}
-	return nil, fmt.Errorf("unexpected response: %T", res)
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
 }
 
 // ConfirmShipmentForCompany confirms a shipment for a specific company
@@ -258,17 +262,17 @@ func (c *Client) ConfirmShipmentForCompany(ctx context.Context, orderNumber stri
 
 // TrackShipment gets tracking information for a shipment
 func (c *Client) TrackShipment(ctx context.Context, orderNumber string) (*Tracking, error) {
-	res, err := c.client.TrackShipmentByOrderNumber(ctx, client.TrackShipmentByOrderNumberParams{
-		OrderNumber: orderNumber,
-	})
+	res, err := c.client.TrackShipmentByOrderNumberWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
-	if ok, success := res.(*client.TrackShipmentByOrderNumberOK); success {
-		result := Tracking(*ok)
-		return &result, nil
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("track shipment failed: status %d", res.StatusCode())
 	}
-	return nil, fmt.Errorf("unexpected response: %T", res)
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
 }
 
 // TrackShipmentForCompany gets tracking information for a specific company's shipment
@@ -279,21 +283,105 @@ func (c *Client) TrackShipmentForCompany(ctx context.Context, orderNumber string
 
 // GetInvoice retrieves the invoice for a delivered shipment
 func (c *Client) GetInvoice(ctx context.Context, orderNumber string) (*Invoice, error) {
-	res, err := c.client.GetInvoice(ctx, client.GetInvoiceParams{
-		OrderNumber: orderNumber,
-	})
+	res, err := c.client.GetInvoiceWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
-	if ok, success := res.(*client.GetInvoiceOK); success {
-		result := Invoice(*ok)
-		return &result, nil
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("get invoice failed: status %d", res.StatusCode())
 	}
-	return nil, fmt.Errorf("unexpected response: %T", res)
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
 }
 
 // GetInvoiceForCompany retrieves the invoice for a specific company's shipment
 func (c *Client) GetInvoiceForCompany(ctx context.Context, orderNumber string, companyAPIKey string) (*Invoice, error) {
 	ctx = WithCompanyAPIKey(ctx, companyAPIKey)
 	return c.GetInvoice(ctx, orderNumber)
+}
+
+// GetShipment retrieves a shipment by order number
+func (c *Client) GetShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
+	res, err := c.client.GetShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("get shipment failed: status %d", res.StatusCode())
+	}
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
+}
+
+// GetShipmentForCompany retrieves a shipment for a specific company
+func (c *Client) GetShipmentForCompany(ctx context.Context, orderNumber string, companyAPIKey string) (*Shipment, error) {
+	ctx = WithCompanyAPIKey(ctx, companyAPIKey)
+	return c.GetShipment(ctx, orderNumber)
+}
+
+// CancelShipment cancels a shipment by order number
+func (c *Client) CancelShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
+	res, err := c.client.CancelShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("cancel shipment failed: status %d", res.StatusCode())
+	}
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
+}
+
+// CancelShipmentForCompany cancels a shipment for a specific company
+func (c *Client) CancelShipmentForCompany(ctx context.Context, orderNumber string, companyAPIKey string) (*Shipment, error) {
+	ctx = WithCompanyAPIKey(ctx, companyAPIKey)
+	return c.CancelShipment(ctx, orderNumber)
+}
+
+// GetQuoteByID retrieves a quote by its ID
+func (c *Client) GetQuoteByID(ctx context.Context, quoteID string) (*Quote, error) {
+	res, err := c.client.GetQuoteWithResponse(ctx, quoteID)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("get quote failed: status %d", res.StatusCode())
+	}
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
+}
+
+// GetQuoteByIDForCompany retrieves a quote for a specific company
+func (c *Client) GetQuoteByIDForCompany(ctx context.Context, quoteID string, companyAPIKey string) (*Quote, error) {
+	ctx = WithCompanyAPIKey(ctx, companyAPIKey)
+	return c.GetQuoteByID(ctx, quoteID)
+}
+
+// GetDocument retrieves a document for a shipment by order number and document type
+func (c *Client) GetDocument(ctx context.Context, orderNumber string, documentType DocumentType) (*Document, error) {
+	res, err := c.client.GetDocumentByOrderNumberWithResponse(ctx, orderNumber, client.GetDocumentByOrderNumberParamsDocumentType(documentType))
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("get document failed: status %d", res.StatusCode())
+	}
+	if res.HALJSON200 == nil {
+		return nil, fmt.Errorf("unexpected empty response body")
+	}
+	return res.HALJSON200, nil
+}
+
+// GetDocumentForCompany retrieves a document for a specific company's shipment
+func (c *Client) GetDocumentForCompany(ctx context.Context, orderNumber string, documentType DocumentType, companyAPIKey string) (*Document, error) {
+	ctx = WithCompanyAPIKey(ctx, companyAPIKey)
+	return c.GetDocument(ctx, orderNumber, documentType)
 }

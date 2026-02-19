@@ -6,19 +6,34 @@ import "github.com/Oway-Inc/oway-sdk/packages/go/client"
 
 // Request types
 type (
-	QuoteRequest    = client.ExternalRequestQuoteRequest
-	ShipmentRequest = client.ExternalCreateShipmentRequest
+	QuoteRequest    = client.QuoteRequest
+	ShipmentRequest = client.CreateShipmentRequest
 )
 
 // Response types
 type (
-	Quote    = client.ExternalRequestQuoteResponse
-	Shipment = client.ExternalOrder
-	Tracking = client.ExternalTracking
-	Invoice  = client.ExternalInvoiceResponse
+	Quote    = client.QuoteResponse
+	Shipment = client.Shipment
+	Tracking = client.Tracking
+	Invoice  = client.InvoiceResponse
 )
 
 // Common types
 type (
-	Address = client.ExternalAddress
+	Address        = client.Address
+	OrderComponent = client.OrderComponent
+	Document       = client.DocumentResponse
+	DocumentType   = client.GetDocumentByOrderNumberParamsDocumentType
+)
+
+// Document type constants
+const (
+	DocumentTypeBOL           DocumentType = "BILL_OF_LADING"
+	DocumentTypeInvoice       DocumentType = "INVOICE"
+	DocumentTypeShippingLabel DocumentType = "SHIPPING_LABEL"
+)
+
+// Additional aliases for EDI Gateway compatibility
+type (
+	CreateShipmentRequest = ShipmentRequest
 )

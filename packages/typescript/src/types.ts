@@ -15,7 +15,7 @@ export type Tracking = paths['/v1/shipper/shipment/{orderNumber}/tracking']['get
 export type Invoice = paths['/v1/shipper/shipment/{orderNumber}/invoice']['get']['responses']['200']['content']['application/hal+json'];
 
 // Common types
-export type Address = components['schemas']['ExternalAddress'];
+export type Address = components['schemas']['Address'];
 
 // Re-export for advanced usage
 export type { paths, components } from './generated/schema';

@@ -10,169 +10,177 @@ Official Oway SDK for JavaScript and TypeScript.
 npm install @oway/sdk
 ```
 
-## 5-Minute Quickstart
+## Quick Start
 
 ```typescript
-import Oway from '@oway/sdk';
+import Oway, { OwayEnvironments } from '@oway/sdk';
 
-// 1. Initialize with your API key
+// 1. Initialize with M2M credentials
 const oway = new Oway({
-  apiKey: 'oway_sk_test_...',
+  clientId: process.env.OWAY_M2M_CLIENT_ID!,
+  clientSecret: process.env.OWAY_M2M_CLIENT_SECRET!,
+  apiKey: process.env.OWAY_API_KEY,       // Optional: default company API key
+  baseUrl: OwayEnvironments.SANDBOX,
 });
 
 // 2. Get a shipping quote
 const quote = await oway.quotes.create({
-  origin: {
-    addressLine1: '123 Warehouse Rd',
+  pickupAddress: {
+    name: 'Warehouse LA',
+    address1: '123 Warehouse Rd',
     city: 'Los Angeles',
     state: 'CA',
     zipCode: '90210',
-    country: 'US',
+    phoneNumber: '+15550123456',
+    contactPerson: 'John Doe',
   },
-  destination: {
-    addressLine1: '456 Distribution Center',
+  deliveryAddress: {
+    name: 'Distribution NYC',
+    address1: '456 Distribution Ave',
     city: 'New York',
     state: 'NY',
     zipCode: '10001',
-    country: 'US',
+    phoneNumber: '+15555678901',
+    contactPerson: 'Jane Smith',
   },
-  items: [{
-    description: 'Pallets',
-    weight: 500,
-    weightUnit: 'LBS',
-    quantity: 2,
-  }],
+  orderComponents: [
+    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+  ],
 });
 
-console.log(`Quote: $${quote.totalCharge / 100}`);
+console.log(`Quote: $${(quote.quotedPriceInCents ?? 0) / 100}`);
 
-// 3. Schedule the shipment
+// 3. Create a shipment from the quote
 const shipment = await oway.shipments.create({
-  quoteId: quote.quoteId,
-  pickup: {
-    contactName: 'John Doe',
-    contactPhone: '555-1234',
-    contactEmail: 'pickup@example.com',
-  },
-  delivery: {
-    contactName: 'Jane Smith',
-    contactPhone: '555-5678',
-    contactEmail: 'delivery@example.com',
-  },
+  quoteId: quote.id,
+  pickupAddress: { /* same as above */ },
+  deliveryAddress: { /* same as above */ },
+  orderComponents: [
+    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+  ],
+  description: 'Electronics - fragile',
 });
+
+console.log(`Order: ${shipment.orderNumber} (${shipment.orderStatus})`);
 
 // 4. Confirm and track
-await oway.shipments.confirm(shipment.orderNumber);
-const tracking = await oway.shipments.tracking(shipment.orderNumber);
-console.log(`Status: ${tracking.status}`);
+await oway.shipments.confirm(shipment.orderNumber!);
+const tracking = await oway.shipments.tracking(shipment.orderNumber!);
+console.log(`Status: ${tracking.orderStatus}`);
 ```
 
-## Getting Your API Key
+## Getting Credentials
 
-**For Shippers:**
-1. Log in to [app.oway.io](https://app.oway.io)
-2. Go to Settings → API Keys
-3. Create a new API key
-4. Use test keys (`oway_sk_test_...`) for development
+### M2M Credentials (Required)
+Contact Oway Sales Engineering (support@oway.io) to obtain a `clientId` and `clientSecret`.
 
-**For Carriers:**
-Contact support@oway.io for carrier API credentials (`oway_ck_...`)
+### Company API Key (Optional)
+Self-service at [app.oway.io/settings/api](https://app.oway.io/settings/api).
+- Shipper keys: `oway_sk_test_...` (test) / `oway_sk_live_...` (production)
+- Carrier keys: `oway_ck_...`
 
 ## Authentication
 
-The SDK automatically handles authentication:
-- **API Key** (`x-oway-api-key` header) - Your company-specific key
-- **Access Token** (`Authorization: Bearer`) - Auto-refreshed JWT
+The SDK handles authentication automatically:
+- **M2M Token** (`Authorization: Bearer`) - Auto-refreshed JWT from clientId/clientSecret
+- **API Key** (`x-oway-api-key`) - Company-specific key for authorization
 
-You only provide your API key - token management is automatic.
+You provide credentials once at initialization - token management is automatic.
 
 ## API Reference
 
 ### Quotes
 
-#### Create Quote
 ```typescript
+// Request a quote
 const quote = await oway.quotes.create({
-  origin: {
-    addressLine1: string,
-    city: string,
-    state: string,
-    zipCode: string,
-    country: string,
-  },
-  destination: { /* same as origin */ },
-  items: [{
-    description: string,
-    weight: number,
-    weightUnit: 'LBS' | 'KG',
-    quantity: number,
-  }],
-  pickupDate?: string,     // Optional: ISO 8601 date
-  accessorials?: string[], // Optional: ['LIFTGATE', 'RESIDENTIAL']
+  pickupAddress: { name, address1, city, state, zipCode, phoneNumber, contactPerson },
+  deliveryAddress: { name, address1, city, state, zipCode, phoneNumber, contactPerson },
+  orderComponents: [{ palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] }],
 });
-```
 
-#### Retrieve Quote
-```typescript
-const quote = await oway.quotes.retrieve('quote_abc123');
+// Retrieve a quote by ID
+const quote = await oway.quotes.retrieve('507f1f77bcf86cd799439011');
 ```
 
 ### Shipments
 
-#### Create Shipment
 ```typescript
+// Create a shipment (optionally from a quote)
 const shipment = await oway.shipments.create({
-  quoteId: string,
-  pickup: {
-    contactName: string,
-    contactPhone: string,
-    contactEmail: string,
-    instructions?: string,
-  },
-  delivery: { /* same as pickup */ },
-  reference?: string, // Your PO number
+  quoteId: quote.id,           // Optional: lock in quoted price
+  pickupAddress: { ... },
+  deliveryAddress: { ... },
+  orderComponents: [{ palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] }],
+  description: 'Palletized freight',
+  poNumber: 'PO-2024-12345',  // Optional
 });
+
+// Retrieve a shipment
+const shipment = await oway.shipments.retrieve('ZKYQ5');
+
+// Confirm a shipment
+await oway.shipments.confirm('ZKYQ5');
+
+// Cancel a shipment
+await oway.shipments.cancel('ZKYQ5');
 ```
 
-#### Retrieve Shipment
+### Tracking
+
 ```typescript
-const shipment = await oway.shipments.retrieve('ORD-123456');
+const tracking = await oway.shipments.tracking('ZKYQ5');
+console.log(tracking.orderStatus);          // 'IN_TRANSIT', 'DELIVERED', etc.
+console.log(tracking.estimatedDeliveryDate);
+console.log(tracking.actualDeliveryDate);
 ```
 
-#### Confirm Shipment
+### Invoices
+
 ```typescript
-await oway.shipments.confirm('ORD-123456');
+const invoice = await oway.shipments.invoice('ZKYQ5');
+console.log(`Total: $${(invoice.totalChargesInCents ?? 0) / 100}`);
+console.log(`Line items: ${invoice.lineItems?.length}`);
 ```
 
-#### Cancel Shipment
+### Documents
+
 ```typescript
-await oway.shipments.cancel('ORD-123456');
+const { url } = await oway.shipments.document('ZKYQ5', 'BILL_OF_LADING');
+// Available types: 'BILL_OF_LADING', 'INVOICE', 'SHIPPING_LABEL'
 ```
 
-#### Track Shipment
-```typescript
-const tracking = await oway.shipments.tracking('ORD-123456');
-console.log(tracking.status);        // 'IN_TRANSIT', 'DELIVERED', etc.
-console.log(tracking.estimatedDelivery);
-```
+### Multi-Tenant (Per-Request API Key)
 
-#### Get Document
+All methods accept an optional `companyApiKey` as the last argument:
+
 ```typescript
-const { url } = await oway.shipments.document('ORD-123456', 'BOL');
-// Download BOL, INVOICE, or LABEL
+const shipment = await oway.shipments.create(request, 'oway_sk_...');
+const tracking = await oway.shipments.tracking('ZKYQ5', 'oway_sk_...');
+const invoice  = await oway.shipments.invoice('ZKYQ5', 'oway_sk_...');
 ```
 
 ## Configuration
 
 ```typescript
 const oway = new Oway({
-  apiKey: string,         // Required
-  baseUrl?: string,       // Optional: Default 'https://rest-api.sandbox.oway.io'
-  maxRetries?: number,    // Optional: Default 3
-  timeout?: number,       // Optional: Default 30000ms
-  debug?: boolean,        // Optional: Enable logging
+  clientId: string,        // Required: M2M client ID
+  clientSecret: string,    // Required: M2M client secret
+  apiKey?: string,         // Optional: Default company API key
+  baseUrl?: string,        // Optional: Defaults to sandbox
+  tokenUrl?: string,       // Optional: Custom token endpoint
+  maxRetries?: number,     // Optional: Default 3
+  timeout?: number,        // Optional: Default 30000ms
+  debug?: boolean,         // Optional: Enable debug logging
 });
 ```
+
+## Environments
+
+| Environment | Constant | URL |
+|-------------|----------|-----|
+| Sandbox | `OwayEnvironments.SANDBOX` | `https://rest-api.sandbox.oway.io` |
+| Production | `OwayEnvironments.PRODUCTION` | `https://rest-api.oway.io` |
 
 ## Error Handling
 
@@ -180,15 +188,19 @@ const oway = new Oway({
 import { OwayError } from '@oway/sdk';
 
 try {
-  const quote = await oway.quotes.create({...});
+  const quote = await oway.quotes.create({ ... });
 } catch (error) {
   if (error instanceof OwayError) {
     console.error({
       message: error.message,
-      code: error.code,           // Error code
+      code: error.code,             // Error code
       statusCode: error.statusCode, // HTTP status
       requestId: error.requestId,   // For support
     });
+
+    if (error.isRetryable()) {
+      // Retry logic - SDK retries automatically up to maxRetries
+    }
   }
 }
 ```
@@ -198,33 +210,14 @@ try {
 Full type definitions included:
 
 ```typescript
-import type { Quote, Shipment, QuoteRequest } from '@oway/sdk';
-
-const request: QuoteRequest = {
-  // TypeScript will autocomplete all fields
-};
-```
-
-## Environment Variables
-
-Store API keys securely:
-
-```typescript
-const oway = new Oway({
-  apiKey: process.env.OWAY_API_KEY!,
-});
-```
-
-Example `.env`:
-```
-OWAY_API_KEY=oway_sk_test_abc123...
+import type { Quote, Shipment, Tracking, Invoice, QuoteRequest, ShipmentRequest, Address } from '@oway/sdk';
 ```
 
 ## Support
 
 - **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
 - **API Reference**: [rest-api.oway.io/api-docs](https://rest-api.oway.io/api-docs)
-- **Support**: support@oway.io
+- **Email**: support@oway.io
 
 ## License
 

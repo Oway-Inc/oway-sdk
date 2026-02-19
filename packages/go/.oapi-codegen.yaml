@@ -1,10 +1,5 @@
-# Configuration for oapi-codegen
 package: client
+output: client/generated.go
 generate:
   models: true
   client: true
-  chi-server: false
-  echo-server: false
-output: client/generated.go
-output-options:
-  skip-prune: true

@@ -24,9 +24,17 @@ const oway = new Oway({
 });
 
 const quote = await oway.quotes.create({
-  origin: { zipCode: '90210', country: 'US' },
-  destination: { zipCode: '10001', country: 'US' },
-  items: [{ weight: 500, weightUnit: 'LBS' }],
+  pickupAddress: {
+    name: 'Warehouse', address1: '123 Warehouse Rd',
+    city: 'Los Angeles', state: 'CA', zipCode: '90210',
+    phoneNumber: '+15550123456', contactPerson: 'John Doe',
+  },
+  deliveryAddress: {
+    name: 'Distribution', address1: '456 Distribution Ave',
+    city: 'New York', state: 'NY', zipCode: '10001',
+    phoneNumber: '+15555678901', contactPerson: 'Jane Smith',
+  },
+  orderComponents: [{ palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] }],
 });
 ```
 
