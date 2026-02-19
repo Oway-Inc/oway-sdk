@@ -18,8 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
       
-      # Install from root (workspace)
       - name: Install dependencies
         run: npm ci
       
@@ -42,8 +42,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          cache: 'npm'
       
-      # Install from root (workspace)
       - name: Install dependencies
         run: npm ci
       
@@ -55,11 +55,15 @@ jobs:
         working-directory: packages/typescript
         run: npm run build
       
+      # Only upload coverage if codecov token is set
       - name: Upload coverage
-        if: matrix.node == 20
+        if: matrix.node == 20 && env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v4
         with:
           files: ./packages/typescript/coverage/coverage-final.json
+          token: ${{ secrets.CODECOV_TOKEN }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   test-go:
     name: Test Go (${{ matrix.go }})
@@ -76,6 +80,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+          cache-dependency-path: packages/go/go.sum
       
       - name: Run tests
         working-directory: packages/go
