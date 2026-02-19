@@ -55,7 +55,6 @@ jobs:
         working-directory: packages/typescript
         run: npm run build
       
-      # Only upload coverage if codecov token is set
       - name: Upload coverage
         if: matrix.node == 20 && env.CODECOV_TOKEN != ''
         uses: codecov/codecov-action@v4
@@ -101,13 +100,22 @@ jobs:
         run: |
           echo "🔍 Checking for internal references..."
           
+          # Check for internal file paths
           if grep -rE "/Users/|/home/|C:\\\\Users" *.md packages/*/README.md 2>/dev/null | grep -v "security-check\|Check for"; then
-            echo "❌ Internal file paths found"
+            echo "❌ Internal file paths found in documentation"
             exit 1
           fi
           
+          # Check for internal domains
           if grep -rE "internal\.oway|\.local" *.md packages/*/README.md 2>/dev/null | grep -v "security\|example"; then
-            echo "❌ Internal domains found"  
+            echo "❌ Internal domains found in documentation"  
+            exit 1
+          fi
+          
+          # Only check public API exports, not internal type aliases
+          # types.go and types.ts are allowed to reference External* for aliasing
+          if grep -E "export.*External|func.*External" packages/typescript/src/index.ts packages/go/oway.go 2>/dev/null; then
+            echo "❌ External types exposed in public API"
             exit 1
           fi
           

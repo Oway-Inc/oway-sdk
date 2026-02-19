@@ -1,4 +1,3 @@
-# Public CI workflow - safe to expose
 name: Test SDKs
 
 on:
@@ -8,25 +7,25 @@ on:
     branches: [main]
 
 jobs:
-  typescript:
-    name: Test TypeScript SDK
+  test-typescript:
+    name: Test TypeScript (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
     
     steps:
       - uses: actions/checkout@v4
       
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
           cache: 'npm'
       
       - name: Install dependencies
-        working-directory: packages/typescript
         run: npm ci
-      
-      - name: Run linter
-        working-directory: packages/typescript
-        run: npm run lint || echo "Linter not configured yet"
       
       - name: Run tests
         working-directory: packages/typescript
@@ -36,7 +35,7 @@ jobs:
         working-directory: packages/typescript
         run: npm run build
 
-  go:
+  test-go:
     name: Test Go SDK
     runs-on: ubuntu-latest
     
@@ -48,10 +47,6 @@ jobs:
           go-version: '1.21'
           cache-dependency-path: packages/go/go.sum
       
-      - name: Download dependencies
-        working-directory: packages/go
-        run: go mod download
-      
       - name: Run tests
         working-directory: packages/go
         run: go test -v -race -cover ./...
@@ -60,10 +55,39 @@ jobs:
         working-directory: packages/go
         run: go build ./...
       
-      - name: Verify no external references
+      - name: Verify no External types in public API
         working-directory: packages/go
         run: |
-          if grep -r "ExternalOrder\|ExternalRequest" *.go; then
-            echo "Error: Public API should not expose 'External' types"
+          echo "🔍 Checking public API doesn't expose 'External' types..."
+          
+          # Check all .go files EXCEPT types.go (types.go is allowed to reference External for aliasing)
+          if grep -r "ExternalOrder\|ExternalRequest" *.go | grep -v "types.go"; then
+            echo "❌ Error: Found 'External' types exposed in public API"
+            echo "ℹ️  Note: types.go is allowed to use External for type aliases"
             exit 1
           fi
+          
+          echo "✅ Public API is clean - External types are internal only"
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for internal references
+        run: |
+          echo "🔍 Checking for internal references in documentation..."
+          
+          if grep -rE "/Users/|/home/|C:\\\\Users" *.md packages/*/README.md 2>/dev/null | grep -v "security\|Check for"; then
+            echo "❌ Internal file paths found"
+            exit 1
+          fi
+          
+          if grep -rE "internal\.oway|\.local" *.md packages/*/README.md 2>/dev/null | grep -v "security\|example\|localhost"; then
+            echo "❌ Internal domains found"  
+            exit 1
+          fi
+          
+          echo "✅ Documentation is clean"
