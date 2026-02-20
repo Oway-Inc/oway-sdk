@@ -38,8 +38,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oway/oway-sdk.git",
+    "url": "https://github.com/Oway-Inc/oway-sdk.git",
     "directory": "packages/typescript"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
