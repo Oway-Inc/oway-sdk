@@ -20,7 +20,7 @@ describe('HttpClient', () => {
     it('should fetch M2M token on first request', async () => {
       (fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ access_token: 'test_token', expires_in: 3600 }),
+        json: async () => ({ accessToken: 'test_token', expiresIn: 3600 }),
       });
       (fetch as any).mockResolvedValueOnce({
         ok: true,

@@ -1,3 +1,10 @@
+import type { components } from './generated/schema';
+
+/** Token response from the /v1/auth/token endpoint (generated from OpenAPI spec) */
+export type TokenResponse = components['schemas']['TokenResponse'];
+
+/** Token error response from the /v1/auth/token endpoint (generated from OpenAPI spec) */
+export type TokenErrorResponse = components['schemas']['TokenErrorResponse'];
 
 export interface OwayConfig {
   /**
@@ -61,12 +68,6 @@ export interface OwayConfig {
     warn: (msg: string, meta?: Record<string, any>) => void;
     error: (msg: string, meta?: Record<string, any>) => void;
   };
-}
-
-export interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
 }
 
 export class OwayError extends Error {
@@ -253,9 +254,17 @@ export class HttpClient {
       }
 
       const data = await response.json() as TokenResponse;
-      this.tokenExpiry = Date.now() + data.expires_in * 1000;
 
-      return data.access_token;
+      if (!data.accessToken || !data.expiresIn) {
+        throw new OwayError(
+          'Invalid token response: missing accessToken or expiresIn',
+          'AUTH_INVALID_RESPONSE'
+        );
+      }
+
+      this.tokenExpiry = Date.now() + data.expiresIn * 1000;
+
+      return data.accessToken;
     } catch (error) {
       this.log('error', 'Token refresh failed', {
         error: error instanceof Error ? error.message : 'Unknown error',

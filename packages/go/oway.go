@@ -187,8 +187,8 @@ func (c *Client) refreshToken(ctx context.Context) (string, time.Time, error) {
 	}
 
 	var tokenResp struct {
-		AccessToken string `json:"access_token"`
-		ExpiresIn   int    `json:"expires_in"`
+		AccessToken string `json:"accessToken"`
+		ExpiresIn   int    `json:"expiresIn"`
 	}
 
 	json.NewDecoder(resp.Body).Decode(&tokenResp)

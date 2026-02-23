@@ -19,7 +19,7 @@ func TestTokenManagement(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"access_token": "test_token", "expires_in": 3600}`))
+		w.Write([]byte(`{"accessToken": "test_token", "expiresIn": 3600}`))
 	}))
 	defer tokenServer.Close()
 
