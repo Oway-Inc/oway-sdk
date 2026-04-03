@@ -17,9 +17,58 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Defines values for AddressAccessorialSnapshotCallAheadRequired.
 const (
-	ApiKeyScopes     = "apiKey.Scopes"
-	BearerAuthScopes = "bearerAuth.Scopes"
+	DAYBEFORE  AddressAccessorialSnapshotCallAheadRequired = "DAY_BEFORE"
+	HALFHOUR   AddressAccessorialSnapshotCallAheadRequired = "HALF_HOUR"
+	ONEHOUR    AddressAccessorialSnapshotCallAheadRequired = "ONE_HOUR"
+	STARTOFDAY AddressAccessorialSnapshotCallAheadRequired = "START_OF_DAY"
+	TWOHOURS   AddressAccessorialSnapshotCallAheadRequired = "TWO_HOURS"
+)
+
+// Defines values for AppliedPricingRuleType.
+const (
+	AddOnMargin  AppliedPricingRuleType = "add_on_margin"
+	MaxMarginCap AppliedPricingRuleType = "max_margin_cap"
+)
+
+// Defines values for OfferWithOrderDataDTOMatchingMethod.
+const (
+	LANE     OfferWithOrderDataDTOMatchingMethod = "LANE"
+	MANUAL   OfferWithOrderDataDTOMatchingMethod = "MANUAL"
+	REGION   OfferWithOrderDataDTOMatchingMethod = "REGION"
+	TERMINAL OfferWithOrderDataDTOMatchingMethod = "TERMINAL"
+	TRIP     OfferWithOrderDataDTOMatchingMethod = "TRIP"
+)
+
+// Defines values for OrderCancellationReason.
+const (
+	CarrierException     OrderCancellationReason = "carrier_exception"
+	ChargebackOther      OrderCancellationReason = "chargeback_other"
+	CustomerCancellation OrderCancellationReason = "customer_cancellation"
+	Expired              OrderCancellationReason = "expired"
+	LowCoverage          OrderCancellationReason = "low_coverage"
+	ShipmentEntryError   OrderCancellationReason = "shipment_entry_error"
+	ShipperException     OrderCancellationReason = "shipper_exception"
+	Tonu                 OrderCancellationReason = "tonu"
+	UnacceptableMargin   OrderCancellationReason = "unacceptable_margin"
+	Unspecified          OrderCancellationReason = "unspecified"
+)
+
+// Defines values for QuoteQuoteSource.
+const (
+	ManualEntry    QuoteQuoteSource = "manual_entry"
+	PricingModel   QuoteQuoteSource = "pricing_model"
+	PricingModelV2 QuoteQuoteSource = "pricing_model_v2"
+)
+
+// Defines values for QuoteStatus.
+const (
+	Confirmed   QuoteStatus = "confirmed"
+	Display     QuoteStatus = "display"
+	Open        QuoteStatus = "open"
+	PriceLocked QuoteStatus = "price_locked"
+	Rejected    QuoteStatus = "rejected"
 )
 
 // Defines values for ShipmentOrderStatus.
@@ -46,11 +95,12 @@ const (
 	TrackingOrderStatusPICKEDUP    TrackingOrderStatus = "PICKED_UP"
 )
 
-// Defines values for GetDocumentByOrderNumberParamsDocumentType.
+// Defines values for GetDocumentParamsDocumentType.
 const (
-	BILLOFLADING  GetDocumentByOrderNumberParamsDocumentType = "BILL_OF_LADING"
-	INVOICE       GetDocumentByOrderNumberParamsDocumentType = "INVOICE"
-	SHIPPINGLABEL GetDocumentByOrderNumberParamsDocumentType = "SHIPPING_LABEL"
+	BILLOFLADING  GetDocumentParamsDocumentType = "BILL_OF_LADING"
+	INVOICE       GetDocumentParamsDocumentType = "INVOICE"
+	POD           GetDocumentParamsDocumentType = "POD"
+	SHIPPINGLABEL GetDocumentParamsDocumentType = "SHIPPING_LABEL"
 )
 
 // Address Address information for pickup or delivery locations
@@ -98,6 +148,55 @@ type Address struct {
 	ZipCode string `json:"zipCode"`
 }
 
+// AddressAccessorialSnapshot defines model for AddressAccessorialSnapshot.
+type AddressAccessorialSnapshot struct {
+	AppointmentRequired *bool                                        `json:"appointmentRequired,omitempty"`
+	CallAheadRequired   *AddressAccessorialSnapshotCallAheadRequired `json:"callAheadRequired,omitempty"`
+	CreatedAt           *time.Time                                   `json:"createdAt,omitempty"`
+	LiftgateRequired    *bool                                        `json:"liftgateRequired,omitempty"`
+	LimitedAccess       *bool                                        `json:"limitedAccess,omitempty"`
+	Residential         *bool                                        `json:"residential,omitempty"`
+	UpdatedAt           *time.Time                                   `json:"updatedAt,omitempty"`
+	Values              *map[string]bool                             `json:"values,omitempty"`
+}
+
+// AddressAccessorialSnapshotCallAheadRequired defines model for AddressAccessorialSnapshot.CallAheadRequired.
+type AddressAccessorialSnapshotCallAheadRequired string
+
+// AppliedPricingRule defines model for AppliedPricingRule.
+type AppliedPricingRule struct {
+	AdjustmentInCents *int32                  `json:"adjustmentInCents,omitempty"`
+	RuleId            *string                 `json:"ruleId,omitempty"`
+	RuleValue         *float64                `json:"ruleValue,omitempty"`
+	Type              *AppliedPricingRuleType `json:"type,omitempty"`
+}
+
+// AppliedPricingRuleType defines model for AppliedPricingRule.Type.
+type AppliedPricingRuleType string
+
+// CarrierApiConfigResponse Carrier API configuration response
+type CarrierApiConfigResponse struct {
+	// ApiEnabled Whether the API is enabled for this carrier
+	ApiEnabled *bool `json:"apiEnabled,omitempty"`
+
+	// ApiVersion Current API version
+	ApiVersion *string `json:"apiVersion,omitempty"`
+
+	// AvailableEndpoints List of available API endpoints for this carrier
+	AvailableEndpoints *[]string `json:"availableEndpoints,omitempty"`
+
+	// CompanyName Name of the carrier company
+	CompanyName *string `json:"companyName,omitempty"`
+}
+
+// ComponentDetails defines model for ComponentDetails.
+type ComponentDetails struct {
+	FreightClass     *string    `json:"freightClass,omitempty"`
+	PalletCount      *int32     `json:"palletCount,omitempty"`
+	PalletDimensions *[]float32 `json:"palletDimensions,omitempty"`
+	PoundsWeight     *float32   `json:"poundsWeight,omitempty"`
+}
+
 // CreateShipmentRequest Request to create a new shipment
 type CreateShipmentRequest struct {
 	// DeliveryAddress Address information for pickup or delivery locations
@@ -115,7 +214,7 @@ type CreateShipmentRequest struct {
 	// PoNumber Purchase order number for reference
 	PoNumber *string `json:"poNumber,omitempty"`
 
-	// QuoteId Optional ID of a previously generated quote. If provided, the shipment must match the quote parameters.
+	// QuoteId Optional ID of a previously generated quote.
 	QuoteId *string `json:"quoteId,omitempty"`
 
 	// RefNumber Additional reference number
@@ -128,9 +227,9 @@ type CreateShipmentRequest struct {
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
 }
 
-// DocumentResponse Response containing document download information
+// DocumentResponse Response containing a document download link
 type DocumentResponse struct {
-	// DownloadLink Pre-signed URL to download the document. Link expires after a short time.
+	// DownloadLink Pre-signed download URL (valid for limited time)
 	DownloadLink *string `json:"downloadLink,omitempty"`
 
 	// FileType MIME type of the document
@@ -140,27 +239,48 @@ type DocumentResponse struct {
 	Filename *string `json:"filename,omitempty"`
 }
 
-// InvoiceCharge An individual charge/fee on the invoice
+// GpsData GPS location data point for a vehicle
+type GpsData struct {
+	// Heading Heading in degrees (0-359, where 0 is North)
+	Heading int32 `json:"heading"`
+
+	// Latitude Latitude coordinate
+	Latitude float64 `json:"latitude"`
+
+	// Longitude Longitude coordinate
+	Longitude float64 `json:"longitude"`
+
+	// Speed Speed in km/h
+	Speed int32 `json:"speed"`
+
+	// Timestamp Timestamp of the GPS reading (ISO 8601 format). Must not be in the future.
+	Timestamp time.Time `json:"timestamp"`
+
+	// VehicleId Unique identifier for the vehicle
+	VehicleId string `json:"vehicleId"`
+}
+
+// InvoiceCharge A charge on an invoice
 type InvoiceCharge struct {
-	// AmountInCents Charge amount in cents (USD)
+	// AmountInCents Amount in cents (USD)
 	AmountInCents *int32 `json:"amountInCents,omitempty"`
 
-	// ChargeType Type of charge (e.g., BASE_FREIGHT, LIFTGATE_PICKUP, LIFTGATE_DELIVERY)
+	// ChargeType Type of charge
 	ChargeType *string `json:"chargeType,omitempty"`
 
 	// Description Human-readable description of the charge
 	Description *string `json:"description,omitempty"`
 }
 
-// InvoiceLineItem A line item on the invoice representing shipped goods
+// InvoiceLineItem A line item on an invoice
 type InvoiceLineItem struct {
-	// Description Description of the goods
+	// Description Description of the item
 	Description *string `json:"description,omitempty"`
 
-	// FreightClass Freight class (NMFC)
+	// FreightClass Freight class
 	FreightClass *string `json:"freightClass,omitempty"`
 
-	// PackageType Type of packaging (e.g., PLT for pallet, CTN for carton)
+	// PackageType Package type
 	PackageType *string `json:"packageType,omitempty"`
 
 	// Quantity Number of pieces/pallets
@@ -184,16 +304,16 @@ type InvoiceResponse struct {
 	// DeliveryDate Delivery date (when the shipment was delivered)
 	DeliveryDate *time.Time `json:"deliveryDate,omitempty"`
 
-	// InvoiceDate Invoice date (when the shipment was delivered)
+	// InvoiceDate Invoice date (typically same as delivery date)
 	InvoiceDate *time.Time `json:"invoiceDate,omitempty"`
 
 	// LineItems Line items representing the shipped goods
 	LineItems *[]InvoiceLineItem `json:"lineItems,omitempty"`
 
-	// OrderId Unique identifier for the order
+	// OrderId Order ID
 	OrderId *string `json:"orderId,omitempty"`
 
-	// OrderNumber Order number (PRO number)
+	// OrderNumber Human-readable order number (PRO number)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
 	// PoNumber Purchase order number (if provided)
@@ -218,52 +338,199 @@ type InvoiceResponse struct {
 	TotalWeight *int32 `json:"totalWeight,omitempty"`
 }
 
-// OrderComponent Individual cargo component in a shipment.
-//
-// **Validation Rules:**
-// - Total weight across all components must equal order totalPoundsWeight
-// - Total pallet count across all components must equal order totalPalletCount
-// - Weight must be between 1 and 2,500 lbs per pallet
-// - Dimensions must be within limits (see palletDimensions field)
+// OfferWithOrderDataDTO defines model for OfferWithOrderDataDTO.
+type OfferWithOrderDataDTO struct {
+	AdditionalPayoutsInCents        *map[string]int32 `json:"additionalPayoutsInCents,omitempty"`
+	CarrierCounterOfferPriceInCents *int32            `json:"carrierCounterOfferPriceInCents,omitempty"`
+	CarrierId                       *string           `json:"carrierId,omitempty"`
+	CentsPayOut                     *int32            `json:"centsPayOut,omitempty"`
+	CommunicationExpired            *bool             `json:"communicationExpired,omitempty"`
+	Contacted                       *bool             `json:"contacted,omitempty"`
+	CreatedAt                       *time.Time        `json:"createdAt,omitempty"`
+	Deadline                        *time.Time        `json:"deadline,omitempty"`
+	DecidedAt                       *time.Time        `json:"decidedAt,omitempty"`
+	DeliveryPin                     *string           `json:"deliveryPin,omitempty"`
+	DriverId                        *string           `json:"driverId,omitempty"`
+
+	// DropoffAddressData Address information for pickup or delivery locations
+	DropoffAddressData        *Address                             `json:"dropoffAddressData,omitempty"`
+	EmailThreadId             *string                              `json:"emailThreadId,omitempty"`
+	Id                        *string                              `json:"id,omitempty"`
+	ManualCentsPayoutOverride *int32                               `json:"manualCentsPayoutOverride,omitempty"`
+	MatchingMethod            *OfferWithOrderDataDTOMatchingMethod `json:"matchingMethod,omitempty"`
+	OrderAccessorials         *OrderAccessorials                   `json:"orderAccessorials,omitempty"`
+	OrderData                 *Order                               `json:"orderData,omitempty"`
+	OrderId                   *string                              `json:"orderId,omitempty"`
+
+	// PickupAddressData Address information for pickup or delivery locations
+	PickupAddressData                *Address                   `json:"pickupAddressData,omitempty"`
+	PickupPin                        *string                    `json:"pickupPin,omitempty"`
+	RealTimeVehicleLocationSnapshots *[]VehicleLocationSnapshot `json:"realTimeVehicleLocationSnapshots,omitempty"`
+	RouteId                          *string                    `json:"routeId,omitempty"`
+	RouteScore                       *float64                   `json:"routeScore,omitempty"`
+	State                            *string                    `json:"state,omitempty"`
+	TotalPayoutInCents               *int32                     `json:"totalPayoutInCents,omitempty"`
+	TripFragmentMatches              *[]TripFragmentMatch       `json:"tripFragmentMatches,omitempty"`
+	UpdatedAt                        *time.Time                 `json:"updatedAt,omitempty"`
+}
+
+// OfferWithOrderDataDTOMatchingMethod defines model for OfferWithOrderDataDTO.MatchingMethod.
+type OfferWithOrderDataDTOMatchingMethod string
+
+// Order defines model for Order.
+type Order struct {
+	AdditionalCustomerIds                 *[]string                `json:"additionalCustomerIds,omitempty"`
+	AmountDue                             *int32                   `json:"amountDue,omitempty"`
+	ApiOrder                              *bool                    `json:"apiOrder,omitempty"`
+	AvgPoundsPerCubicFoot                 *float64                 `json:"avgPoundsPerCubicFoot,omitempty"`
+	BillingAddressId                      *string                  `json:"billingAddressId,omitempty"`
+	CancellationReason                    *OrderCancellationReason `json:"cancellationReason,omitempty"`
+	CompanyId                             *string                  `json:"companyId,omitempty"`
+	Confirmed                             *bool                    `json:"confirmed,omitempty"`
+	CreatedAt                             *time.Time               `json:"createdAt,omitempty"`
+	CustomerId                            *string                  `json:"customerId,omitempty"`
+	DecidedAt                             *time.Time               `json:"decidedAt,omitempty"`
+	DeliveryAddressId                     *string                  `json:"deliveryAddressId,omitempty"`
+	Description                           *string                  `json:"description,omitempty"`
+	EmailThreadId                         *string                  `json:"emailThreadId,omitempty"`
+	Id                                    *string                  `json:"id,omitempty"`
+	LogisticsId                           *string                  `json:"logisticsId,omitempty"`
+	LtlCode                               *string                  `json:"ltlCode,omitempty"`
+	OrderComponents                       *[]ComponentDetails      `json:"orderComponents,omitempty"`
+	OrderNumber                           *string                  `json:"orderNumber,omitempty"`
+	OrderPreConfirmation                  *bool                    `json:"orderPreConfirmation,omitempty"`
+	Paid                                  *bool                    `json:"paid,omitempty"`
+	PaidAt                                *time.Time               `json:"paidAt,omitempty"`
+	PaidBy                                *string                  `json:"paidBy,omitempty"`
+	PaymentDueAt                          *time.Time               `json:"paymentDueAt,omitempty"`
+	PaymentMethod                         *string                  `json:"paymentMethod,omitempty"`
+	PaymentNotes                          *string                  `json:"paymentNotes,omitempty"`
+	PickupAddressId                       *string                  `json:"pickupAddressId,omitempty"`
+	PoNumber                              *string                  `json:"poNumber,omitempty"`
+	Quote                                 *Quote                   `json:"quote,omitempty"`
+	RefNumber                             *string                  `json:"refNumber,omitempty"`
+	SearchMatches                         *[]SearchMatch           `json:"searchMatches,omitempty"`
+	State                                 *string                  `json:"state,omitempty"`
+	TotalCubicFeet                        *float64                 `json:"totalCubicFeet,omitempty"`
+	TotalPalletCount                      *int32                   `json:"totalPalletCount,omitempty"`
+	TotalPoundsWeight                     *float32                 `json:"totalPoundsWeight,omitempty"`
+	TotalPriceInCents                     *int32                   `json:"totalPriceInCents,omitempty"`
+	TotalPriceInCentsWithoutBrokerCharges *int32                   `json:"totalPriceInCentsWithoutBrokerCharges,omitempty"`
+	UpdatedAt                             *time.Time               `json:"updatedAt,omitempty"`
+}
+
+// OrderCancellationReason defines model for Order.CancellationReason.
+type OrderCancellationReason string
+
+// OrderAccessorials defines model for OrderAccessorials.
+type OrderAccessorials struct {
+	DeliveryAccessorials *AddressAccessorialSnapshot `json:"deliveryAccessorials,omitempty"`
+	Hazmat               *bool                       `json:"hazmat,omitempty"`
+	PickupAccessorials   *AddressAccessorialSnapshot `json:"pickupAccessorials,omitempty"`
+	Reefer               *bool                       `json:"reefer,omitempty"`
+}
+
+// OrderComponent A cargo component (pallet group) in a shipment
 type OrderComponent struct {
-	// PalletCount Number of pallets for this component
+	// PalletCount Number of pallets in this component
 	PalletCount int32 `json:"palletCount"`
 
-	// PalletDimensions Pallet dimensions in inches as [length, width, height].
-	//
-	// **Dimension Limits:**
-	// - Standard shipments: max 95×95×94 inches
-	// - With liftgate accessorial: max 62×62×94 inches
-	// - Oversize rule: Both length AND width cannot exceed 60 inches
-	// - Minimum: 1×1×1 inches
+	// PalletDimensions Pallet dimensions as [height, length, width] in inches
 	PalletDimensions []int32 `json:"palletDimensions"`
 
-	// PoundsWeight Total weight for this component in pounds. Must be between 1 and 2,500 lbs per pallet (e.g., 2 pallets = max 5,000 lbs).
-	PoundsWeight float64 `json:"poundsWeight"`
+	// PoundsWeight Weight per pallet in pounds
+	PoundsWeight int32 `json:"poundsWeight"`
 }
+
+// ProblemDetail RFC 9457 Problem Details error response
+type ProblemDetail struct {
+	// Detail A human-readable explanation specific to this occurrence of the problem
+	Detail *string `json:"detail,omitempty"`
+
+	// Reason A machine-readable reason code for programmatic handling
+	Reason *string `json:"reason,omitempty"`
+
+	// Status The HTTP status code
+	Status *int32 `json:"status,omitempty"`
+
+	// Title A short, human-readable summary of the problem type
+	Title *string `json:"title,omitempty"`
+
+	// Type A URI reference that identifies the problem type
+	Type *string `json:"type,omitempty"`
+}
+
+// Quote defines model for Quote.
+type Quote struct {
+	AdditionalChargesInCents          *map[string]int32     `json:"additionalChargesInCents,omitempty"`
+	AppliedPricingRules               *[]AppliedPricingRule `json:"appliedPricingRules,omitempty"`
+	BrokerChargesInCents              *map[string]int32     `json:"brokerChargesInCents,omitempty"`
+	CarrierProbability                *float64              `json:"carrierProbability,omitempty"`
+	CentsCharge                       *int32                `json:"centsCharge,omitempty"`
+	CoverageDenialReason              *string               `json:"coverageDenialReason,omitempty"`
+	CreatedAt                         *time.Time            `json:"createdAt,omitempty"`
+	CustomerId                        *string               `json:"customerId,omitempty"`
+	DropoffScoreSurroundingNormalized *float64              `json:"dropoffScoreSurroundingNormalized,omitempty"`
+	DropoffZip                        *string               `json:"dropoffZip,omitempty"`
+	ExposePrice                       *bool                 `json:"exposePrice,omitempty"`
+	Id                                *string               `json:"id,omitempty"`
+	Miles                             *float64              `json:"miles,omitempty"`
+	NumPallets                        *int32                `json:"numPallets,omitempty"`
+	OrderId                           *string               `json:"orderId,omitempty"`
+	OriginalPrice                     *float64              `json:"originalPrice,omitempty"`
+	PickupScoreSurroundingNormalized  *float64              `json:"pickupScoreSurroundingNormalized,omitempty"`
+	PickupZip                         *string               `json:"pickupZip,omitempty"`
+	PricingRuleAdjustmentInCents      *int32                `json:"pricingRuleAdjustmentInCents,omitempty"`
+	QuoteSource                       *QuoteQuoteSource     `json:"quoteSource,omitempty"`
+	ShipperId                         *string               `json:"shipperId,omitempty"`
+	ShipperProbability                *float64              `json:"shipperProbability,omitempty"`
+	Status                            *QuoteStatus          `json:"status,omitempty"`
+	SuggestedCarrierPayoutCents       *int32                `json:"suggestedCarrierPayoutCents,omitempty"`
+	TimeStamp                         *time.Time            `json:"timeStamp,omitempty"`
+	TotalCentsChargeWithBrokerCharges *int32                `json:"totalCentsChargeWithBrokerCharges,omitempty"`
+	TotalWeight                       *float32              `json:"totalWeight,omitempty"`
+	UpdatedAt                         *time.Time            `json:"updatedAt,omitempty"`
+}
+
+// QuoteQuoteSource defines model for Quote.QuoteSource.
+type QuoteQuoteSource string
+
+// QuoteStatus defines model for Quote.Status.
+type QuoteStatus string
 
 // QuoteRequest Request to generate a shipping quote. Quotes are valid for 2 days from creation.
 type QuoteRequest struct {
 	// DeliveryAddress Address information for pickup or delivery locations
 	DeliveryAddress Address `json:"deliveryAddress"`
 
-	// OrderComponents List of pallets or freight pieces. Quote will be based on total pallet count and weight.
+	// OrderComponents List of pallets or freight pieces.
 	OrderComponents []OrderComponent `json:"orderComponents"`
 
 	// PickupAddress Address information for pickup or delivery locations
 	PickupAddress Address `json:"pickupAddress"`
+
+	// RequiredPickupDate Required pickup date (ISO 8601).
+	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
 }
 
-// QuoteResponse Response containing quote details
+// QuoteResponse Response containing a shipping quote
 type QuoteResponse struct {
-	// Id Unique identifier for the quote
+	// Id Unique quote identifier
 	Id *string `json:"id,omitempty"`
 
-	// QuoteExpirationTime Time when the quote expires (ISO 8601 format). Quotes are valid for 2 days.
+	// QuoteExpirationTime When this quote expires (ISO 8601 format). Quotes are valid for 2 days.
 	QuoteExpirationTime *time.Time `json:"quoteExpirationTime,omitempty"`
 
 	// QuotedPriceInCents Total quoted price in cents (USD)
 	QuotedPriceInCents *int32 `json:"quotedPriceInCents,omitempty"`
+}
+
+// SearchMatch defines model for SearchMatch.
+type SearchMatch struct {
+	EndIndex   *int32  `json:"endIndex,omitempty"`
+	Field      *string `json:"field,omitempty"`
+	StartIndex *int32  `json:"startIndex,omitempty"`
+	Value      *string `json:"value,omitempty"`
 }
 
 // Shipment Shipment/Order details
@@ -280,7 +547,7 @@ type Shipment struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current status of the order
+	// OrderStatus Current shipment status in the order lifecycle
 	OrderStatus *ShipmentOrderStatus `json:"orderStatus,omitempty"`
 
 	// TotalPriceInCents Total price of the order in cents (USD)
@@ -293,8 +560,38 @@ type Shipment struct {
 	UserId *string `json:"userId,omitempty"`
 }
 
-// ShipmentOrderStatus Current status of the order
+// ShipmentOrderStatus Current shipment status in the order lifecycle
 type ShipmentOrderStatus string
+
+// TokenErrorResponse Error response for token requests
+type TokenErrorResponse struct {
+	// Error Error code
+	Error *string `json:"error,omitempty"`
+
+	// ErrorDescription Human-readable error description
+	ErrorDescription *string `json:"errorDescription,omitempty"`
+}
+
+// TokenRequest Token request containing client credentials
+type TokenRequest struct {
+	// ClientId Client ID provided by Oway
+	ClientId string `json:"clientId"`
+
+	// ClientSecret Client secret provided by Oway
+	ClientSecret string `json:"clientSecret"`
+}
+
+// TokenResponse Successful token response
+type TokenResponse struct {
+	// AccessToken The access token to use for API requests
+	AccessToken *string `json:"accessToken,omitempty"`
+
+	// ExpiresIn Token validity in seconds
+	ExpiresIn *int32 `json:"expiresIn,omitempty"`
+
+	// TokenType Token type (always 'Bearer')
+	TokenType *string `json:"tokenType,omitempty"`
+}
 
 // Tracking Shipment tracking information
 type Tracking struct {
@@ -316,15 +613,94 @@ type Tracking struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current status of the order
+	// OrderStatus Current shipment status in the order lifecycle
 	OrderStatus *TrackingOrderStatus `json:"orderStatus,omitempty"`
 }
 
-// TrackingOrderStatus Current status of the order
+// TrackingOrderStatus Current shipment status in the order lifecycle
 type TrackingOrderStatus string
 
-// GetDocumentByOrderNumberParamsDocumentType defines parameters for GetDocumentByOrderNumber.
-type GetDocumentByOrderNumberParamsDocumentType string
+// TripDetour defines model for TripDetour.
+type TripDetour struct {
+	DeliveryDetourSeconds *int32 `json:"deliveryDetourSeconds,omitempty"`
+	PickupDetourSeconds   *int32 `json:"pickupDetourSeconds,omitempty"`
+	TotalDetourSeconds    *int32 `json:"totalDetourSeconds,omitempty"`
+}
+
+// TripFragmentMatch defines model for TripFragmentMatch.
+type TripFragmentMatch struct {
+	DeliveryStopNumber *int32      `json:"deliveryStopNumber,omitempty"`
+	PickupStopNumber   *int32      `json:"pickupStopNumber,omitempty"`
+	TripDetour         *TripDetour `json:"tripDetour,omitempty"`
+	TripFragmentId     *string     `json:"tripFragmentId,omitempty"`
+	TripId             *string     `json:"tripId,omitempty"`
+	VehicleId          *string     `json:"vehicleId,omitempty"`
+}
+
+// TripLeg defines model for TripLeg.
+type TripLeg struct {
+	ArrivalWindowEnd    *time.Time `json:"arrivalWindowEnd,omitempty"`
+	ArrivalWindowStart  *time.Time `json:"arrivalWindowStart,omitempty"`
+	AvailableForOffers  *bool      `json:"availableForOffers,omitempty"`
+	EndLat              *float64   `json:"endLat,omitempty"`
+	EndLong             *float64   `json:"endLong,omitempty"`
+	EstDriveTimeMinutes *int32     `json:"estDriveTimeMinutes,omitempty"`
+	StartLat            *float64   `json:"startLat,omitempty"`
+	StartLong           *float64   `json:"startLong,omitempty"`
+	StartTime           *time.Time `json:"startTime,omitempty"`
+	StopNumber          *int32     `json:"stopNumber,omitempty"`
+}
+
+// TripRequest defines model for TripRequest.
+type TripRequest struct {
+	CarrierId *string    `json:"carrierId,omitempty"`
+	Id        *string    `json:"id,omitempty"`
+	Legs      *[]TripLeg `json:"legs,omitempty"`
+	TripNo    *string    `json:"tripNo,omitempty"`
+	VehicleId *string    `json:"vehicleId,omitempty"`
+}
+
+// VehicleLocationSnapshot defines model for VehicleLocationSnapshot.
+type VehicleLocationSnapshot struct {
+	Heading                *int32     `json:"heading,omitempty"`
+	Id                     *string    `json:"id,omitempty"`
+	LastUpdated            *time.Time `json:"lastUpdated,omitempty"`
+	Location               *string    `json:"location,omitempty"`
+	NumHexesAwayFromPickup *int32     `json:"numHexesAwayFromPickup,omitempty"`
+	Speed                  *int32     `json:"speed,omitempty"`
+	VehicleId              *string    `json:"vehicleId,omitempty"`
+	VehicleName            *string    `json:"vehicleName,omitempty"`
+}
+
+// AddGpsDataJSONBody defines parameters for AddGpsData.
+type AddGpsDataJSONBody = []GpsData
+
+// GetJobsParams defines parameters for GetJobs.
+type GetJobsParams struct {
+	// ActiveOnly If true, only return currently active jobs
+	ActiveOnly *bool `form:"activeOnly,omitempty" json:"activeOnly,omitempty"`
+
+	// StartTime Filter jobs created after this time (ISO 8601 format)
+	StartTime *time.Time `form:"startTime,omitempty" json:"startTime,omitempty"`
+
+	// EndTime Filter jobs created before this time (ISO 8601 format)
+	EndTime *time.Time `form:"endTime,omitempty" json:"endTime,omitempty"`
+}
+
+// AddTripsJSONBody defines parameters for AddTrips.
+type AddTripsJSONBody = []TripRequest
+
+// GetDocumentParamsDocumentType defines parameters for GetDocument.
+type GetDocumentParamsDocumentType string
+
+// GetTokenJSONRequestBody defines body for GetToken for application/json ContentType.
+type GetTokenJSONRequestBody = TokenRequest
+
+// AddGpsDataJSONRequestBody defines body for AddGpsData for application/json ContentType.
+type AddGpsDataJSONRequestBody = AddGpsDataJSONBody
+
+// AddTripsJSONRequestBody defines body for AddTrips for application/json ContentType.
+type AddTripsJSONRequestBody = AddTripsJSONBody
 
 // RequestQuoteJSONRequestBody defines body for RequestQuote for application/json ContentType.
 type RequestQuoteJSONRequestBody = QuoteRequest
@@ -405,6 +781,27 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetTokenWithBody request with any body
+	GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCarrierApiConfig request
+	GetCarrierApiConfig(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddGpsDataWithBody request with any body
+	AddGpsDataWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddGpsData(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetJobs request
+	GetJobs(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddTripsWithBody request with any body
+	AddTripsWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddTrips(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RequestQuoteWithBody request with any body
 	RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -418,23 +815,119 @@ type ClientInterface interface {
 
 	CreateShipment(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetShipmentByOrderNumber request
-	GetShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetShipment request
+	GetShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CancelShipmentByOrderNumber request
-	CancelShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CancelShipment request
+	CancelShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ConfirmShipmentByOrderNumber request
-	ConfirmShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ConfirmShipment request
+	ConfirmShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetDocumentByOrderNumber request
-	GetDocumentByOrderNumber(ctx context.Context, orderNumber string, documentType GetDocumentByOrderNumberParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetDocument request
+	GetDocument(ctx context.Context, orderNumber string, documentType GetDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetInvoice request
 	GetInvoice(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// TrackShipmentByOrderNumber request
-	TrackShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// TrackShipment request
+	TrackShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTokenRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTokenRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCarrierApiConfig(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCarrierApiConfigRequest(c.Server, carrierId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddGpsDataWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddGpsDataRequestWithBody(c.Server, carrierId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddGpsData(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddGpsDataRequest(c.Server, carrierId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetJobs(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetJobsRequest(c.Server, carrierId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddTripsWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTripsRequestWithBody(c.Server, carrierId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddTrips(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTripsRequest(c.Server, carrierId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -497,8 +990,8 @@ func (c *Client) CreateShipment(ctx context.Context, body CreateShipmentJSONRequ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetShipmentByOrderNumberRequest(c.Server, orderNumber)
+func (c *Client) GetShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShipmentRequest(c.Server, orderNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -509,8 +1002,8 @@ func (c *Client) GetShipmentByOrderNumber(ctx context.Context, orderNumber strin
 	return c.Client.Do(req)
 }
 
-func (c *Client) CancelShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCancelShipmentByOrderNumberRequest(c.Server, orderNumber)
+func (c *Client) CancelShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelShipmentRequest(c.Server, orderNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -521,8 +1014,8 @@ func (c *Client) CancelShipmentByOrderNumber(ctx context.Context, orderNumber st
 	return c.Client.Do(req)
 }
 
-func (c *Client) ConfirmShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewConfirmShipmentByOrderNumberRequest(c.Server, orderNumber)
+func (c *Client) ConfirmShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmShipmentRequest(c.Server, orderNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -533,8 +1026,8 @@ func (c *Client) ConfirmShipmentByOrderNumber(ctx context.Context, orderNumber s
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetDocumentByOrderNumber(ctx context.Context, orderNumber string, documentType GetDocumentByOrderNumberParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetDocumentByOrderNumberRequest(c.Server, orderNumber, documentType)
+func (c *Client) GetDocument(ctx context.Context, orderNumber string, documentType GetDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDocumentRequest(c.Server, orderNumber, documentType)
 	if err != nil {
 		return nil, err
 	}
@@ -557,8 +1050,8 @@ func (c *Client) GetInvoice(ctx context.Context, orderNumber string, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) TrackShipmentByOrderNumber(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewTrackShipmentByOrderNumberRequest(c.Server, orderNumber)
+func (c *Client) TrackShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrackShipmentRequest(c.Server, orderNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -567,6 +1060,262 @@ func (c *Client) TrackShipmentByOrderNumber(ctx context.Context, orderNumber str
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetTokenRequest calls the generic GetToken builder with application/json body
+func NewGetTokenRequest(server string, body GetTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGetTokenRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGetTokenRequestWithBody generates requests for GetToken with any type of body
+func NewGetTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/auth/token")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCarrierApiConfigRequest generates requests for GetCarrierApiConfig
+func NewGetCarrierApiConfigRequest(server string, carrierId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddGpsDataRequest calls the generic AddGpsData builder with application/json body
+func NewAddGpsDataRequest(server string, carrierId string, body AddGpsDataJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddGpsDataRequestWithBody(server, carrierId, "application/json", bodyReader)
+}
+
+// NewAddGpsDataRequestWithBody generates requests for AddGpsData with any type of body
+func NewAddGpsDataRequestWithBody(server string, carrierId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/%s/gps-data", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetJobsRequest generates requests for GetJobs
+func NewGetJobsRequest(server string, carrierId string, params *GetJobsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/%s/jobs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ActiveOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "activeOnly", runtime.ParamLocationQuery, *params.ActiveOnly); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.StartTime != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "startTime", runtime.ParamLocationQuery, *params.StartTime); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndTime != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "endTime", runtime.ParamLocationQuery, *params.EndTime); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddTripsRequest calls the generic AddTrips builder with application/json body
+func NewAddTripsRequest(server string, carrierId string, body AddTripsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddTripsRequestWithBody(server, carrierId, "application/json", bodyReader)
+}
+
+// NewAddTripsRequestWithBody generates requests for AddTrips with any type of body
+func NewAddTripsRequestWithBody(server string, carrierId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/%s/trips", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewRequestQuoteRequest calls the generic RequestQuote builder with application/json body
@@ -683,8 +1432,8 @@ func NewCreateShipmentRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
-// NewGetShipmentByOrderNumberRequest generates requests for GetShipmentByOrderNumber
-func NewGetShipmentByOrderNumberRequest(server string, orderNumber string) (*http.Request, error) {
+// NewGetShipmentRequest generates requests for GetShipment
+func NewGetShipmentRequest(server string, orderNumber string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -717,8 +1466,8 @@ func NewGetShipmentByOrderNumberRequest(server string, orderNumber string) (*htt
 	return req, nil
 }
 
-// NewCancelShipmentByOrderNumberRequest generates requests for CancelShipmentByOrderNumber
-func NewCancelShipmentByOrderNumberRequest(server string, orderNumber string) (*http.Request, error) {
+// NewCancelShipmentRequest generates requests for CancelShipment
+func NewCancelShipmentRequest(server string, orderNumber string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -751,8 +1500,8 @@ func NewCancelShipmentByOrderNumberRequest(server string, orderNumber string) (*
 	return req, nil
 }
 
-// NewConfirmShipmentByOrderNumberRequest generates requests for ConfirmShipmentByOrderNumber
-func NewConfirmShipmentByOrderNumberRequest(server string, orderNumber string) (*http.Request, error) {
+// NewConfirmShipmentRequest generates requests for ConfirmShipment
+func NewConfirmShipmentRequest(server string, orderNumber string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -785,8 +1534,8 @@ func NewConfirmShipmentByOrderNumberRequest(server string, orderNumber string) (
 	return req, nil
 }
 
-// NewGetDocumentByOrderNumberRequest generates requests for GetDocumentByOrderNumber
-func NewGetDocumentByOrderNumberRequest(server string, orderNumber string, documentType GetDocumentByOrderNumberParamsDocumentType) (*http.Request, error) {
+// NewGetDocumentRequest generates requests for GetDocument
+func NewGetDocumentRequest(server string, orderNumber string, documentType GetDocumentParamsDocumentType) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -860,8 +1609,8 @@ func NewGetInvoiceRequest(server string, orderNumber string) (*http.Request, err
 	return req, nil
 }
 
-// NewTrackShipmentByOrderNumberRequest generates requests for TrackShipmentByOrderNumber
-func NewTrackShipmentByOrderNumberRequest(server string, orderNumber string) (*http.Request, error) {
+// NewTrackShipmentRequest generates requests for TrackShipment
+func NewTrackShipmentRequest(server string, orderNumber string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -937,6 +1686,27 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetTokenWithBodyWithResponse request with any body
+	GetTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
+
+	GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
+
+	// GetCarrierApiConfigWithResponse request
+	GetCarrierApiConfigWithResponse(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*GetCarrierApiConfigResponse, error)
+
+	// AddGpsDataWithBodyWithResponse request with any body
+	AddGpsDataWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error)
+
+	AddGpsDataWithResponse(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error)
+
+	// GetJobsWithResponse request
+	GetJobsWithResponse(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*GetJobsResponse, error)
+
+	// AddTripsWithBodyWithResponse request with any body
+	AddTripsWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
+
+	AddTripsWithResponse(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
+
 	// RequestQuoteWithBodyWithResponse request with any body
 	RequestQuoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestQuoteResponse, error)
 
@@ -950,33 +1720,164 @@ type ClientWithResponsesInterface interface {
 
 	CreateShipmentWithResponse(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
 
-	// GetShipmentByOrderNumberWithResponse request
-	GetShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetShipmentByOrderNumberResponse, error)
+	// GetShipmentWithResponse request
+	GetShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetShipmentResponse, error)
 
-	// CancelShipmentByOrderNumberWithResponse request
-	CancelShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*CancelShipmentByOrderNumberResponse, error)
+	// CancelShipmentWithResponse request
+	CancelShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*CancelShipmentResponse, error)
 
-	// ConfirmShipmentByOrderNumberWithResponse request
-	ConfirmShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*ConfirmShipmentByOrderNumberResponse, error)
+	// ConfirmShipmentWithResponse request
+	ConfirmShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*ConfirmShipmentResponse, error)
 
-	// GetDocumentByOrderNumberWithResponse request
-	GetDocumentByOrderNumberWithResponse(ctx context.Context, orderNumber string, documentType GetDocumentByOrderNumberParamsDocumentType, reqEditors ...RequestEditorFn) (*GetDocumentByOrderNumberResponse, error)
+	// GetDocumentWithResponse request
+	GetDocumentWithResponse(ctx context.Context, orderNumber string, documentType GetDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetDocumentResponse, error)
 
 	// GetInvoiceWithResponse request
 	GetInvoiceWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetInvoiceResponse, error)
 
-	// TrackShipmentByOrderNumberWithResponse request
-	TrackShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentByOrderNumberResponse, error)
+	// TrackShipmentWithResponse request
+	TrackShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error)
+}
+
+type GetTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TokenResponse
+	JSON400      *TokenErrorResponse
+	JSON401      *TokenErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCarrierApiConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CarrierApiConfigResponse
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCarrierApiConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCarrierApiConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddGpsDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *int32
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r AddGpsDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddGpsDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetJobsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]OfferWithOrderDataDTO
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetJobsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetJobsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddTripsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *int32
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r AddTripsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddTripsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type RequestQuoteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *QuoteResponse
-	HALJSON400   *QuoteResponse
-	HALJSON401   *QuoteResponse
-	HALJSON403   *QuoteResponse
-	HALJSON500   *QuoteResponse
+	JSON200      *QuoteResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON422      *ProblemDetail
+	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
@@ -998,11 +1899,11 @@ func (r RequestQuoteResponse) StatusCode() int {
 type GetQuoteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *QuoteResponse
-	HALJSON400   *QuoteResponse
-	HALJSON401   *QuoteResponse
-	HALJSON403   *QuoteResponse
-	HALJSON404   *QuoteResponse
+	JSON200      *QuoteResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
@@ -1024,11 +1925,12 @@ func (r GetQuoteResponse) StatusCode() int {
 type CreateShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *Shipment
-	HALJSON400   *Shipment
-	HALJSON401   *Shipment
-	HALJSON403   *Shipment
-	HALJSON500   *Shipment
+	JSON200      *Shipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON422      *ProblemDetail
+	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
@@ -1047,18 +1949,18 @@ func (r CreateShipmentResponse) StatusCode() int {
 	return 0
 }
 
-type GetShipmentByOrderNumberResponse struct {
+type GetShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *Shipment
-	HALJSON400   *Shipment
-	HALJSON401   *Shipment
-	HALJSON403   *Shipment
-	HALJSON404   *Shipment
+	JSON200      *Shipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r GetShipmentByOrderNumberResponse) Status() string {
+func (r GetShipmentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1066,26 +1968,26 @@ func (r GetShipmentByOrderNumberResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetShipmentByOrderNumberResponse) StatusCode() int {
+func (r GetShipmentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type CancelShipmentByOrderNumberResponse struct {
+type CancelShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *Shipment
-	HALJSON400   *Shipment
-	HALJSON401   *Shipment
-	HALJSON403   *Shipment
-	HALJSON404   *Shipment
-	HALJSON500   *Shipment
+	JSON200      *Shipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r CancelShipmentByOrderNumberResponse) Status() string {
+func (r CancelShipmentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1093,26 +1995,26 @@ func (r CancelShipmentByOrderNumberResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r CancelShipmentByOrderNumberResponse) StatusCode() int {
+func (r CancelShipmentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type ConfirmShipmentByOrderNumberResponse struct {
+type ConfirmShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *Shipment
-	HALJSON400   *Shipment
-	HALJSON401   *Shipment
-	HALJSON403   *Shipment
-	HALJSON404   *Shipment
-	HALJSON500   *Shipment
+	JSON200      *Shipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r ConfirmShipmentByOrderNumberResponse) Status() string {
+func (r ConfirmShipmentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1120,26 +2022,26 @@ func (r ConfirmShipmentByOrderNumberResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ConfirmShipmentByOrderNumberResponse) StatusCode() int {
+func (r ConfirmShipmentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetDocumentByOrderNumberResponse struct {
+type GetDocumentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *DocumentResponse
-	HALJSON400   *DocumentResponse
-	HALJSON401   *DocumentResponse
-	HALJSON403   *DocumentResponse
-	HALJSON404   *DocumentResponse
-	HALJSON500   *DocumentResponse
+	JSON200      *DocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r GetDocumentByOrderNumberResponse) Status() string {
+func (r GetDocumentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1147,7 +2049,7 @@ func (r GetDocumentByOrderNumberResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetDocumentByOrderNumberResponse) StatusCode() int {
+func (r GetDocumentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1157,11 +2059,11 @@ func (r GetDocumentByOrderNumberResponse) StatusCode() int {
 type GetInvoiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *InvoiceResponse
-	HALJSON400   *InvoiceResponse
-	HALJSON401   *InvoiceResponse
-	HALJSON403   *InvoiceResponse
-	HALJSON404   *InvoiceResponse
+	JSON200      *InvoiceResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
@@ -1180,18 +2082,18 @@ func (r GetInvoiceResponse) StatusCode() int {
 	return 0
 }
 
-type TrackShipmentByOrderNumberResponse struct {
+type TrackShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	HALJSON200   *Tracking
-	HALJSON400   *Tracking
-	HALJSON401   *Tracking
-	HALJSON403   *Tracking
-	HALJSON404   *Tracking
+	JSON200      *Tracking
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r TrackShipmentByOrderNumberResponse) Status() string {
+func (r TrackShipmentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1199,11 +2101,80 @@ func (r TrackShipmentByOrderNumberResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r TrackShipmentByOrderNumberResponse) StatusCode() int {
+func (r TrackShipmentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
+}
+
+// GetTokenWithBodyWithResponse request with arbitrary body returning *GetTokenResponse
+func (c *ClientWithResponses) GetTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetTokenResponse, error) {
+	rsp, err := c.GetTokenWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error) {
+	rsp, err := c.GetToken(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTokenResponse(rsp)
+}
+
+// GetCarrierApiConfigWithResponse request returning *GetCarrierApiConfigResponse
+func (c *ClientWithResponses) GetCarrierApiConfigWithResponse(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*GetCarrierApiConfigResponse, error) {
+	rsp, err := c.GetCarrierApiConfig(ctx, carrierId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCarrierApiConfigResponse(rsp)
+}
+
+// AddGpsDataWithBodyWithResponse request with arbitrary body returning *AddGpsDataResponse
+func (c *ClientWithResponses) AddGpsDataWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error) {
+	rsp, err := c.AddGpsDataWithBody(ctx, carrierId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddGpsDataResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddGpsDataWithResponse(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error) {
+	rsp, err := c.AddGpsData(ctx, carrierId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddGpsDataResponse(rsp)
+}
+
+// GetJobsWithResponse request returning *GetJobsResponse
+func (c *ClientWithResponses) GetJobsWithResponse(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*GetJobsResponse, error) {
+	rsp, err := c.GetJobs(ctx, carrierId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetJobsResponse(rsp)
+}
+
+// AddTripsWithBodyWithResponse request with arbitrary body returning *AddTripsResponse
+func (c *ClientWithResponses) AddTripsWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
+	rsp, err := c.AddTripsWithBody(ctx, carrierId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddTripsResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddTripsWithResponse(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
+	rsp, err := c.AddTrips(ctx, carrierId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddTripsResponse(rsp)
 }
 
 // RequestQuoteWithBodyWithResponse request with arbitrary body returning *RequestQuoteResponse
@@ -1249,40 +2220,40 @@ func (c *ClientWithResponses) CreateShipmentWithResponse(ctx context.Context, bo
 	return ParseCreateShipmentResponse(rsp)
 }
 
-// GetShipmentByOrderNumberWithResponse request returning *GetShipmentByOrderNumberResponse
-func (c *ClientWithResponses) GetShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetShipmentByOrderNumberResponse, error) {
-	rsp, err := c.GetShipmentByOrderNumber(ctx, orderNumber, reqEditors...)
+// GetShipmentWithResponse request returning *GetShipmentResponse
+func (c *ClientWithResponses) GetShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetShipmentResponse, error) {
+	rsp, err := c.GetShipment(ctx, orderNumber, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetShipmentByOrderNumberResponse(rsp)
+	return ParseGetShipmentResponse(rsp)
 }
 
-// CancelShipmentByOrderNumberWithResponse request returning *CancelShipmentByOrderNumberResponse
-func (c *ClientWithResponses) CancelShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*CancelShipmentByOrderNumberResponse, error) {
-	rsp, err := c.CancelShipmentByOrderNumber(ctx, orderNumber, reqEditors...)
+// CancelShipmentWithResponse request returning *CancelShipmentResponse
+func (c *ClientWithResponses) CancelShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*CancelShipmentResponse, error) {
+	rsp, err := c.CancelShipment(ctx, orderNumber, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseCancelShipmentByOrderNumberResponse(rsp)
+	return ParseCancelShipmentResponse(rsp)
 }
 
-// ConfirmShipmentByOrderNumberWithResponse request returning *ConfirmShipmentByOrderNumberResponse
-func (c *ClientWithResponses) ConfirmShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*ConfirmShipmentByOrderNumberResponse, error) {
-	rsp, err := c.ConfirmShipmentByOrderNumber(ctx, orderNumber, reqEditors...)
+// ConfirmShipmentWithResponse request returning *ConfirmShipmentResponse
+func (c *ClientWithResponses) ConfirmShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*ConfirmShipmentResponse, error) {
+	rsp, err := c.ConfirmShipment(ctx, orderNumber, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseConfirmShipmentByOrderNumberResponse(rsp)
+	return ParseConfirmShipmentResponse(rsp)
 }
 
-// GetDocumentByOrderNumberWithResponse request returning *GetDocumentByOrderNumberResponse
-func (c *ClientWithResponses) GetDocumentByOrderNumberWithResponse(ctx context.Context, orderNumber string, documentType GetDocumentByOrderNumberParamsDocumentType, reqEditors ...RequestEditorFn) (*GetDocumentByOrderNumberResponse, error) {
-	rsp, err := c.GetDocumentByOrderNumber(ctx, orderNumber, documentType, reqEditors...)
+// GetDocumentWithResponse request returning *GetDocumentResponse
+func (c *ClientWithResponses) GetDocumentWithResponse(ctx context.Context, orderNumber string, documentType GetDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetDocumentResponse, error) {
+	rsp, err := c.GetDocument(ctx, orderNumber, documentType, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetDocumentByOrderNumberResponse(rsp)
+	return ParseGetDocumentResponse(rsp)
 }
 
 // GetInvoiceWithResponse request returning *GetInvoiceResponse
@@ -1294,13 +2265,283 @@ func (c *ClientWithResponses) GetInvoiceWithResponse(ctx context.Context, orderN
 	return ParseGetInvoiceResponse(rsp)
 }
 
-// TrackShipmentByOrderNumberWithResponse request returning *TrackShipmentByOrderNumberResponse
-func (c *ClientWithResponses) TrackShipmentByOrderNumberWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentByOrderNumberResponse, error) {
-	rsp, err := c.TrackShipmentByOrderNumber(ctx, orderNumber, reqEditors...)
+// TrackShipmentWithResponse request returning *TrackShipmentResponse
+func (c *ClientWithResponses) TrackShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error) {
+	rsp, err := c.TrackShipment(ctx, orderNumber, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseTrackShipmentByOrderNumberResponse(rsp)
+	return ParseTrackShipmentResponse(rsp)
+}
+
+// ParseGetTokenResponse parses an HTTP response from a GetTokenWithResponse call
+func ParseGetTokenResponse(rsp *http.Response) (*GetTokenResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TokenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest TokenErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest TokenErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCarrierApiConfigResponse parses an HTTP response from a GetCarrierApiConfigWithResponse call
+func ParseGetCarrierApiConfigResponse(rsp *http.Response) (*GetCarrierApiConfigResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCarrierApiConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CarrierApiConfigResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddGpsDataResponse parses an HTTP response from a AddGpsDataWithResponse call
+func ParseAddGpsDataResponse(rsp *http.Response) (*AddGpsDataResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddGpsDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest int32
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetJobsResponse parses an HTTP response from a GetJobsWithResponse call
+func ParseGetJobsResponse(rsp *http.Response) (*GetJobsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetJobsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []OfferWithOrderDataDTO
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddTripsResponse parses an HTTP response from a AddTripsWithResponse call
+func ParseAddTripsResponse(rsp *http.Response) (*AddTripsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddTripsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest int32
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseRequestQuoteResponse parses an HTTP response from a RequestQuoteWithResponse call
@@ -1322,35 +2563,42 @@ func ParseRequestQuoteResponse(rsp *http.Response) (*RequestQuoteResponse, error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON500 = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -1376,35 +2624,35 @@ func ParseGetQuoteResponse(rsp *http.Response) (*GetQuoteResponse, error) {
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest QuoteResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	}
 
@@ -1430,50 +2678,57 @@ func ParseCreateShipmentResponse(rsp *http.Response) (*CreateShipmentResponse, e
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON500 = &dest
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseGetShipmentByOrderNumberResponse parses an HTTP response from a GetShipmentByOrderNumberWithResponse call
-func ParseGetShipmentByOrderNumberResponse(rsp *http.Response) (*GetShipmentByOrderNumberResponse, error) {
+// ParseGetShipmentResponse parses an HTTP response from a GetShipmentWithResponse call
+func ParseGetShipmentResponse(rsp *http.Response) (*GetShipmentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetShipmentByOrderNumberResponse{
+	response := &GetShipmentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1484,50 +2739,50 @@ func ParseGetShipmentByOrderNumberResponse(rsp *http.Response) (*GetShipmentByOr
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseCancelShipmentByOrderNumberResponse parses an HTTP response from a CancelShipmentByOrderNumberWithResponse call
-func ParseCancelShipmentByOrderNumberResponse(rsp *http.Response) (*CancelShipmentByOrderNumberResponse, error) {
+// ParseCancelShipmentResponse parses an HTTP response from a CancelShipmentWithResponse call
+func ParseCancelShipmentResponse(rsp *http.Response) (*CancelShipmentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &CancelShipmentByOrderNumberResponse{
+	response := &CancelShipmentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1538,57 +2793,57 @@ func ParseCancelShipmentByOrderNumberResponse(rsp *http.Response) (*CancelShipme
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON500 = &dest
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseConfirmShipmentByOrderNumberResponse parses an HTTP response from a ConfirmShipmentByOrderNumberWithResponse call
-func ParseConfirmShipmentByOrderNumberResponse(rsp *http.Response) (*ConfirmShipmentByOrderNumberResponse, error) {
+// ParseConfirmShipmentResponse parses an HTTP response from a ConfirmShipmentWithResponse call
+func ParseConfirmShipmentResponse(rsp *http.Response) (*ConfirmShipmentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ConfirmShipmentByOrderNumberResponse{
+	response := &ConfirmShipmentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1599,57 +2854,57 @@ func ParseConfirmShipmentByOrderNumberResponse(rsp *http.Response) (*ConfirmShip
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Shipment
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON500 = &dest
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseGetDocumentByOrderNumberResponse parses an HTTP response from a GetDocumentByOrderNumberWithResponse call
-func ParseGetDocumentByOrderNumberResponse(rsp *http.Response) (*GetDocumentByOrderNumberResponse, error) {
+// ParseGetDocumentResponse parses an HTTP response from a GetDocumentWithResponse call
+func ParseGetDocumentResponse(rsp *http.Response) (*GetDocumentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetDocumentByOrderNumberResponse{
+	response := &GetDocumentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1660,42 +2915,42 @@ func ParseGetDocumentByOrderNumberResponse(rsp *http.Response) (*GetDocumentByOr
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest DocumentResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest DocumentResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest DocumentResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest DocumentResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest DocumentResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON500 = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -1721,50 +2976,50 @@ func ParseGetInvoiceResponse(rsp *http.Response) (*GetInvoiceResponse, error) {
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest InvoiceResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest InvoiceResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest InvoiceResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest InvoiceResponse
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseTrackShipmentByOrderNumberResponse parses an HTTP response from a TrackShipmentByOrderNumberWithResponse call
-func ParseTrackShipmentByOrderNumberResponse(rsp *http.Response) (*TrackShipmentByOrderNumberResponse, error) {
+// ParseTrackShipmentResponse parses an HTTP response from a TrackShipmentWithResponse call
+func ParseTrackShipmentResponse(rsp *http.Response) (*TrackShipmentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &TrackShipmentByOrderNumberResponse{
+	response := &TrackShipmentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1775,35 +3030,35 @@ func ParseTrackShipmentByOrderNumberResponse(rsp *http.Response) (*TrackShipment
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON200 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Tracking
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON400 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Tracking
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON401 = &dest
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Tracking
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON403 = &dest
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Tracking
+		var dest ProblemDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.HALJSON404 = &dest
+		response.JSON404 = &dest
 
 	}
 

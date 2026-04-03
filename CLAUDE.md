@@ -89,14 +89,21 @@ Outputs to `dist/` with CJS, ESM, and TypeScript definitions.
 3. Add wrapper layer on top of generated code
 4. Update root `package.json` scripts
 
-## OpenAPI Spec
+## OpenAPI Spec & Generation Pipeline
 
 The spec is the single source of truth at `openapi/spec.json`.
 
-**Update it:**
+**Regenerate all SDKs** (fetches spec, regenerates TypeScript + Go, runs tests):
 ```bash
-curl https://rest-api.oway.io/api-docs/all-v1 -o openapi/spec.json
+npm run generate              # from local rest service (localhost:8181)
+npm run generate:sandbox      # from sandbox API
+npm run generate:production   # from production API
+npm run generate:skip-fetch   # regenerate from existing spec.json
 ```
+
+The pipeline (`scripts/generate.js`) handles: spec fetch → TypeScript codegen → Go codegen → build → test.
+
+**Go codegen** uses `oapi-codegen` v2.5.1. Install: `go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1`
 
 **Key endpoints:**
 - `POST /v1/shipper/quote` - Get quote
@@ -131,7 +138,7 @@ See `packages/typescript/AI_AGENT_GUIDE.md` for details on:
 ## References
 
 - **API Docs**: https://docs.shipoway.com
-- **OpenAPI Spec**: https://rest-api.oway.io/api-docs/all-v1
+- **OpenAPI Spec**: https://api.oway.io/api-docs/all-v1
 - **Main Repo**: https://github.com/Oway-Inc/oway-sdk
 
 ## Important Notes

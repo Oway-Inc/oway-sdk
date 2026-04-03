@@ -274,7 +274,7 @@ export interface paths {
         };
         /**
          * Get a shipment document by order number
-         * @description Retrieves a download link for a shipment document using the order number (PRO number). Supported document types: BILL_OF_LADING, INVOICE, SHIPPING_LABEL.
+         * @description Retrieves a download link for a shipment document using the order number (PRO number). Supported document types: BILL_OF_LADING, INVOICE, SHIPPING_LABEL, POD.
          */
         get: operations["getDocument"];
         put?: never;
@@ -349,6 +349,35 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description RFC 9457 Problem Details error response */
+        ProblemDetail: {
+            /**
+             * @description A URI reference that identifies the problem type
+             * @example https://api.oway.io/errors/location-not-serviceable
+             */
+            type?: string;
+            /**
+             * @description A short, human-readable summary of the problem type
+             * @example Bad Request
+             */
+            title?: string;
+            /**
+             * Format: int32
+             * @description The HTTP status code
+             * @example 400
+             */
+            status?: number;
+            /**
+             * @description A human-readable explanation specific to this occurrence of the problem
+             * @example pickupAddress.zipCode must be a 5-digit ZIP code
+             */
+            detail?: string;
+            /**
+             * @description A machine-readable reason code for programmatic handling
+             * @example pickup_not_covered
+             */
+            reason?: string;
+        };
         /** @description Shipment/Order details */
         Shipment: {
             /**
@@ -372,7 +401,7 @@ export interface components {
              */
             orderNumber?: string;
             /**
-             * @description Current status of the order
+             * @description Current shipment status in the order lifecycle
              * @example CONFIRMED
              * @enum {string}
              */
@@ -538,6 +567,12 @@ export interface components {
             deliveryAddress: components["schemas"]["Address"];
             /** @description List of pallets or freight pieces. */
             orderComponents: components["schemas"]["OrderComponent"][];
+            /**
+             * Format: date-time
+             * @description Required pickup date (ISO 8601).
+             * @example 2026-04-01T08:00:00Z
+             */
+            requiredPickupDate?: string;
         };
         /** @description Response containing a shipping quote */
         QuoteResponse: {
@@ -559,17 +594,6 @@ export interface components {
              */
             quoteExpirationTime?: string;
         };
-        Trip: {
-            id?: string;
-            carrierId?: string;
-            vehicleId?: string;
-            tripNo?: string;
-            legs?: components["schemas"]["TripLeg"][];
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
         TripLeg: {
             /** Format: double */
             startLat?: number;
@@ -590,6 +614,13 @@ export interface components {
             estDriveTimeMinutes?: number;
             /** Format: int32 */
             stopNumber?: number;
+        };
+        TripRequest: {
+            id?: string;
+            carrierId?: string;
+            vehicleId?: string;
+            tripNo?: string;
+            legs?: components["schemas"]["TripLeg"][];
         };
         /** @description GPS location data point for a vehicle */
         GpsData: {
@@ -642,19 +673,6 @@ export interface components {
              */
             clientSecret: string;
         };
-        /** @description Error response for token requests */
-        TokenErrorResponse: {
-            /**
-             * @description Error code
-             * @example invalid_client
-             */
-            error?: string;
-            /**
-             * @description Human-readable error description
-             * @example Invalid client credentials
-             */
-            errorDescription?: string;
-        };
         /** @description Successful token response */
         TokenResponse: {
             /**
@@ -674,6 +692,19 @@ export interface components {
              */
             expiresIn?: number;
         };
+        /** @description Error response for token requests */
+        TokenErrorResponse: {
+            /**
+             * @description Error code
+             * @example invalid_client
+             */
+            error?: string;
+            /**
+             * @description Human-readable error description
+             * @example Invalid client credentials
+             */
+            errorDescription?: string;
+        };
         /** @description Shipment tracking information */
         Tracking: {
             /**
@@ -687,7 +718,7 @@ export interface components {
              */
             orderNumber?: string;
             /**
-             * @description Current status of the order
+             * @description Current shipment status in the order lifecycle
              * @example PICKED_UP
              * @enum {string}
              */
@@ -923,6 +954,8 @@ export interface components {
             deliveryPin?: string;
             contacted?: boolean;
             communicationExpired?: boolean;
+            /** Format: int32 */
+            carrierCounterOfferPriceInCents?: number;
             emailThreadId?: string;
             /** Format: int32 */
             manualCentsPayoutOverride?: number;
@@ -947,6 +980,7 @@ export interface components {
             customerId?: string;
             companyId?: string;
             additionalCustomerIds?: string[];
+            apiOrder?: boolean;
             orderNumber?: string;
             pickupAddressId?: string;
             deliveryAddressId?: string;
@@ -970,7 +1004,7 @@ export interface components {
             confirmed?: boolean;
             state?: string;
             /** @enum {string} */
-            cancellationReason?: "unspecified" | "customer_cancellation" | "shipment_entry_error" | "low_coverage" | "unacceptable_margin" | "expired" | "carrier_exception" | "shipper_exception";
+            cancellationReason?: "unspecified" | "customer_cancellation" | "shipment_entry_error" | "low_coverage" | "unacceptable_margin" | "expired" | "carrier_exception" | "shipper_exception" | "tonu" | "chargeback_other";
             orderComponents?: components["schemas"]["ComponentDetails"][];
             poNumber?: string;
             refNumber?: string;
@@ -1016,6 +1050,7 @@ export interface components {
             /** Format: date-time */
             timeStamp?: string;
             exposePrice?: boolean;
+            coverageDenialReason?: string;
             /** Format: int32 */
             suggestedCarrierPayoutCents?: number;
             /** Format: double */
@@ -1043,6 +1078,8 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+            /** Format: int32 */
+            totalCentsChargeWithBrokerCharges?: number;
             /** @enum {string} */
             status?: "open" | "display" | "price_locked" | "confirmed" | "rejected";
             /** @enum {string} */
@@ -1127,7 +1164,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1136,7 +1173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1145,7 +1182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment not found */
@@ -1154,7 +1191,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1163,7 +1200,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1198,7 +1235,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1207,7 +1244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1216,7 +1253,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment not found */
@@ -1225,7 +1262,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1234,7 +1271,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1267,7 +1304,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1276,7 +1313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, user not in company, or quote not owned by company */
@@ -1285,7 +1322,22 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /**
+             * @description Unprocessable Entity. Possible reasons:
+             *
+             *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
+             *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
+             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1294,7 +1346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1327,7 +1379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1336,7 +1388,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or user does not belong to the authorized company */
@@ -1345,7 +1397,22 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /**
+             * @description Unprocessable Entity. Possible reasons:
+             *
+             *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
+             *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
+             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1354,7 +1421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1371,7 +1438,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Trip"][];
+                "application/json": components["schemas"]["TripRequest"][];
             };
         };
         responses: {
@@ -1390,7 +1457,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid bearer token */
@@ -1399,7 +1466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: API access is not enabled for this carrier */
@@ -1408,7 +1475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Carrier not found */
@@ -1417,7 +1484,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1426,7 +1493,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1462,7 +1529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid bearer token */
@@ -1471,7 +1538,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: API access is not enabled for this carrier */
@@ -1480,7 +1547,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Carrier not found */
@@ -1489,7 +1556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1498,7 +1565,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1575,7 +1642,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1584,7 +1651,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1593,7 +1660,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment not found */
@@ -1602,7 +1669,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Shipment"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1637,7 +1704,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Tracking"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1646,7 +1713,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Tracking"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1655,7 +1722,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Tracking"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment not found */
@@ -1664,7 +1731,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Tracking"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1699,7 +1766,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvoiceResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1708,7 +1775,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvoiceResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1717,7 +1784,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvoiceResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment not found */
@@ -1726,7 +1793,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvoiceResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1742,7 +1809,7 @@ export interface operations {
                  */
                 orderNumber: string;
                 /** @description Type of document to retrieve */
-                documentType: "BILL_OF_LADING" | "INVOICE" | "SHIPPING_LABEL";
+                documentType: "BILL_OF_LADING" | "INVOICE" | "SHIPPING_LABEL" | "POD";
             };
             cookie?: never;
         };
@@ -1763,7 +1830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1772,7 +1839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing/invalid API key, or shipment does not belong to your company */
@@ -1781,7 +1848,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Shipment or document not found */
@@ -1790,7 +1857,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1799,7 +1866,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1831,7 +1898,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
@@ -1840,7 +1907,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: missing, invalid, or expired API key (authorization failed) */
@@ -1849,7 +1916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Quote not found */
@@ -1858,7 +1925,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QuoteResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1890,7 +1957,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CarrierApiConfigResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: API access is not enabled for this carrier */
@@ -1899,7 +1966,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CarrierApiConfigResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Carrier not found */
@@ -1908,7 +1975,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CarrierApiConfigResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1917,7 +1984,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CarrierApiConfigResponse"];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -1956,7 +2023,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OfferWithOrderDataDTO"][];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Forbidden: API access is not enabled for this carrier */
@@ -1965,7 +2032,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OfferWithOrderDataDTO"][];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Carrier not found */
@@ -1974,7 +2041,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OfferWithOrderDataDTO"][];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
             /** @description Internal server error */
@@ -1983,7 +2050,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OfferWithOrderDataDTO"][];
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };

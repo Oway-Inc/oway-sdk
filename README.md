@@ -204,8 +204,8 @@ func main() {
 
 | Environment | Constant | URL |
 |-------------|----------|-----|
-| **Sandbox** | `OwayEnvironments.SANDBOX` | `https://rest-api.sandbox.oway.io` |
-| **Production** | `OwayEnvironments.PRODUCTION` | `https://rest-api.oway.io` |
+| **Sandbox** | `OwayEnvironments.SANDBOX` | `https://api.sandbox.oway.io` |
+| **Production** | `OwayEnvironments.PRODUCTION` | `https://api.oway.io` |
 
 Start with Sandbox for development and testing. Switch to Production when you're ready for live shipments. See [ENVIRONMENTS.md](./ENVIRONMENTS.md) for details.
 

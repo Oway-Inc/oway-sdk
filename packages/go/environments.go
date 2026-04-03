@@ -1,6 +1,6 @@
 package oway
 
 const (
-	EnvironmentSandbox    = "https://rest-api.sandbox.oway.io"
-	EnvironmentProduction = "https://rest-api.oway.io"
+	EnvironmentSandbox    = "https://api.sandbox.oway.io"
+	EnvironmentProduction = "https://api.oway.io"
 )

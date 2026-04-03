@@ -11,7 +11,7 @@ async function main() {
     clientId: process.env.OWAY_M2M_CLIENT_ID || 'client_example',
     clientSecret: process.env.OWAY_M2M_CLIENT_SECRET || 'secret_example',
     apiKey: process.env.OWAY_API_KEY || 'oway_sk_test_example',
-    // Uses sandbox by default: https://rest-api.sandbox.oway.io
+    // Uses sandbox by default: https://api.sandbox.oway.io
   });
 
   console.log('🚚 Oway SDK Example: Quote and Schedule\n');

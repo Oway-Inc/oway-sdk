@@ -23,7 +23,7 @@ type (
 	Address        = client.Address
 	OrderComponent = client.OrderComponent
 	Document       = client.DocumentResponse
-	DocumentType   = client.GetDocumentByOrderNumberParamsDocumentType
+	DocumentType   = client.GetDocumentParamsDocumentType
 )
 
 // Document type constants
@@ -31,6 +31,7 @@ const (
 	DocumentTypeBOL           DocumentType = "BILL_OF_LADING"
 	DocumentTypeInvoice       DocumentType = "INVOICE"
 	DocumentTypeShippingLabel DocumentType = "SHIPPING_LABEL"
+	DocumentTypePOD           DocumentType = "POD"
 )
 
 // Additional aliases for EDI Gateway compatibility

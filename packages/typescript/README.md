@@ -179,8 +179,8 @@ const oway = new Oway({
 
 | Environment | Constant | URL |
 |-------------|----------|-----|
-| Sandbox | `OwayEnvironments.SANDBOX` | `https://rest-api.sandbox.oway.io` |
-| Production | `OwayEnvironments.PRODUCTION` | `https://rest-api.oway.io` |
+| Sandbox | `OwayEnvironments.SANDBOX` | `https://api.sandbox.oway.io` |
+| Production | `OwayEnvironments.PRODUCTION` | `https://api.oway.io` |
 
 ## Error Handling
 
@@ -216,7 +216,7 @@ import type { Quote, Shipment, Tracking, Invoice, QuoteRequest, ShipmentRequest,
 ## Support
 
 - **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
-- **API Reference**: [rest-api.oway.io/api-docs](https://rest-api.oway.io/api-docs)
+- **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
 
 ## License

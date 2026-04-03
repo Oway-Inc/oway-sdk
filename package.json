@@ -8,8 +8,10 @@
   ],
   "scripts": {
     "generate": "node scripts/generate.js",
-    "generate:typescript": "npm run generate --workspace=packages/typescript",
-    "generate:all": "npm run generate:typescript",
+    "generate:local": "node scripts/generate.js",
+    "generate:sandbox": "node scripts/generate.js --sandbox",
+    "generate:production": "node scripts/generate.js --production",
+    "generate:skip-fetch": "node scripts/generate.js --skip-fetch",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
