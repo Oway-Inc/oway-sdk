@@ -181,8 +181,8 @@ oway.New(oway.Config{
 
 | Environment | Constant | URL |
 |-------------|----------|-----|
-| Sandbox | `oway.EnvironmentSandbox` | `https://rest-api.sandbox.oway.io` |
-| Production | `oway.EnvironmentProduction` | `https://rest-api.oway.io` |
+| Sandbox | `oway.EnvironmentSandbox` | `https://api.sandbox.oway.io` |
+| Production | `oway.EnvironmentProduction` | `https://api.oway.io` |
 
 ## Type Aliases
 
@@ -224,7 +224,7 @@ resp, err := raw.GetShipmentByOrderNumberWithResponse(ctx, orderNumber)
 ## Support
 
 - **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
-- **API Reference**: [rest-api.oway.io/api-docs](https://rest-api.oway.io/api-docs)
+- **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
 
 ## License

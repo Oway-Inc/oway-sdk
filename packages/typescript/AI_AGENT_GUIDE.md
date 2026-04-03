@@ -91,7 +91,7 @@ The quote is $450 (Quote ID: quote_abc123). Would you like me to schedule this s
 1. Go to OpenAI → Create a GPT
 2. Add Actions (import OpenAPI spec):
    ```
-   https://rest-api.oway.io/api-docs/all-v1
+   https://api.oway.io/api-docs/all-v1
    ```
 3. Configure Authentication:
    - M2M credentials in GPT settings

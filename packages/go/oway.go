@@ -56,10 +56,10 @@ func New(config Config) (*Client, error) {
 	}
 
 	if config.BaseURL == "" {
-		config.BaseURL = "https://rest-api.sandbox.oway.io"
+		config.BaseURL = "https://api.sandbox.oway.io"
 	}
 	if config.TokenURL == "" {
-		config.TokenURL = "https://rest-api.sandbox.oway.io/v1/auth/token"
+		config.TokenURL = "https://api.sandbox.oway.io/v1/auth/token"
 	}
 	if config.HTTPClient == nil {
 		config.HTTPClient = &http.Client{Timeout: 30 * time.Second}
@@ -206,10 +206,10 @@ func (c *Client) RequestQuote(ctx context.Context, req *QuoteRequest) (*Quote, e
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("request quote failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // RequestQuoteForCompany requests a quote for a specific company
@@ -227,10 +227,10 @@ func (c *Client) CreateShipment(ctx context.Context, req *ShipmentRequest) (*Shi
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("create shipment failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // CreateShipmentForCompany creates a shipment for a specific company
@@ -241,17 +241,17 @@ func (c *Client) CreateShipmentForCompany(ctx context.Context, req *ShipmentRequ
 
 // ConfirmShipment confirms a shipment by order number
 func (c *Client) ConfirmShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
-	res, err := c.client.ConfirmShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	res, err := c.client.ConfirmShipmentWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("confirm shipment failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // ConfirmShipmentForCompany confirms a shipment for a specific company
@@ -262,17 +262,17 @@ func (c *Client) ConfirmShipmentForCompany(ctx context.Context, orderNumber stri
 
 // TrackShipment gets tracking information for a shipment
 func (c *Client) TrackShipment(ctx context.Context, orderNumber string) (*Tracking, error) {
-	res, err := c.client.TrackShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	res, err := c.client.TrackShipmentWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("track shipment failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // TrackShipmentForCompany gets tracking information for a specific company's shipment
@@ -290,10 +290,10 @@ func (c *Client) GetInvoice(ctx context.Context, orderNumber string) (*Invoice, 
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("get invoice failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // GetInvoiceForCompany retrieves the invoice for a specific company's shipment
@@ -304,17 +304,17 @@ func (c *Client) GetInvoiceForCompany(ctx context.Context, orderNumber string, c
 
 // GetShipment retrieves a shipment by order number
 func (c *Client) GetShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
-	res, err := c.client.GetShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	res, err := c.client.GetShipmentWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("get shipment failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // GetShipmentForCompany retrieves a shipment for a specific company
@@ -325,17 +325,17 @@ func (c *Client) GetShipmentForCompany(ctx context.Context, orderNumber string, 
 
 // CancelShipment cancels a shipment by order number
 func (c *Client) CancelShipment(ctx context.Context, orderNumber string) (*Shipment, error) {
-	res, err := c.client.CancelShipmentByOrderNumberWithResponse(ctx, orderNumber)
+	res, err := c.client.CancelShipmentWithResponse(ctx, orderNumber)
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("cancel shipment failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // CancelShipmentForCompany cancels a shipment for a specific company
@@ -353,10 +353,10 @@ func (c *Client) GetQuoteByID(ctx context.Context, quoteID string) (*Quote, erro
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("get quote failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // GetQuoteByIDForCompany retrieves a quote for a specific company
@@ -367,17 +367,17 @@ func (c *Client) GetQuoteByIDForCompany(ctx context.Context, quoteID string, com
 
 // GetDocument retrieves a document for a shipment by order number and document type
 func (c *Client) GetDocument(ctx context.Context, orderNumber string, documentType DocumentType) (*Document, error) {
-	res, err := c.client.GetDocumentByOrderNumberWithResponse(ctx, orderNumber, client.GetDocumentByOrderNumberParamsDocumentType(documentType))
+	res, err := c.client.GetDocumentWithResponse(ctx, orderNumber, client.GetDocumentParamsDocumentType(documentType))
 	if err != nil {
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("get document failed: status %d", res.StatusCode())
 	}
-	if res.HALJSON200 == nil {
+	if res.JSON200 == nil {
 		return nil, fmt.Errorf("unexpected empty response body")
 	}
-	return res.HALJSON200, nil
+	return res.JSON200, nil
 }
 
 // GetDocumentForCompany retrieves a document for a specific company's shipment

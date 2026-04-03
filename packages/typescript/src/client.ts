@@ -31,13 +31,13 @@ export interface OwayConfig {
 
   /**
    * Base URL for the Oway API
-   * @default "https://rest-api.sandbox.oway.io"
+   * @default "https://api.sandbox.oway.io"
    */
   baseUrl?: string;
 
   /**
    * Token endpoint for authentication
-   * @default "https://rest-api.sandbox.oway.io/v1/auth/token"
+   * @default "https://api.sandbox.oway.io/v1/auth/token"
    */
   tokenUrl?: string;
 
@@ -135,8 +135,8 @@ export class HttpClient {
     }
 
     this.config = {
-      baseUrl: config.baseUrl || process.env.OWAY_BASE_URL || 'https://rest-api.sandbox.oway.io',
-      tokenUrl: config.tokenUrl || (config.baseUrl || process.env.OWAY_BASE_URL || 'https://rest-api.sandbox.oway.io') + '/v1/auth/token',
+      baseUrl: config.baseUrl || process.env.OWAY_BASE_URL || 'https://api.sandbox.oway.io',
+      tokenUrl: config.tokenUrl || (config.baseUrl || process.env.OWAY_BASE_URL || 'https://api.sandbox.oway.io') + '/v1/auth/token',
       maxRetries: config.maxRetries ?? 3,
       timeout: config.timeout ?? 30000,
       debug: config.debug ?? false,

@@ -8,13 +8,13 @@ export const OwayEnvironments = {
    * Sandbox environment for development and testing
    * Safe to use - no real shipments created
    */
-  SANDBOX: 'https://rest-api.sandbox.oway.io',
+  SANDBOX: 'https://api.sandbox.oway.io',
 
   /**
    * Production environment for live traffic
    * Real shipments will be created and billed
    */
-  PRODUCTION: 'https://rest-api.oway.io',
+  PRODUCTION: 'https://api.oway.io',
 } as const;
 
 export type OwayEnvironment = typeof OwayEnvironments[keyof typeof OwayEnvironments];

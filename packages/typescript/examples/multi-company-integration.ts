@@ -10,7 +10,7 @@ const oway = new Oway({
   clientId: process.env.OWAY_M2M_CLIENT_ID!,
   clientSecret: process.env.OWAY_M2M_CLIENT_SECRET!,
   // No default apiKey - provided per-request
-  // Defaults to sandbox: https://rest-api.sandbox.oway.io
+  // Defaults to sandbox: https://api.sandbox.oway.io
 });
 
 // Customer API keys from your database
