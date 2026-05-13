@@ -24,9 +24,10 @@ type Address = client.Address
 // Dimensions describes pallet dimensions in inches.
 type Dimensions = client.Dimensions
 
-// PalletDims returns a *Dimensions with all three sides populated. It exists
-// so callers can write Dimensions inline without needing to take the address
-// of each int32. Pass zero for any side that should be left unspecified.
+// PalletDims returns a *Dimensions with the provided non-zero sides
+// populated. It exists so callers can write Dimensions inline without
+// taking the address of each int32. Pass zero for any side that should
+// be left unspecified (the API default applies for those).
 func PalletDims(length, width, height int32) *Dimensions {
 	d := &Dimensions{}
 	if length > 0 {
