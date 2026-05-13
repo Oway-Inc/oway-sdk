@@ -6,450 +6,345 @@ export type TokenResponse = components['schemas']['TokenResponse'];
 /** Token error response from the /v1/auth/token endpoint (generated from OpenAPI spec) */
 export type TokenErrorResponse = components['schemas']['TokenErrorResponse'];
 
+/** RFC 9457 Problem Details payload returned by the Oway API on error. */
+export type ProblemDetail = components['schemas']['ProblemDetail'];
+
+/** A single field-level validation failure. */
+export type Violation = components['schemas']['Violation'];
+
 export interface OwayConfig {
-  /**
-   * M2M Client ID (REQUIRED for all integrations)
-   * Provided by Oway Sales Engineering team
-   */
+  /** M2M Client ID (required). */
   clientId: string;
-
-  /**
-   * M2M Client Secret (REQUIRED for all integrations)
-   * Provided by Oway Sales Engineering team
-   */
+  /** M2M Client Secret (required). */
   clientSecret: string;
-
   /**
-   * Default company API key (optional)
-   *
-   * Single-company: Set this to your company's API key
-   * Multi-company: Omit this and provide per-request
-   *
-   * Get from: https://app.oway.io/settings/api
+   * Default company API key. For multi-tenant integrations pass a
+   * per-request key on the `companyApiKey` option instead.
    */
   apiKey?: string;
-
-  /**
-   * Base URL for the Oway API
-   * @default "https://api.sandbox.oway.io"
-   */
+  /** Base URL. Defaults to https://api.sandbox.oway.io. */
   baseUrl?: string;
-
-  /**
-   * Token endpoint for authentication
-   * @default "https://api.sandbox.oway.io/v1/auth/token"
-   */
+  /** Token endpoint. Defaults to `${baseUrl}/v1/auth/token`. */
   tokenUrl?: string;
-
-  /**
-   * Maximum number of retry attempts for failed requests
-   * @default 3
-   */
+  /** Maximum retry attempts on transient errors. Defaults to 3. Pass 0 to disable. */
   maxRetries?: number;
-
-  /**
-   * Timeout in milliseconds for API requests
-   * @default 30000
-   */
+  /** Request timeout in milliseconds. Defaults to 30000. */
   timeout?: number;
-
-  /**
-   * Enable debug logging (logs sanitized request/response metadata)
-   * @default false
-   */
+  /** Enable structured debug logging. */
   debug?: boolean;
-
-  /**
-   * Custom logger implementation
-   */
+  /** Custom logger. When omitted the SDK is silent. */
   logger?: {
-    debug: (msg: string, meta?: Record<string, any>) => void;
-    info: (msg: string, meta?: Record<string, any>) => void;
-    warn: (msg: string, meta?: Record<string, any>) => void;
-    error: (msg: string, meta?: Record<string, any>) => void;
+    debug: (msg: string, meta?: Record<string, unknown>) => void;
+    info: (msg: string, meta?: Record<string, unknown>) => void;
+    warn: (msg: string, meta?: Record<string, unknown>) => void;
+    error: (msg: string, meta?: Record<string, unknown>) => void;
   };
-}
-
-export class OwayError extends Error {
-  constructor(
-    message: string,
-    public code?: string,
-    public statusCode?: number,
-    public requestId?: string
-  ) {
-    super(message);
-    this.name = 'OwayError';
-  }
-
-  /**
-   * Determines if this error represents a transient failure that should be retried
-   */
-  isRetryable(): boolean {
-    if (!this.statusCode) return false;
-
-    // 429 Too Many Requests - rate limit (retryable with backoff)
-    if (this.statusCode === 429) return true;
-
-    // 503 Service Unavailable - temporary outage
-    if (this.statusCode === 503) return true;
-
-    // 500 Internal Server Error - might be transient
-    if (this.statusCode === 500) return true;
-
-    // 501 Not Implemented - permanent error
-    if (this.statusCode === 501) return false;
-
-    // 502 Bad Gateway - might be transient
-    if (this.statusCode === 502) return true;
-
-    // 504 Gateway Timeout - might be transient
-    if (this.statusCode === 504) return true;
-
-    // Other 5xx errors - retry by default
-    if (this.statusCode >= 500) return true;
-
-    // 4xx errors (except 429) are client errors - don't retry
-    return false;
-  }
 }
 
 /**
- * HTTP client for making authenticated requests to the Oway API
+ * Typed error returned by the SDK whenever the API returns a non-2xx
+ * response. Carries the parsed ProblemDetail (`code`, `message`, `violations`)
+ * plus the `requestId` to quote when reporting issues.
  */
+export class OwayError extends Error {
+  readonly statusCode?: number;
+  readonly code?: string;
+  readonly requestId?: string;
+  readonly violations: Violation[];
+  readonly rawBody?: string;
+
+  constructor(opts: {
+    message: string;
+    statusCode?: number;
+    code?: string;
+    requestId?: string;
+    violations?: Violation[];
+    rawBody?: string;
+  }) {
+    super(opts.message);
+    this.name = 'OwayError';
+    this.statusCode = opts.statusCode;
+    this.code = opts.code;
+    this.requestId = opts.requestId;
+    this.violations = opts.violations ?? [];
+    this.rawBody = opts.rawBody;
+  }
+
+  /** True for well-known transient HTTP status codes (408/429/500/502/503/504). */
+  isRetryable(): boolean {
+    if (!this.statusCode) return false;
+    return [408, 429, 500, 502, 503, 504].includes(this.statusCode);
+  }
+
+  /** 4xx response. */
+  isClientError(): boolean {
+    return !!this.statusCode && this.statusCode >= 400 && this.statusCode < 500;
+  }
+
+  /** 5xx response. */
+  isServerError(): boolean {
+    return !!this.statusCode && this.statusCode >= 500 && this.statusCode < 600;
+  }
+}
+
+/** Parse a raw response body into an OwayError. Tolerant of malformed JSON. */
+export function parseHttpError(
+  status: number,
+  requestId: string | undefined,
+  rawBody: string
+): OwayError {
+  let problem: ProblemDetail | undefined;
+  try {
+    problem = rawBody ? (JSON.parse(rawBody) as ProblemDetail) : undefined;
+  } catch {
+    // fall through
+  }
+  const message =
+    problem?.detail ||
+    problem?.title ||
+    `Request failed with status ${status}`;
+  return new OwayError({
+    message,
+    statusCode: status,
+    code: problem?.reason,
+    requestId,
+    violations: problem?.violations,
+    rawBody,
+  });
+}
+
+function randomRequestId(): string {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  // Fallback for older runtimes: 128 random bits as hex.
+  const buf = new Uint8Array(16);
+  for (let i = 0; i < 16; i++) buf[i] = Math.floor(Math.random() * 256);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Full-jitter exponential backoff capped at 30s. */
+function backoffDelayMs(attempt: number): number {
+  const base = Math.min(Math.pow(2, attempt) * 1000, 30_000);
+  return Math.floor(Math.random() * (base + 1));
+}
+
+interface RequestOptions {
+  query?: Record<string, string | number | boolean>;
+  body?: unknown;
+  headers?: Record<string, string>;
+  requestId?: string;
+  /** Override the default API key for this request (multi-tenant integrations). */
+  companyApiKey?: string;
+}
+
 export class HttpClient {
-  private config: Required<Omit<OwayConfig, 'logger' | 'apiKey' | 'clientId' | 'clientSecret' | 'companyApiKey'>> & {
+  private readonly config: Required<
+    Pick<OwayConfig, 'baseUrl' | 'tokenUrl' | 'maxRetries' | 'timeout' | 'debug' | 'clientId' | 'clientSecret'>
+  > & {
     apiKey?: string;
-    clientId?: string;
-    clientSecret?: string;
-    companyApiKey?: string;
     logger?: OwayConfig['logger'];
   };
   private accessToken: string | null = null;
-  private tokenExpiry: number = 0;
+  private tokenExpiry = 0;
   private tokenRefreshPromise: Promise<string> | null = null;
 
   constructor(config: OwayConfig) {
-    // M2M credentials are REQUIRED for all integrations
     if (!config.clientId || !config.clientSecret) {
-      throw new OwayError('clientId and clientSecret are required. Contact Oway Sales Engineering to obtain M2M credentials.');
+      throw new OwayError({
+        message: 'clientId and clientSecret are required',
+        code: 'CONFIG_MISSING_CREDENTIALS',
+      });
     }
+    const baseUrl =
+      config.baseUrl ||
+      (typeof process !== 'undefined' ? process.env?.OWAY_BASE_URL : undefined) ||
+      'https://api.sandbox.oway.io';
 
     this.config = {
-      baseUrl: config.baseUrl || process.env.OWAY_BASE_URL || 'https://api.sandbox.oway.io',
-      tokenUrl: config.tokenUrl || (config.baseUrl || process.env.OWAY_BASE_URL || 'https://api.sandbox.oway.io') + '/v1/auth/token',
+      baseUrl,
+      tokenUrl: config.tokenUrl || `${baseUrl}/v1/auth/token`,
       maxRetries: config.maxRetries ?? 3,
-      timeout: config.timeout ?? 30000,
+      timeout: config.timeout ?? 30_000,
       debug: config.debug ?? false,
       clientId: config.clientId,
       clientSecret: config.clientSecret,
-      apiKey: config.apiKey, // Optional default company API key
+      apiKey: config.apiKey,
       logger: config.logger,
     };
 
-    this.log('debug', 'Oway SDK initialized', {
+    this.log('debug', 'sdk initialized', {
       baseUrl: this.config.baseUrl,
-      authMode: 'M2M',
       hasDefaultApiKey: !!this.config.apiKey,
     });
   }
 
-  /**
-   * Internal logging with sanitization
-   */
   private log(
     level: 'debug' | 'info' | 'warn' | 'error',
     message: string,
-    meta?: Record<string, any>
+    meta?: Record<string, unknown>
   ): void {
+    if (!this.config.logger) return;
     if (!this.config.debug && level === 'debug') return;
-
-    const sanitized = meta ? this.sanitizeForLogging(meta) : undefined;
-
-    if (this.config.logger) {
-      this.config.logger[level](message, sanitized);
-    } else if (this.config.debug && level !== 'debug') {
-      // Default console logging for non-debug levels when debug enabled
-      console[level === 'error' ? 'error' : 'log'](`[Oway ${level}]`, message, sanitized);
-    }
+    const safe = meta ? (this.sanitize(meta) as Record<string, unknown>) : undefined;
+    this.config.logger[level](message, safe);
   }
 
-  /**
-   * Sanitize objects for logging - remove sensitive fields
-   */
-  private sanitizeForLogging(obj: any): any {
+  private sanitize(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') return obj;
-
-    const sensitive = ['apiKey', 'token', 'authorization', 'password', 'secret'];
-    const sanitized: any = Array.isArray(obj) ? [] : {};
-
-    for (const [key, value] of Object.entries(obj)) {
-      const lowerKey = key.toLowerCase();
-      if (sensitive.some(s => lowerKey.includes(s))) {
-        sanitized[key] = '[REDACTED]';
-      } else if (value && typeof value === 'object') {
-        sanitized[key] = this.sanitizeForLogging(value);
+    const sensitive = ['apikey', 'token', 'authorization', 'password', 'secret', 'clientsecret'];
+    const out: Record<string, unknown> = Array.isArray(obj) ? ([] as unknown as Record<string, unknown>) : {};
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      const lower = k.toLowerCase();
+      if (sensitive.some((s) => lower.includes(s))) {
+        out[k] = '[REDACTED]';
+      } else if (v && typeof v === 'object') {
+        out[k] = this.sanitize(v);
       } else {
-        sanitized[key] = value;
+        out[k] = v;
       }
     }
-
-    return sanitized;
+    return out;
   }
 
-  /**
-   * Get or refresh the access token using the API key
-   * Handles concurrent requests by queuing them behind a single refresh
-   */
   private async getAccessToken(): Promise<string> {
-    // If refresh already in progress, wait for it
-    if (this.tokenRefreshPromise) {
-      this.log('debug', 'Waiting for token refresh in progress');
-      return this.tokenRefreshPromise;
-    }
-
-    // Return cached token if still valid (with 5-minute buffer)
+    if (this.tokenRefreshPromise) return this.tokenRefreshPromise;
     if (this.accessToken && Date.now() < this.tokenExpiry - 5 * 60 * 1000) {
       return this.accessToken;
     }
-
-    // Start token refresh
-    this.log('debug', 'Refreshing access token');
     this.tokenRefreshPromise = this.refreshToken();
-
     try {
       this.accessToken = await this.tokenRefreshPromise;
-      this.log('info', 'Access token refreshed', {
-        expiresAt: new Date(this.tokenExpiry).toISOString(),
-      });
       return this.accessToken;
     } finally {
       this.tokenRefreshPromise = null;
     }
   }
 
-  /**
-   * Perform the actual token refresh using M2M credentials
-   */
   private async refreshToken(): Promise<string> {
-    try {
-      this.log('debug', 'Refreshing M2M access token');
-
-      const response = await fetch(this.config.tokenUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          clientId: this.config.clientId,
-          clientSecret: this.config.clientSecret,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new OwayError(
-          'Failed to obtain access token',
-          'AUTH_FAILED',
-          response.status
-        );
-      }
-
-      const data = await response.json() as TokenResponse;
-
-      if (!data.accessToken || !data.expiresIn) {
-        throw new OwayError(
-          'Invalid token response: missing accessToken or expiresIn',
-          'AUTH_INVALID_RESPONSE'
-        );
-      }
-
-      this.tokenExpiry = Date.now() + data.expiresIn * 1000;
-
-      return data.accessToken;
-    } catch (error) {
-      this.log('error', 'Token refresh failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-
-      if (error instanceof OwayError) throw error;
-      throw new OwayError(
-        `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'AUTH_ERROR'
-      );
-    }
-  }
-
-  /**
-   * Generate a unique request ID
-   */
-  private generateRequestId(): string {
-    // Simple UUID v4-like implementation
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
+    this.log('debug', 'refreshing access token');
+    const resp = await fetch(this.config.tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientId: this.config.clientId,
+        clientSecret: this.config.clientSecret,
+      }),
     });
+    const text = await resp.text();
+    if (!resp.ok) {
+      throw parseHttpError(resp.status, resp.headers.get('x-request-id') ?? undefined, text);
+    }
+    let parsed: TokenResponse;
+    try {
+      parsed = JSON.parse(text) as TokenResponse;
+    } catch {
+      throw new OwayError({
+        message: 'token response was not valid JSON',
+        code: 'AUTH_INVALID_RESPONSE',
+        statusCode: resp.status,
+      });
+    }
+    if (!parsed.accessToken || !parsed.expiresIn) {
+      throw new OwayError({
+        message: 'token response missing accessToken or expiresIn',
+        code: 'AUTH_INVALID_RESPONSE',
+        statusCode: resp.status,
+      });
+    }
+    this.tokenExpiry = Date.now() + parsed.expiresIn * 1000;
+    return parsed.accessToken;
   }
 
-  /**
-   * Make an authenticated request to the Oway API
-   */
-  async request<T>(
-    method: string,
-    path: string,
-    options: {
-      query?: Record<string, string | number | boolean>;
-      body?: unknown;
-      headers?: Record<string, string>;
-      requestId?: string;
-      companyApiKey?: string; // Override per-request for multi-tenant integrations
-    } = {}
-  ): Promise<T> {
+  async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
     const token = await this.getAccessToken();
     const url = new URL(path, this.config.baseUrl);
-    const requestId = options.requestId || this.generateRequestId();
-
-    // Add query parameters
     if (options.query) {
-      Object.entries(options.query).forEach(([key, value]) => {
-        url.searchParams.append(key, String(value));
-      });
+      for (const [k, v] of Object.entries(options.query)) url.searchParams.append(k, String(v));
     }
-
-    // Determine which API key to use (priority: per-request > default > fallback to auth apiKey)
-    const apiKey = options.companyApiKey || this.config.companyApiKey || this.config.apiKey;
-
+    const requestId = options.requestId || randomRequestId();
+    const apiKey = options.companyApiKey ?? this.config.apiKey;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'x-request-id': requestId,
       ...options.headers,
     };
+    if (apiKey) headers['x-oway-api-key'] = apiKey;
 
-    // Add company API key if available
-    if (apiKey) {
-      headers['x-oway-api-key'] = apiKey;
-    }
-
-    this.log('debug', `${method} ${path}`, {
-      requestId,
-      hasBody: !!options.body,
-      query: options.query,
-    });
-
-    let lastError: Error | null = null;
-
+    let lastErr: Error | null = null;
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-        const response = await fetch(url.toString(), {
+      try {
+        const resp = await fetch(url.toString(), {
           method,
           headers,
-          body: options.body ? JSON.stringify(options.body) : undefined,
+          body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
           signal: controller.signal,
         });
-
         clearTimeout(timeoutId);
 
-        // Extract server request ID (if different from ours)
-        const serverRequestId = response.headers.get('x-request-id') || requestId;
+        const serverRequestId = resp.headers.get('x-request-id') ?? requestId;
 
-        if (!response.ok) {
-          let errorData: any;
-          try {
-            errorData = await response.json();
-          } catch {
-            errorData = { message: response.statusText };
-          }
-
-          const error = new OwayError(
-            errorData.message || `Request failed with status ${response.status}`,
-            errorData.code || 'API_ERROR',
-            response.status,
-            serverRequestId
-          );
-
-          this.log('warn', 'Request failed', {
+        if (!resp.ok) {
+          const rawBody = await resp.text();
+          const err = parseHttpError(resp.status, serverRequestId, rawBody);
+          this.log('warn', 'request failed', {
             method,
             path,
-            status: response.status,
-            requestId: serverRequestId,
+            status: err.statusCode,
+            code: err.code,
+            requestId: err.requestId,
             attempt: attempt + 1,
-            isRetryable: error.isRetryable(),
+            retryable: err.isRetryable(),
           });
-
-          throw error;
+          if (!err.isRetryable() || attempt === this.config.maxRetries) throw err;
+          lastErr = err;
+        } else {
+          if (resp.status === 204) return {} as T;
+          return (await resp.json()) as T;
         }
-
-        this.log('debug', 'Request successful', {
-          method,
-          path,
-          status: response.status,
-          requestId: serverRequestId,
-        });
-
-        // Return empty object for 204 No Content
-        if (response.status === 204) {
-          return {} as T;
+      } catch (e) {
+        clearTimeout(timeoutId);
+        if (e instanceof OwayError) {
+          if (!e.isRetryable() || attempt === this.config.maxRetries) throw e;
+          lastErr = e;
+        } else {
+          lastErr = e as Error;
+          if (attempt === this.config.maxRetries) throw lastErr;
         }
-
-        return await response.json() as T;
-      } catch (error) {
-        lastError = error as Error;
-
-        // Use isRetryable() for intelligent retry decisions
-        if (error instanceof OwayError && !error.isRetryable()) {
-          this.log('error', 'Non-retryable error', {
-            requestId,
-            code: error.code,
-            statusCode: error.statusCode,
-          });
-          throw error;
-        }
-
-        // Don't retry if this was the last attempt
-        if (attempt === this.config.maxRetries) {
-          this.log('error', 'Max retries exceeded', {
-            requestId,
-            attempts: attempt + 1,
-          });
-          break;
-        }
-
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, attempt) * 1000;
-        this.log('warn', 'Retrying request', {
-          requestId,
-          attempt: attempt + 1,
-          maxRetries: this.config.maxRetries,
-          delayMs: delay,
-        });
-        await new Promise(resolve => setTimeout(resolve, delay));
       }
+
+      const delay = backoffDelayMs(attempt);
+      this.log('warn', 'retrying', { attempt: attempt + 1, delay });
+      await new Promise((r) => setTimeout(r, delay));
     }
 
-    this.log('error', 'Request failed', {
-      requestId,
-      error: lastError instanceof Error ? lastError.message : 'Unknown error',
-    });
-
-    throw lastError || new OwayError('Request failed after retries', 'MAX_RETRIES_EXCEEDED', undefined, requestId);
+    throw (
+      lastErr ||
+      new OwayError({
+        message: 'request failed after retries',
+        code: 'MAX_RETRIES_EXCEEDED',
+        requestId,
+      })
+    );
   }
 
-  async get<T>(path: string, query?: Record<string, string | number | boolean>, companyApiKey?: string): Promise<T> {
+  get<T>(path: string, query?: Record<string, string | number | boolean>, companyApiKey?: string): Promise<T> {
     return this.request<T>('GET', path, { query, companyApiKey });
   }
 
-  async post<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
+  post<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
     return this.request<T>('POST', path, { body, companyApiKey });
   }
 
-  async put<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
+  put<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
     return this.request<T>('PUT', path, { body, companyApiKey });
   }
 
-  async delete<T>(path: string, companyApiKey?: string): Promise<T> {
+  delete<T>(path: string, companyApiKey?: string): Promise<T> {
     return this.request<T>('DELETE', path, { companyApiKey });
   }
 }

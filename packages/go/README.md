@@ -8,6 +8,8 @@ Official Go SDK for the Oway freight shipping platform.
 go get github.com/Oway-Inc/oway-sdk/packages/go
 ```
 
+Requires Go 1.22 or newer.
+
 ## Quick Start
 
 ```go
@@ -35,7 +37,6 @@ func main() {
 
 	ctx := context.Background()
 
-	// Request a quote
 	quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{
 		PickupAddress: oway.Address{
 			Name:          "Warehouse LA",
@@ -64,11 +65,10 @@ func main() {
 	}
 	fmt.Printf("Quote: $%.2f\n", float64(*quote.QuotedPriceInCents)/100)
 
-	// Create shipment from quote
 	shipment, err := client.CreateShipment(ctx, &oway.ShipmentRequest{
 		QuoteId:         quote.Id,
-		PickupAddress:   oway.Address{/* same as above */},
-		DeliveryAddress: oway.Address{/* same as above */},
+		PickupAddress:   oway.Address{ /* ... */ },
+		DeliveryAddress: oway.Address{ /* ... */ },
 		OrderComponents: []oway.OrderComponent{
 			{PalletCount: 2, PoundsWeight: 1000, PalletDimensions: []int32{48, 40, 48}},
 		},
@@ -76,117 +76,131 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Order: %s (status: %s)\n", *shipment.OrderNumber, *shipment.OrderStatus)
-
-	// Confirm, track, and get invoice
-	shipment, _ = client.ConfirmShipment(ctx, *shipment.OrderNumber)
-	tracking, _ := client.TrackShipment(ctx, *shipment.OrderNumber)
-	fmt.Printf("Status: %s\n", *tracking.OrderStatus)
+	fmt.Printf("Order: %s\n", *shipment.OrderNumber)
 }
 ```
 
-## Getting Credentials
-
-### M2M Credentials (Required)
-Contact Oway Sales Engineering (support@oway.io) to obtain a `ClientID` and `ClientSecret`.
-
-### Company API Key (Optional)
-Self-service at [app.oway.io/settings/api](https://app.oway.io/settings/api).
-- Shipper keys: `oway_sk_test_...` (test) / `oway_sk_live_...` (production)
-- Carrier keys: `oway_ck_...`
-
 ## Authentication
 
-The SDK handles authentication automatically:
-- **M2M Token** (`Authorization: Bearer`) - Auto-refreshed JWT from ClientID/ClientSecret
-- **API Key** (`x-oway-api-key`) - Company-specific key for authorization
+The SDK manages both authentication tokens automatically:
 
-Features:
-- Thread-safe token caching with `sync.RWMutex`
-- Automatic refresh 5 minutes before expiry
-- Double-check locking (prevents thundering herd)
+- **M2M JWT** (`Authorization: Bearer`) refreshed five minutes before expiry.
+- **Company API key** (`x-oway-api-key`) attached to every request.
+
+Set the default key on the client, or supply a per-request key via context for multi-tenant use:
+
+```go
+ctx := oway.WithCompanyAPIKey(context.Background(), "oway_sk_tenant_xyz")
+quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{ /* ... */ })
+```
+
+## Error Handling
+
+Every method returns `*oway.Error` on a non-2xx response. The error carries the parsed RFC 9457 `ProblemDetail`, the server-issued request id, and per-field validation failures when present.
+
+```go
+shipment, err := client.CreateShipment(ctx, req)
+if err != nil {
+	if oe, ok := oway.AsError(err); ok {
+		// Programmatic branching:
+		switch oe.Code {
+		case "no_coverage":
+			// Lane not within Oway's coverage area.
+		case "account_restriction":
+			// Account does not have the requested service enabled.
+		case "daily_trip_limit":
+			// Trip cap hit for the pickup date.
+		}
+
+		// Validation failures expose per-field reasons:
+		for _, v := range oe.Violations {
+			fmt.Printf("  %s: %s\n", v.Field, v.Reason)
+		}
+
+		// Request id to quote when reporting an issue:
+		fmt.Println("requestId:", oe.RequestID)
+	}
+	return err
+}
+```
+
+`Error.IsRetryable()` is true for 408, 429, 500, 502, 503, and 504. The SDK already retries those for you with full-jitter exponential backoff; the helper is exposed so callers can decide whether to surface failures up.
+
+## Retries
+
+Transient failures are retried automatically using full-jitter exponential backoff capped at 30 seconds. Configure with `Config.MaxRetries`:
+
+```go
+oway.New(oway.Config{
+	// ...
+	MaxRetries: 5, // default 3; pass -1 to disable
+})
+```
+
+Retries respect `context.Context` cancellation.
+
+## Logging
+
+The SDK is silent by default. Supply an `*slog.Logger` to receive structured events:
+
+```go
+logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+oway.New(oway.Config{ /* ... */, Logger: logger })
+```
 
 ## API Methods
-
-All methods have a `ForCompany` variant that accepts a per-request API key for multi-tenant integrations.
 
 ### Quotes
 
 ```go
-// Request a quote
-quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{...})
-
-// Retrieve a quote by ID
-quote, err := client.GetQuoteByID(ctx, quoteID)
-
-// Multi-tenant: specify company API key per request
-quote, err := client.RequestQuoteForCompany(ctx, &oway.QuoteRequest{...}, "oway_sk_...")
+quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{ /* ... */ })
+quote, err := client.GetQuote(ctx, quoteID)
 ```
 
 ### Shipments
 
 ```go
-// Create a shipment
-shipment, err := client.CreateShipment(ctx, &oway.ShipmentRequest{...})
-
-// Retrieve a shipment by order number
+shipment, err := client.CreateShipment(ctx, &oway.ShipmentRequest{ /* ... */ })
 shipment, err := client.GetShipment(ctx, orderNumber)
-
-// Confirm a shipment
 shipment, err := client.ConfirmShipment(ctx, orderNumber)
-
-// Cancel a shipment
 shipment, err := client.CancelShipment(ctx, orderNumber)
 ```
 
-### Tracking
+### Tracking, Invoices, Documents
 
 ```go
 tracking, err := client.TrackShipment(ctx, orderNumber)
-fmt.Printf("Status: %s\n", *tracking.OrderStatus)
-fmt.Printf("ETA: %v\n", tracking.EstimatedDeliveryDate)
+invoice, err  := client.GetInvoice(ctx, orderNumber)
+doc, err      := client.GetDocument(ctx, orderNumber, oway.DocumentTypeBOL)
 ```
 
-### Invoices
-
-```go
-invoice, err := client.GetInvoice(ctx, orderNumber)
-fmt.Printf("Total: $%.2f\n", float64(*invoice.TotalChargesInCents)/100)
-```
-
-### Documents
-
-```go
-doc, err := client.GetDocument(ctx, orderNumber, oway.DocumentTypeBOL)
-fmt.Printf("Download: %s\n", *doc.DownloadLink)
-```
-
-Available document types: `oway.DocumentTypeBOL`, `oway.DocumentTypeInvoice`, `oway.DocumentTypeShippingLabel`
+Document types: `DocumentTypeBOL`, `DocumentTypeInvoice`, `DocumentTypeShippingLabel`, `DocumentTypePOD`.
 
 ## Configuration
 
 ```go
 oway.New(oway.Config{
-    ClientID:     "...",                   // Required: M2M client ID
-    ClientSecret: "...",                   // Required: M2M client secret
-    APIKey:       "oway_sk_...",           // Optional: Default company API key
-    BaseURL:      oway.EnvironmentSandbox, // Optional: defaults to sandbox
-    TokenURL:     "...",                   // Optional: custom token endpoint
-    HTTPClient:   &http.Client{},          // Optional: custom HTTP client
-    Debug:        true,                    // Optional: enable debug logging
+	ClientID:     "...",                   // required
+	ClientSecret: "...",                   // required
+	APIKey:       "oway_sk_...",           // default company key (optional)
+	BaseURL:      oway.EnvironmentSandbox, // default
+	TokenURL:     "...",                   // default: BaseURL + /v1/auth/token
+	HTTPClient:   &http.Client{},          // optional override
+	MaxRetries:   3,                       // 0 -> default 3, -1 disables
+	Logger:       slog.Default(),          // optional
 })
 ```
 
 ## Environments
 
 | Environment | Constant | URL |
-|-------------|----------|-----|
+|---|---|---|
 | Sandbox | `oway.EnvironmentSandbox` | `https://api.sandbox.oway.io` |
 | Production | `oway.EnvironmentProduction` | `https://api.oway.io` |
 
 ## Type Aliases
 
-Clean names mapped from generated types:
+Clean public names mapped from generated types:
 
 | SDK Type | Generated Type |
 |----------|----------------|
@@ -199,26 +213,15 @@ Clean names mapped from generated types:
 | `oway.Address` | `client.Address` |
 | `oway.OrderComponent` | `client.OrderComponent` |
 | `oway.Document` | `client.DocumentResponse` |
-| `oway.DocumentType` | `client.GetDocumentByOrderNumberParamsDocumentType` |
+| `oway.DocumentType` | `client.GetDocumentParamsDocumentType` |
 
-## Context Support
+## Advanced
 
-All methods accept `context.Context` for timeouts and cancellation:
-
-```go
-ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-defer cancel()
-
-quote, err := client.RequestQuote(ctx, request)
-```
-
-## Advanced Usage
-
-Access the underlying oapi-codegen client directly:
+The underlying oapi-codegen client is exposed for use cases not covered by the wrapper:
 
 ```go
-raw := client.GetClient()
-resp, err := raw.GetShipmentByOrderNumberWithResponse(ctx, orderNumber)
+raw := client.GeneratedClient()
+resp, err := raw.GetShipmentWithResponse(ctx, orderNumber)
 ```
 
 ## Support

@@ -17,58 +17,88 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
-// Defines values for AddressAccessorialSnapshotCallAheadRequired.
+// Defines values for BundleStatus.
 const (
-	DAYBEFORE  AddressAccessorialSnapshotCallAheadRequired = "DAY_BEFORE"
-	HALFHOUR   AddressAccessorialSnapshotCallAheadRequired = "HALF_HOUR"
-	ONEHOUR    AddressAccessorialSnapshotCallAheadRequired = "ONE_HOUR"
-	STARTOFDAY AddressAccessorialSnapshotCallAheadRequired = "START_OF_DAY"
-	TWOHOURS   AddressAccessorialSnapshotCallAheadRequired = "TWO_HOURS"
+	BundleStatusACCEPTED       BundleStatus = "ACCEPTED"
+	BundleStatusDECLINED       BundleStatus = "DECLINED"
+	BundleStatusEXPIRED        BundleStatus = "EXPIRED"
+	BundleStatusOPEN           BundleStatus = "OPEN"
+	BundleStatusSUBSETACCEPTED BundleStatus = "SUBSET_ACCEPTED"
 )
 
-// Defines values for AppliedPricingRuleType.
+// Defines values for CarrierShipmentStatus.
 const (
-	AddOnMargin  AppliedPricingRuleType = "add_on_margin"
-	MaxMarginCap AppliedPricingRuleType = "max_margin_cap"
+	CarrierShipmentStatusACCEPTED  CarrierShipmentStatus = "ACCEPTED"
+	CarrierShipmentStatusCANCELLED CarrierShipmentStatus = "CANCELLED"
+	CarrierShipmentStatusDELIVERED CarrierShipmentStatus = "DELIVERED"
+	CarrierShipmentStatusEXPIRED   CarrierShipmentStatus = "EXPIRED"
+	CarrierShipmentStatusPENDING   CarrierShipmentStatus = "PENDING"
+	CarrierShipmentStatusPICKEDUP  CarrierShipmentStatus = "PICKED_UP"
+	CarrierShipmentStatusREJECTED  CarrierShipmentStatus = "REJECTED"
 )
 
-// Defines values for OfferWithOrderDataDTOMatchingMethod.
+// Defines values for CarrierTrackingOrderStatus.
 const (
-	LANE     OfferWithOrderDataDTOMatchingMethod = "LANE"
-	MANUAL   OfferWithOrderDataDTOMatchingMethod = "MANUAL"
-	REGION   OfferWithOrderDataDTOMatchingMethod = "REGION"
-	TERMINAL OfferWithOrderDataDTOMatchingMethod = "TERMINAL"
-	TRIP     OfferWithOrderDataDTOMatchingMethod = "TRIP"
+	CarrierTrackingOrderStatusACCEPTED    CarrierTrackingOrderStatus = "ACCEPTED"
+	CarrierTrackingOrderStatusASSIGNED    CarrierTrackingOrderStatus = "ASSIGNED"
+	CarrierTrackingOrderStatusCANCELLED   CarrierTrackingOrderStatus = "CANCELLED"
+	CarrierTrackingOrderStatusCONFIRMED   CarrierTrackingOrderStatus = "CONFIRMED"
+	CarrierTrackingOrderStatusDELIVERED   CarrierTrackingOrderStatus = "DELIVERED"
+	CarrierTrackingOrderStatusINITIALIZED CarrierTrackingOrderStatus = "INITIALIZED"
+	CarrierTrackingOrderStatusINTRANSIT   CarrierTrackingOrderStatus = "IN_TRANSIT"
+	CarrierTrackingOrderStatusPICKEDUP    CarrierTrackingOrderStatus = "PICKED_UP"
 )
 
-// Defines values for OrderCancellationReason.
+// Defines values for ExceptionReportRequestExceptionType.
 const (
-	CarrierException     OrderCancellationReason = "carrier_exception"
-	ChargebackOther      OrderCancellationReason = "chargeback_other"
-	CustomerCancellation OrderCancellationReason = "customer_cancellation"
-	Expired              OrderCancellationReason = "expired"
-	LowCoverage          OrderCancellationReason = "low_coverage"
-	ShipmentEntryError   OrderCancellationReason = "shipment_entry_error"
-	ShipperException     OrderCancellationReason = "shipper_exception"
-	Tonu                 OrderCancellationReason = "tonu"
-	UnacceptableMargin   OrderCancellationReason = "unacceptable_margin"
-	Unspecified          OrderCancellationReason = "unspecified"
+	ExceptionReportRequestExceptionTypeAddressIncorrect     ExceptionReportRequestExceptionType = "address_incorrect"
+	ExceptionReportRequestExceptionTypeCustomsDelay         ExceptionReportRequestExceptionType = "customs_delay"
+	ExceptionReportRequestExceptionTypeDamageAtDelivery     ExceptionReportRequestExceptionType = "damage_at_delivery"
+	ExceptionReportRequestExceptionTypeDamageInTransit      ExceptionReportRequestExceptionType = "damage_in_transit"
+	ExceptionReportRequestExceptionTypeDamageUponReceipt    ExceptionReportRequestExceptionType = "damage_upon_receipt"
+	ExceptionReportRequestExceptionTypeDeliveryAttempted    ExceptionReportRequestExceptionType = "delivery_attempted"
+	ExceptionReportRequestExceptionTypeDriverHosExpired     ExceptionReportRequestExceptionType = "driver_hos_expired"
+	ExceptionReportRequestExceptionTypeFailedPickup         ExceptionReportRequestExceptionType = "failed_pickup"
+	ExceptionReportRequestExceptionTypeLoadNotReady         ExceptionReportRequestExceptionType = "load_not_ready"
+	ExceptionReportRequestExceptionTypeNoCapacity           ExceptionReportRequestExceptionType = "no_capacity"
+	ExceptionReportRequestExceptionTypeOther                ExceptionReportRequestExceptionType = "other"
+	ExceptionReportRequestExceptionTypeRecipientUnavailable ExceptionReportRequestExceptionType = "recipient_unavailable"
+	ExceptionReportRequestExceptionTypeTrafficDelay         ExceptionReportRequestExceptionType = "traffic_delay"
+	ExceptionReportRequestExceptionTypeTruckBreakdown       ExceptionReportRequestExceptionType = "truck_breakdown"
+	ExceptionReportRequestExceptionTypeWeatherDelay         ExceptionReportRequestExceptionType = "weather_delay"
+	ExceptionReportRequestExceptionTypeWrongEquipment       ExceptionReportRequestExceptionType = "wrong_equipment"
 )
 
-// Defines values for QuoteQuoteSource.
+// Defines values for OfferStatus.
 const (
-	ManualEntry    QuoteQuoteSource = "manual_entry"
-	PricingModel   QuoteQuoteSource = "pricing_model"
-	PricingModelV2 QuoteQuoteSource = "pricing_model_v2"
+	OfferStatusACCEPTED  OfferStatus = "ACCEPTED"
+	OfferStatusCANCELLED OfferStatus = "CANCELLED"
+	OfferStatusDELIVERED OfferStatus = "DELIVERED"
+	OfferStatusEXPIRED   OfferStatus = "EXPIRED"
+	OfferStatusPENDING   OfferStatus = "PENDING"
+	OfferStatusPICKEDUP  OfferStatus = "PICKED_UP"
+	OfferStatusREJECTED  OfferStatus = "REJECTED"
 )
 
-// Defines values for QuoteStatus.
+// Defines values for OrderOrderStatus.
 const (
-	Confirmed   QuoteStatus = "confirmed"
-	Display     QuoteStatus = "display"
-	Open        QuoteStatus = "open"
-	PriceLocked QuoteStatus = "price_locked"
-	Rejected    QuoteStatus = "rejected"
+	OrderOrderStatusACCEPTED    OrderOrderStatus = "ACCEPTED"
+	OrderOrderStatusASSIGNED    OrderOrderStatus = "ASSIGNED"
+	OrderOrderStatusCANCELLED   OrderOrderStatus = "CANCELLED"
+	OrderOrderStatusCONFIRMED   OrderOrderStatus = "CONFIRMED"
+	OrderOrderStatusDELIVERED   OrderOrderStatus = "DELIVERED"
+	OrderOrderStatusINITIALIZED OrderOrderStatus = "INITIALIZED"
+	OrderOrderStatusINTRANSIT   OrderOrderStatus = "IN_TRANSIT"
+	OrderOrderStatusPICKEDUP    OrderOrderStatus = "PICKED_UP"
+)
+
+// Defines values for RejectOfferRequestReason.
+const (
+	RejectOfferRequestReasonCapacityUnavailable RejectOfferRequestReason = "capacity_unavailable"
+	RejectOfferRequestReasonOther               RejectOfferRequestReason = "other"
+	RejectOfferRequestReasonOutsideServiceArea  RejectOfferRequestReason = "outside_service_area"
+	RejectOfferRequestReasonRateNotAcceptable   RejectOfferRequestReason = "rate_not_acceptable"
+	RejectOfferRequestReasonTimelineNotFeasible RejectOfferRequestReason = "timeline_not_feasible"
 )
 
 // Defines values for ShipmentOrderStatus.
@@ -85,23 +115,78 @@ const (
 
 // Defines values for TrackingOrderStatus.
 const (
-	TrackingOrderStatusACCEPTED    TrackingOrderStatus = "ACCEPTED"
-	TrackingOrderStatusASSIGNED    TrackingOrderStatus = "ASSIGNED"
-	TrackingOrderStatusCANCELLED   TrackingOrderStatus = "CANCELLED"
-	TrackingOrderStatusCONFIRMED   TrackingOrderStatus = "CONFIRMED"
-	TrackingOrderStatusDELIVERED   TrackingOrderStatus = "DELIVERED"
-	TrackingOrderStatusINITIALIZED TrackingOrderStatus = "INITIALIZED"
-	TrackingOrderStatusINTRANSIT   TrackingOrderStatus = "IN_TRANSIT"
-	TrackingOrderStatusPICKEDUP    TrackingOrderStatus = "PICKED_UP"
+	ACCEPTED    TrackingOrderStatus = "ACCEPTED"
+	ASSIGNED    TrackingOrderStatus = "ASSIGNED"
+	CANCELLED   TrackingOrderStatus = "CANCELLED"
+	CONFIRMED   TrackingOrderStatus = "CONFIRMED"
+	DELIVERED   TrackingOrderStatus = "DELIVERED"
+	INITIALIZED TrackingOrderStatus = "INITIALIZED"
+	INTRANSIT   TrackingOrderStatus = "IN_TRANSIT"
+	PICKEDUP    TrackingOrderStatus = "PICKED_UP"
+)
+
+// Defines values for UploadUrlRequestContentType.
+const (
+	Applicationpdf UploadUrlRequestContentType = "application/pdf"
+	Imagejpeg      UploadUrlRequestContentType = "image/jpeg"
+	Imagepng       UploadUrlRequestContentType = "image/png"
+)
+
+// Defines values for UploadUrlRequestDocumentType.
+const (
+	PROOFOFDELIVERY UploadUrlRequestDocumentType = "PROOF_OF_DELIVERY"
+	SIGNATURE       UploadUrlRequestDocumentType = "SIGNATURE"
+)
+
+// Defines values for GetShipmentDocumentParamsDocumentType.
+const (
+	GetShipmentDocumentParamsDocumentTypeBILLOFLADING  GetShipmentDocumentParamsDocumentType = "BILL_OF_LADING"
+	GetShipmentDocumentParamsDocumentTypeSHIPPINGLABEL GetShipmentDocumentParamsDocumentType = "SHIPPING_LABEL"
 )
 
 // Defines values for GetDocumentParamsDocumentType.
 const (
-	BILLOFLADING  GetDocumentParamsDocumentType = "BILL_OF_LADING"
-	INVOICE       GetDocumentParamsDocumentType = "INVOICE"
-	POD           GetDocumentParamsDocumentType = "POD"
-	SHIPPINGLABEL GetDocumentParamsDocumentType = "SHIPPING_LABEL"
+	GetDocumentParamsDocumentTypeBILLOFLADING  GetDocumentParamsDocumentType = "BILL_OF_LADING"
+	GetDocumentParamsDocumentTypeINVOICE       GetDocumentParamsDocumentType = "INVOICE"
+	GetDocumentParamsDocumentTypePOD           GetDocumentParamsDocumentType = "POD"
+	GetDocumentParamsDocumentTypeSHIPPINGLABEL GetDocumentParamsDocumentType = "SHIPPING_LABEL"
 )
+
+// AcceptBundleRequest Request body for accepting a bundle, optionally excluding specific offers
+type AcceptBundleRequest struct {
+	// CarrierReference Carrier's internal reference number for this bundle
+	CarrierReference *string `json:"carrier_reference,omitempty"`
+
+	// DriverName Name of the assigned driver
+	DriverName *string `json:"driver_name,omitempty"`
+
+	// DriverPhone Phone number of the assigned driver
+	DriverPhone *string `json:"driver_phone,omitempty"`
+
+	// OfferIdsToExclude List of offer IDs to exclude from the bundle acceptance
+	OfferIdsToExclude *[]string `json:"offer_ids_to_exclude,omitempty"`
+
+	// VehicleId Identifier of the vehicle assigned to this bundle
+	VehicleId *string `json:"vehicle_id,omitempty"`
+}
+
+// AcceptOfferRequest Request body for accepting an offer
+type AcceptOfferRequest struct {
+	// CarrierReference Carrier's internal reference number for this shipment
+	CarrierReference *string `json:"carrier_reference,omitempty"`
+
+	// DriverName Name of the assigned driver
+	DriverName *string `json:"driver_name,omitempty"`
+
+	// DriverPhone Phone number of the assigned driver
+	DriverPhone *string `json:"driver_phone,omitempty"`
+
+	// EstimatedPickupTime Estimated time of pickup
+	EstimatedPickupTime *time.Time `json:"estimated_pickup_time,omitempty"`
+
+	// VehicleId Identifier of the vehicle assigned to this shipment
+	VehicleId *string `json:"vehicle_id,omitempty"`
+}
 
 // Address Address information for pickup or delivery locations
 type Address struct {
@@ -113,6 +198,9 @@ type Address struct {
 
 	// AppointmentRequired Whether an appointment is required for pickup/delivery
 	AppointmentRequired *bool `json:"appointmentRequired,omitempty"`
+
+	// CallAheadRequired Whether a call-ahead notification is required before pickup/delivery. When true, the carrier will call the contact person before arriving at the location.
+	CallAheadRequired *bool `json:"callAheadRequired,omitempty"`
 
 	// City City name
 	City string `json:"city"`
@@ -148,53 +236,232 @@ type Address struct {
 	ZipCode string `json:"zipCode"`
 }
 
-// AddressAccessorialSnapshot defines model for AddressAccessorialSnapshot.
-type AddressAccessorialSnapshot struct {
-	AppointmentRequired *bool                                        `json:"appointmentRequired,omitempty"`
-	CallAheadRequired   *AddressAccessorialSnapshotCallAheadRequired `json:"callAheadRequired,omitempty"`
-	CreatedAt           *time.Time                                   `json:"createdAt,omitempty"`
-	LiftgateRequired    *bool                                        `json:"liftgateRequired,omitempty"`
-	LimitedAccess       *bool                                        `json:"limitedAccess,omitempty"`
-	Residential         *bool                                        `json:"residential,omitempty"`
-	UpdatedAt           *time.Time                                   `json:"updatedAt,omitempty"`
-	Values              *map[string]bool                             `json:"values,omitempty"`
+// Bundle A bundle of offers presented to a carrier
+type Bundle struct {
+	// CreatedAt When this bundle was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Id Unique bundle identifier
+	Id *string `json:"id,omitempty"`
+
+	// Offers List of offers in this bundle with full details
+	Offers *[]Offer `json:"offers,omitempty"`
+
+	// Status Current bundle status
+	Status *BundleStatus `json:"status,omitempty"`
+
+	// UpdatedAt When this bundle was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// AddressAccessorialSnapshotCallAheadRequired defines model for AddressAccessorialSnapshot.CallAheadRequired.
-type AddressAccessorialSnapshotCallAheadRequired string
+// BundleStatus Current bundle status
+type BundleStatus string
 
-// AppliedPricingRule defines model for AppliedPricingRule.
-type AppliedPricingRule struct {
-	AdjustmentInCents *int32                  `json:"adjustmentInCents,omitempty"`
-	RuleId            *string                 `json:"ruleId,omitempty"`
-	RuleValue         *float64                `json:"ruleValue,omitempty"`
-	Type              *AppliedPricingRuleType `json:"type,omitempty"`
+// CarrierAddress Address information for pickup or delivery locations
+type CarrierAddress struct {
+	// Address1 Primary street address
+	Address1 string `json:"address1"`
+
+	// Address2 Secondary address line (suite, unit, etc.)
+	Address2 *string `json:"address2,omitempty"`
+
+	// AppointmentRequired Whether an appointment is required for pickup/delivery
+	AppointmentRequired *bool `json:"appointment_required,omitempty"`
+
+	// City City name
+	City string `json:"city"`
+
+	// CloseTime Closing time for the location in 24-hour format (HH:mm). Defaults to 16:00 if not provided.
+	CloseTime *string `json:"close_time,omitempty"`
+
+	// ContactPerson Name of the contact person at this location
+	ContactPerson string `json:"contact_person"`
+
+	// LiftgateRequired Whether a liftgate is required at this location
+	LiftgateRequired *bool `json:"liftgate_required,omitempty"`
+
+	// LimitedAccess Whether this is a limited access location (residential, construction site, etc.)
+	LimitedAccess *bool `json:"limited_access,omitempty"`
+
+	// Name Name of the location or business
+	Name string `json:"name"`
+
+	// Notes Additional notes or instructions for the driver
+	Notes *string `json:"notes,omitempty"`
+
+	// OpenTime Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
+	OpenTime *string `json:"open_time,omitempty"`
+
+	// PhoneNumber Contact phone number in E.164 format
+	PhoneNumber string `json:"phone_number"`
+
+	// State Two-letter state abbreviation
+	State string `json:"state"`
+
+	// ZipCode 5-digit ZIP code
+	ZipCode string `json:"zip_code"`
 }
 
-// AppliedPricingRuleType defines model for AppliedPricingRule.Type.
-type AppliedPricingRuleType string
+// CarrierComponent Individual pallet/component details
+type CarrierComponent struct {
+	// FreightClass Freight class code
+	FreightClass *string `json:"freight_class,omitempty"`
 
-// CarrierApiConfigResponse Carrier API configuration response
-type CarrierApiConfigResponse struct {
-	// ApiEnabled Whether the API is enabled for this carrier
-	ApiEnabled *bool `json:"apiEnabled,omitempty"`
+	// PalletCount Number of pallets in this component
+	PalletCount *int32 `json:"pallet_count,omitempty"`
 
-	// ApiVersion Current API version
-	ApiVersion *string `json:"apiVersion,omitempty"`
+	// PalletDimensions Pallet dimensions [length, width, height] in inches
+	PalletDimensions *[]float32 `json:"pallet_dimensions,omitempty"`
 
-	// AvailableEndpoints List of available API endpoints for this carrier
-	AvailableEndpoints *[]string `json:"availableEndpoints,omitempty"`
-
-	// CompanyName Name of the carrier company
-	CompanyName *string `json:"companyName,omitempty"`
+	// PoundsWeight Weight in pounds for this component
+	PoundsWeight *float32 `json:"pounds_weight,omitempty"`
 }
 
-// ComponentDetails defines model for ComponentDetails.
-type ComponentDetails struct {
-	FreightClass     *string    `json:"freightClass,omitempty"`
-	PalletCount      *int32     `json:"palletCount,omitempty"`
-	PalletDimensions *[]float32 `json:"palletDimensions,omitempty"`
-	PoundsWeight     *float32   `json:"poundsWeight,omitempty"`
+// CarrierDocumentResponse Document download information
+type CarrierDocumentResponse struct {
+	// DownloadLink Pre-signed download URL (valid for limited time)
+	DownloadLink *string `json:"download_link,omitempty"`
+
+	// FileType MIME type of the document
+	FileType *string `json:"file_type,omitempty"`
+
+	// Filename Name of the document file
+	Filename *string `json:"filename,omitempty"`
+}
+
+// CarrierShipment Carrier shipment details (post-acceptance)
+type CarrierShipment struct {
+	// AssignedDriver Assigned driver information
+	AssignedDriver *Driver `json:"assigned_driver,omitempty"`
+
+	// CarrierReference Carrier's own tracking reference number
+	CarrierReference *string `json:"carrier_reference,omitempty"`
+
+	// CreatedAt When this offer was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Deadline Offer expiration time — must accept or reject before this time
+	Deadline *time.Time `json:"deadline,omitempty"`
+
+	// Delivery Address information for pickup or delivery locations
+	Delivery *CarrierAddress `json:"delivery,omitempty"`
+
+	// DeliveryConfirmation Carrier-reported delivery confirmation details
+	DeliveryConfirmation *DeliveryConfirmation `json:"delivery_confirmation,omitempty"`
+
+	// DeliveryPin PIN code for delivery verification
+	DeliveryPin *string `json:"delivery_pin,omitempty"`
+
+	// Id Unique offer identifier
+	Id *string `json:"id,omitempty"`
+
+	// Order Order details visible to the carrier
+	Order *Order `json:"order,omitempty"`
+
+	// Payout Carrier payout information
+	Payout *Payout `json:"payout,omitempty"`
+
+	// Pickup Address information for pickup or delivery locations
+	Pickup *CarrierAddress `json:"pickup,omitempty"`
+
+	// PickupConfirmation Carrier-reported pickup confirmation details
+	PickupConfirmation *PickupConfirmation `json:"pickup_confirmation,omitempty"`
+
+	// PickupPin PIN code for pickup verification
+	PickupPin *string `json:"pickup_pin,omitempty"`
+
+	// RejectionReason Reason for rejection (populated when status is REJECTED)
+	RejectionReason *string `json:"rejection_reason,omitempty"`
+
+	// RejectionReasonText Free-text explanation for rejection
+	RejectionReasonText *string `json:"rejection_reason_text,omitempty"`
+
+	// Status Current status of the carrier offer
+	Status *CarrierShipmentStatus `json:"status,omitempty"`
+
+	// Tracking Shipment tracking information
+	Tracking *CarrierTracking `json:"tracking,omitempty"`
+
+	// UpdatedAt When this offer was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// CarrierShipmentStatus Current status of the carrier offer
+type CarrierShipmentStatus string
+
+// CarrierTracking Shipment tracking information
+type CarrierTracking struct {
+	// ActualDeliveryDate Actual delivery date/time (ISO 8601 format)
+	ActualDeliveryDate *time.Time `json:"actual_delivery_date,omitempty"`
+
+	// ActualPickupDate Actual pickup date/time (ISO 8601 format)
+	ActualPickupDate *time.Time `json:"actual_pickup_date,omitempty"`
+
+	// EstimatedDeliveryDate Estimated delivery date/time (ISO 8601 format)
+	EstimatedDeliveryDate *time.Time `json:"estimated_delivery_date,omitempty"`
+
+	// EstimatedPickupDate Estimated pickup date/time (ISO 8601 format)
+	EstimatedPickupDate *time.Time `json:"estimated_pickup_date,omitempty"`
+
+	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
+	OrderNumber *string `json:"order_number,omitempty"`
+
+	// OrderStatus Current shipment status in the order lifecycle
+	OrderStatus *CarrierTrackingOrderStatus `json:"order_status,omitempty"`
+}
+
+// CarrierTrackingOrderStatus Current shipment status in the order lifecycle
+type CarrierTrackingOrderStatus string
+
+// CarrierTripLeg A single leg of a trip
+type CarrierTripLeg struct {
+	// ArrivalWindowEnd Latest arrival time (ISO 8601 format)
+	ArrivalWindowEnd *time.Time `json:"arrival_window_end,omitempty"`
+
+	// ArrivalWindowStart Earliest arrival time (ISO 8601 format)
+	ArrivalWindowStart *time.Time `json:"arrival_window_start,omitempty"`
+
+	// AvailableForOffers Whether the vehicle is available for offers on this leg
+	AvailableForOffers *bool `json:"available_for_offers,omitempty"`
+
+	// EndLat End latitude
+	EndLat *float64 `json:"end_lat,omitempty"`
+
+	// EndLong End longitude
+	EndLong *float64 `json:"end_long,omitempty"`
+
+	// EstDriveTimeMinutes Estimated drive time in minutes
+	EstDriveTimeMinutes *int32 `json:"est_drive_time_minutes,omitempty"`
+
+	// StartLat Start latitude
+	StartLat *float64 `json:"start_lat,omitempty"`
+
+	// StartLong Start longitude
+	StartLong *float64 `json:"start_long,omitempty"`
+
+	// StartTime Departure time (ISO 8601 format)
+	StartTime *time.Time `json:"start_time,omitempty"`
+
+	// StopNumber Stop sequence number (0-based)
+	StopNumber *int32 `json:"stop_number,omitempty"`
+}
+
+// CarrierTripRequest Trip data for a carrier vehicle
+type CarrierTripRequest struct {
+	// CarrierId Carrier identifier
+	CarrierId *string `json:"carrier_id,omitempty"`
+
+	// Id Trip identifier
+	Id *string `json:"id,omitempty"`
+
+	// Legs Ordered list of trip legs
+	Legs *[]CarrierTripLeg `json:"legs,omitempty"`
+
+	// TripNo Trip number
+	TripNo *string `json:"trip_no,omitempty"`
+
+	// VehicleId Vehicle identifier
+	VehicleId *string `json:"vehicle_id,omitempty"`
 }
 
 // CreateShipmentRequest Request to create a new shipment
@@ -227,6 +494,72 @@ type CreateShipmentRequest struct {
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
 }
 
+// DeliveryConfirmation Carrier-reported delivery confirmation details
+type DeliveryConfirmation struct {
+	// Address Formatted delivery address
+	Address *string `json:"address,omitempty"`
+
+	// DeliveryTime Actual delivery time
+	DeliveryTime *time.Time `json:"delivery_time,omitempty"`
+
+	// Latitude GPS latitude at delivery
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// Longitude GPS longitude at delivery
+	Longitude *float64 `json:"longitude,omitempty"`
+
+	// Notes Additional notes about the delivery
+	Notes *string `json:"notes,omitempty"`
+
+	// ProofOfDeliveryUrl URL to proof of delivery document
+	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
+
+	// RecordedAt When this confirmation was recorded
+	RecordedAt *time.Time `json:"recorded_at,omitempty"`
+
+	// SignatureImageUrl URL to signature image
+	SignatureImageUrl *string `json:"signature_image_url,omitempty"`
+
+	// SignedBy Name of person who received the shipment
+	SignedBy *string `json:"signed_by,omitempty"`
+}
+
+// DeliveryConfirmationRequest Request body for confirming shipment delivery
+type DeliveryConfirmationRequest struct {
+	// Coordinates GPS coordinates for a shipment event
+	Coordinates *EventCoordinates `json:"coordinates,omitempty"`
+
+	// DeliveryTime Time the shipment was delivered
+	DeliveryTime time.Time `json:"delivery_time"`
+
+	// Location Location where a shipment event occurred
+	Location *EventLocation `json:"location,omitempty"`
+
+	// Notes Additional notes about the delivery
+	Notes *string `json:"notes,omitempty"`
+
+	// ProofOfDeliveryUrl URL to the proof of delivery document
+	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
+
+	// SignatureImageUrl URL to the signature image
+	SignatureImageUrl *string `json:"signature_image_url,omitempty"`
+
+	// SignedBy Name of the person who signed for the delivery
+	SignedBy *string `json:"signed_by,omitempty"`
+}
+
+// Dimensions Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied.
+type Dimensions struct {
+	// Height Height in inches
+	Height *int32 `json:"height,omitempty"`
+
+	// Length Length in inches
+	Length *int32 `json:"length,omitempty"`
+
+	// Width Width in inches
+	Width *int32 `json:"width,omitempty"`
+}
+
 // DocumentResponse Response containing a document download link
 type DocumentResponse struct {
 	// DownloadLink Pre-signed download URL (valid for limited time)
@@ -239,25 +572,79 @@ type DocumentResponse struct {
 	Filename *string `json:"filename,omitempty"`
 }
 
-// GpsData GPS location data point for a vehicle
-type GpsData struct {
-	// Heading Heading in degrees (0-359, where 0 is North)
-	Heading int32 `json:"heading"`
+// Driver Assigned driver information
+type Driver struct {
+	// Name Driver's full name
+	Name *string `json:"name,omitempty"`
 
-	// Latitude Latitude coordinate
-	Latitude float64 `json:"latitude"`
+	// Phone Driver's phone number in E.164 format (e.g., +15551234567)
+	Phone *string `json:"phone,omitempty"`
 
-	// Longitude Longitude coordinate
-	Longitude float64 `json:"longitude"`
+	// VehicleId Vehicle identifier assigned to this shipment
+	VehicleId *string `json:"vehicle_id,omitempty"`
+}
 
-	// Speed Speed in km/h
-	Speed int32 `json:"speed"`
+// EventCoordinates GPS coordinates for a shipment event
+type EventCoordinates struct {
+	// Latitude Latitude in decimal degrees
+	Latitude *float64 `json:"latitude,omitempty"`
 
-	// Timestamp Timestamp of the GPS reading (ISO 8601 format). Must not be in the future.
-	Timestamp time.Time `json:"timestamp"`
+	// Longitude Longitude in decimal degrees
+	Longitude *float64 `json:"longitude,omitempty"`
+}
 
-	// VehicleId Unique identifier for the vehicle
-	VehicleId string `json:"vehicleId"`
+// EventLocation Location where a shipment event occurred
+type EventLocation struct {
+	// Address1 Primary street address
+	Address1 *string `json:"address1,omitempty"`
+
+	// Address2 Secondary address line (suite, unit, etc.)
+	Address2 *string `json:"address2,omitempty"`
+
+	// City City name
+	City *string `json:"city,omitempty"`
+
+	// Country Country code
+	Country *string `json:"country,omitempty"`
+
+	// State Two-letter state abbreviation
+	State *string `json:"state,omitempty"`
+
+	// ZipCode 5-digit ZIP code
+	ZipCode *string `json:"zip_code,omitempty"`
+}
+
+// ExceptionReportRequest Request body for reporting a shipment exception
+type ExceptionReportRequest struct {
+	// Description Description of the exception
+	Description *string `json:"description,omitempty"`
+
+	// EstimatedDeliveryTime Revised estimated delivery time following the exception
+	EstimatedDeliveryTime *time.Time `json:"estimated_delivery_time,omitempty"`
+
+	// ExceptionTime Time the exception occurred
+	ExceptionTime time.Time `json:"exception_time"`
+
+	// ExceptionType Type of exception that occurred
+	ExceptionType ExceptionReportRequestExceptionType `json:"exception_type"`
+
+	// Location Location where a shipment event occurred
+	Location *EventLocation `json:"location,omitempty"`
+}
+
+// ExceptionReportRequestExceptionType Type of exception that occurred
+type ExceptionReportRequestExceptionType string
+
+// ExceptionResponse Response after reporting a shipment exception
+type ExceptionResponse struct {
+	// ExceptionRecorded Whether the exception was successfully recorded
+	ExceptionRecorded *bool `json:"exception_recorded,omitempty"`
+
+	// NotificationsSent Whether notifications were sent to relevant parties (reserved for future use)
+	NotificationsSent *bool `json:"notifications_sent,omitempty"`
+
+	// OrderNumber Human-readable order number
+	OrderNumber *string `json:"order_number,omitempty"`
 }
 
 // InvoiceCharge A charge on an invoice
@@ -338,108 +725,197 @@ type InvoiceResponse struct {
 	TotalWeight *int32 `json:"totalWeight,omitempty"`
 }
 
-// OfferWithOrderDataDTO defines model for OfferWithOrderDataDTO.
-type OfferWithOrderDataDTO struct {
-	AdditionalPayoutsInCents        *map[string]int32 `json:"additionalPayoutsInCents,omitempty"`
-	CarrierCounterOfferPriceInCents *int32            `json:"carrierCounterOfferPriceInCents,omitempty"`
-	CarrierId                       *string           `json:"carrierId,omitempty"`
-	CentsPayOut                     *int32            `json:"centsPayOut,omitempty"`
-	CommunicationExpired            *bool             `json:"communicationExpired,omitempty"`
-	Contacted                       *bool             `json:"contacted,omitempty"`
-	CreatedAt                       *time.Time        `json:"createdAt,omitempty"`
-	Deadline                        *time.Time        `json:"deadline,omitempty"`
-	DecidedAt                       *time.Time        `json:"decidedAt,omitempty"`
-	DeliveryPin                     *string           `json:"deliveryPin,omitempty"`
-	DriverId                        *string           `json:"driverId,omitempty"`
+// LocationAcknowledgment Acknowledgment of a location update
+type LocationAcknowledgment struct {
+	// OrderNumber Human-readable order number
+	OrderNumber *string `json:"order_number,omitempty"`
 
-	// DropoffAddressData Address information for pickup or delivery locations
-	DropoffAddressData        *Address                             `json:"dropoffAddressData,omitempty"`
-	EmailThreadId             *string                              `json:"emailThreadId,omitempty"`
-	Id                        *string                              `json:"id,omitempty"`
-	ManualCentsPayoutOverride *int32                               `json:"manualCentsPayoutOverride,omitempty"`
-	MatchingMethod            *OfferWithOrderDataDTOMatchingMethod `json:"matchingMethod,omitempty"`
-	OrderAccessorials         *OrderAccessorials                   `json:"orderAccessorials,omitempty"`
-	OrderData                 *Order                               `json:"orderData,omitempty"`
-	OrderId                   *string                              `json:"orderId,omitempty"`
-
-	// PickupAddressData Address information for pickup or delivery locations
-	PickupAddressData                *Address                   `json:"pickupAddressData,omitempty"`
-	PickupPin                        *string                    `json:"pickupPin,omitempty"`
-	RealTimeVehicleLocationSnapshots *[]VehicleLocationSnapshot `json:"realTimeVehicleLocationSnapshots,omitempty"`
-	RouteId                          *string                    `json:"routeId,omitempty"`
-	RouteScore                       *float64                   `json:"routeScore,omitempty"`
-	State                            *string                    `json:"state,omitempty"`
-	TotalPayoutInCents               *int32                     `json:"totalPayoutInCents,omitempty"`
-	TripFragmentMatches              *[]TripFragmentMatch       `json:"tripFragmentMatches,omitempty"`
-	UpdatedAt                        *time.Time                 `json:"updatedAt,omitempty"`
+	// Recorded Whether the location update was recorded
+	Recorded *bool `json:"recorded,omitempty"`
 }
 
-// OfferWithOrderDataDTOMatchingMethod defines model for OfferWithOrderDataDTO.MatchingMethod.
-type OfferWithOrderDataDTOMatchingMethod string
+// Offer Carrier offer details
+type Offer struct {
+	// AssignedDriver Assigned driver information
+	AssignedDriver *Driver `json:"assigned_driver,omitempty"`
 
-// Order defines model for Order.
+	// CarrierReference Carrier's own tracking reference number
+	CarrierReference *string `json:"carrier_reference,omitempty"`
+
+	// CreatedAt When this offer was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Deadline Offer expiration time — must accept or reject before this time
+	Deadline *time.Time `json:"deadline,omitempty"`
+
+	// Delivery Address information for pickup or delivery locations
+	Delivery *CarrierAddress `json:"delivery,omitempty"`
+
+	// DeliveryConfirmation Carrier-reported delivery confirmation details
+	DeliveryConfirmation *DeliveryConfirmation `json:"delivery_confirmation,omitempty"`
+
+	// DeliveryPin PIN code for delivery verification
+	DeliveryPin *string `json:"delivery_pin,omitempty"`
+
+	// Id Unique offer identifier
+	Id *string `json:"id,omitempty"`
+
+	// Order Order details visible to the carrier
+	Order *Order `json:"order,omitempty"`
+
+	// Payout Carrier payout information
+	Payout *Payout `json:"payout,omitempty"`
+
+	// Pickup Address information for pickup or delivery locations
+	Pickup *CarrierAddress `json:"pickup,omitempty"`
+
+	// PickupConfirmation Carrier-reported pickup confirmation details
+	PickupConfirmation *PickupConfirmation `json:"pickup_confirmation,omitempty"`
+
+	// PickupPin PIN code for pickup verification
+	PickupPin *string `json:"pickup_pin,omitempty"`
+
+	// RejectionReason Reason for rejection (populated when status is REJECTED)
+	RejectionReason *string `json:"rejection_reason,omitempty"`
+
+	// RejectionReasonText Free-text explanation for rejection
+	RejectionReasonText *string `json:"rejection_reason_text,omitempty"`
+
+	// Status Current status of the carrier offer
+	Status *OfferStatus `json:"status,omitempty"`
+
+	// Tracking Shipment tracking information
+	Tracking *CarrierTracking `json:"tracking,omitempty"`
+
+	// UpdatedAt When this offer was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// OfferStatus Current status of the carrier offer
+type OfferStatus string
+
+// OfferLocationUpdate Real-time location update for a shipment in transit
+type OfferLocationUpdate struct {
+	// Heading Heading in degrees (0-359, where 0 is north; -1 for unknown)
+	Heading *int32 `json:"heading,omitempty"`
+
+	// Latitude Latitude in decimal degrees
+	Latitude float64 `json:"latitude"`
+
+	// Longitude Longitude in decimal degrees
+	Longitude float64 `json:"longitude"`
+
+	// SpeedMph Speed in miles per hour
+	SpeedMph *int32 `json:"speed_mph,omitempty"`
+
+	// Timestamp Timestamp of this location reading
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// Order Order details visible to the carrier
 type Order struct {
-	AdditionalCustomerIds                 *[]string                `json:"additionalCustomerIds,omitempty"`
-	AmountDue                             *int32                   `json:"amountDue,omitempty"`
-	ApiOrder                              *bool                    `json:"apiOrder,omitempty"`
-	AvgPoundsPerCubicFoot                 *float64                 `json:"avgPoundsPerCubicFoot,omitempty"`
-	BillingAddressId                      *string                  `json:"billingAddressId,omitempty"`
-	CancellationReason                    *OrderCancellationReason `json:"cancellationReason,omitempty"`
-	CompanyId                             *string                  `json:"companyId,omitempty"`
-	Confirmed                             *bool                    `json:"confirmed,omitempty"`
-	CreatedAt                             *time.Time               `json:"createdAt,omitempty"`
-	CustomerId                            *string                  `json:"customerId,omitempty"`
-	DecidedAt                             *time.Time               `json:"decidedAt,omitempty"`
-	DeliveryAddressId                     *string                  `json:"deliveryAddressId,omitempty"`
-	Description                           *string                  `json:"description,omitempty"`
-	EmailThreadId                         *string                  `json:"emailThreadId,omitempty"`
-	Id                                    *string                  `json:"id,omitempty"`
-	LogisticsId                           *string                  `json:"logisticsId,omitempty"`
-	LtlCode                               *string                  `json:"ltlCode,omitempty"`
-	OrderComponents                       *[]ComponentDetails      `json:"orderComponents,omitempty"`
-	OrderNumber                           *string                  `json:"orderNumber,omitempty"`
-	OrderPreConfirmation                  *bool                    `json:"orderPreConfirmation,omitempty"`
-	Paid                                  *bool                    `json:"paid,omitempty"`
-	PaidAt                                *time.Time               `json:"paidAt,omitempty"`
-	PaidBy                                *string                  `json:"paidBy,omitempty"`
-	PaymentDueAt                          *time.Time               `json:"paymentDueAt,omitempty"`
-	PaymentMethod                         *string                  `json:"paymentMethod,omitempty"`
-	PaymentNotes                          *string                  `json:"paymentNotes,omitempty"`
-	PickupAddressId                       *string                  `json:"pickupAddressId,omitempty"`
-	PoNumber                              *string                  `json:"poNumber,omitempty"`
-	Quote                                 *Quote                   `json:"quote,omitempty"`
-	RefNumber                             *string                  `json:"refNumber,omitempty"`
-	SearchMatches                         *[]SearchMatch           `json:"searchMatches,omitempty"`
-	State                                 *string                  `json:"state,omitempty"`
-	TotalCubicFeet                        *float64                 `json:"totalCubicFeet,omitempty"`
-	TotalPalletCount                      *int32                   `json:"totalPalletCount,omitempty"`
-	TotalPoundsWeight                     *float32                 `json:"totalPoundsWeight,omitempty"`
-	TotalPriceInCents                     *int32                   `json:"totalPriceInCents,omitempty"`
-	TotalPriceInCentsWithoutBrokerCharges *int32                   `json:"totalPriceInCentsWithoutBrokerCharges,omitempty"`
-	UpdatedAt                             *time.Time               `json:"updatedAt,omitempty"`
+	// Components Individual pallet/component details
+	Components *[]CarrierComponent `json:"components,omitempty"`
+
+	// CreatedAt When the order was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Description Cargo description
+	Description *string `json:"description,omitempty"`
+
+	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
+	OrderNumber *string `json:"order_number,omitempty"`
+
+	// OrderStatus Current shipment status in the order lifecycle
+	OrderStatus *OrderOrderStatus `json:"order_status,omitempty"`
+
+	// PoNumber Shipper's purchase order number
+	PoNumber *string `json:"po_number,omitempty"`
+
+	// RefNumber Shipper's reference number
+	RefNumber *string `json:"ref_number,omitempty"`
+
+	// TotalPalletCount Total number of pallets
+	TotalPalletCount *int32 `json:"total_pallet_count,omitempty"`
+
+	// TotalPoundsWeight Total weight in pounds
+	TotalPoundsWeight *float32 `json:"total_pounds_weight,omitempty"`
+
+	// UpdatedAt When the order was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// OrderCancellationReason defines model for Order.CancellationReason.
-type OrderCancellationReason string
-
-// OrderAccessorials defines model for OrderAccessorials.
-type OrderAccessorials struct {
-	DeliveryAccessorials *AddressAccessorialSnapshot `json:"deliveryAccessorials,omitempty"`
-	Hazmat               *bool                       `json:"hazmat,omitempty"`
-	PickupAccessorials   *AddressAccessorialSnapshot `json:"pickupAccessorials,omitempty"`
-	Reefer               *bool                       `json:"reefer,omitempty"`
-}
+// OrderOrderStatus Current shipment status in the order lifecycle
+type OrderOrderStatus string
 
 // OrderComponent A cargo component (pallet group) in a shipment
 type OrderComponent struct {
+	// Dimensions Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied.
+	Dimensions *Dimensions `json:"dimensions,omitempty"`
+
 	// PalletCount Number of pallets in this component
 	PalletCount int32 `json:"palletCount"`
 
-	// PalletDimensions Pallet dimensions as [height, length, width] in inches
-	PalletDimensions []int32 `json:"palletDimensions"`
+	// PalletDimensions Pallet dimensions as [height, length, width] in inches. Deprecated: prefer the 'dimensions' object. Optional: if both 'palletDimensions' and 'dimensions' are omitted, the API defaults to 40 x 48 x 60 in. (length x width x height).
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	PalletDimensions *[]int32 `json:"palletDimensions,omitempty"`
 
 	// PoundsWeight Weight per pallet in pounds
 	PoundsWeight int32 `json:"poundsWeight"`
+}
+
+// Payout Carrier payout information
+type Payout struct {
+	// TotalInCents Total payout amount in cents (USD). Includes base payout plus all additional charges.
+	TotalInCents *int32 `json:"total_in_cents,omitempty"`
+}
+
+// PickupConfirmation Carrier-reported pickup confirmation details
+type PickupConfirmation struct {
+	// Address Formatted pickup address
+	Address *string `json:"address,omitempty"`
+
+	// DriverName Name of driver who picked up
+	DriverName *string `json:"driver_name,omitempty"`
+
+	// Latitude GPS latitude at pickup
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// Longitude GPS longitude at pickup
+	Longitude *float64 `json:"longitude,omitempty"`
+
+	// Notes Additional notes about the pickup
+	Notes *string `json:"notes,omitempty"`
+
+	// PickupTime Actual pickup time
+	PickupTime *time.Time `json:"pickup_time,omitempty"`
+
+	// RecordedAt When this confirmation was recorded
+	RecordedAt *time.Time `json:"recorded_at,omitempty"`
+
+	// SignedBy Name of person who handed over the shipment
+	SignedBy *string `json:"signed_by,omitempty"`
+}
+
+// PickupConfirmationRequest Request body for confirming shipment pickup
+type PickupConfirmationRequest struct {
+	// Coordinates GPS coordinates for a shipment event
+	Coordinates *EventCoordinates `json:"coordinates,omitempty"`
+
+	// DriverName Name of the driver who performed the pickup
+	DriverName *string `json:"driver_name,omitempty"`
+
+	// Location Location where a shipment event occurred
+	Location *EventLocation `json:"location,omitempty"`
+
+	// Notes Additional notes about the pickup
+	Notes *string `json:"notes,omitempty"`
+
+	// PickupTime Time the shipment was picked up
+	PickupTime time.Time `json:"pickup_time"`
+
+	// SignedBy Name of the person who signed at pickup
+	SignedBy *string `json:"signed_by,omitempty"`
 }
 
 // ProblemDetail RFC 9457 Problem Details error response
@@ -458,45 +934,10 @@ type ProblemDetail struct {
 
 	// Type A URI reference that identifies the problem type
 	Type *string `json:"type,omitempty"`
+
+	// Violations Per-field validation failures when a request is rejected for one or more invalid fields. Present only on validation-style errors.
+	Violations *[]Violation `json:"violations,omitempty"`
 }
-
-// Quote defines model for Quote.
-type Quote struct {
-	AdditionalChargesInCents          *map[string]int32     `json:"additionalChargesInCents,omitempty"`
-	AppliedPricingRules               *[]AppliedPricingRule `json:"appliedPricingRules,omitempty"`
-	BrokerChargesInCents              *map[string]int32     `json:"brokerChargesInCents,omitempty"`
-	CarrierProbability                *float64              `json:"carrierProbability,omitempty"`
-	CentsCharge                       *int32                `json:"centsCharge,omitempty"`
-	CoverageDenialReason              *string               `json:"coverageDenialReason,omitempty"`
-	CreatedAt                         *time.Time            `json:"createdAt,omitempty"`
-	CustomerId                        *string               `json:"customerId,omitempty"`
-	DropoffScoreSurroundingNormalized *float64              `json:"dropoffScoreSurroundingNormalized,omitempty"`
-	DropoffZip                        *string               `json:"dropoffZip,omitempty"`
-	ExposePrice                       *bool                 `json:"exposePrice,omitempty"`
-	Id                                *string               `json:"id,omitempty"`
-	Miles                             *float64              `json:"miles,omitempty"`
-	NumPallets                        *int32                `json:"numPallets,omitempty"`
-	OrderId                           *string               `json:"orderId,omitempty"`
-	OriginalPrice                     *float64              `json:"originalPrice,omitempty"`
-	PickupScoreSurroundingNormalized  *float64              `json:"pickupScoreSurroundingNormalized,omitempty"`
-	PickupZip                         *string               `json:"pickupZip,omitempty"`
-	PricingRuleAdjustmentInCents      *int32                `json:"pricingRuleAdjustmentInCents,omitempty"`
-	QuoteSource                       *QuoteQuoteSource     `json:"quoteSource,omitempty"`
-	ShipperId                         *string               `json:"shipperId,omitempty"`
-	ShipperProbability                *float64              `json:"shipperProbability,omitempty"`
-	Status                            *QuoteStatus          `json:"status,omitempty"`
-	SuggestedCarrierPayoutCents       *int32                `json:"suggestedCarrierPayoutCents,omitempty"`
-	TimeStamp                         *time.Time            `json:"timeStamp,omitempty"`
-	TotalCentsChargeWithBrokerCharges *int32                `json:"totalCentsChargeWithBrokerCharges,omitempty"`
-	TotalWeight                       *float32              `json:"totalWeight,omitempty"`
-	UpdatedAt                         *time.Time            `json:"updatedAt,omitempty"`
-}
-
-// QuoteQuoteSource defines model for Quote.QuoteSource.
-type QuoteQuoteSource string
-
-// QuoteStatus defines model for Quote.Status.
-type QuoteStatus string
 
 // QuoteRequest Request to generate a shipping quote. Quotes are valid for 2 days from creation.
 type QuoteRequest struct {
@@ -515,6 +956,9 @@ type QuoteRequest struct {
 
 // QuoteResponse Response containing a shipping quote
 type QuoteResponse struct {
+	// EstimatedDeliveryDate Estimated delivery date and time (ISO 8601 format, UTC). May be null when the ETA cannot be computed.
+	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate"`
+
 	// Id Unique quote identifier
 	Id *string `json:"id,omitempty"`
 
@@ -523,15 +967,22 @@ type QuoteResponse struct {
 
 	// QuotedPriceInCents Total quoted price in cents (USD)
 	QuotedPriceInCents *int32 `json:"quotedPriceInCents,omitempty"`
+
+	// TransitDays Number of business days to deliver the shipment after pickup. Pickup day is excluded; weekends are not counted. May be null when the ETA cannot be computed.
+	TransitDays *int32 `json:"transitDays"`
 }
 
-// SearchMatch defines model for SearchMatch.
-type SearchMatch struct {
-	EndIndex   *int32  `json:"endIndex,omitempty"`
-	Field      *string `json:"field,omitempty"`
-	StartIndex *int32  `json:"startIndex,omitempty"`
-	Value      *string `json:"value,omitempty"`
+// RejectOfferRequest Request body for rejecting an offer
+type RejectOfferRequest struct {
+	// Reason Reason for rejecting the offer
+	Reason RejectOfferRequestReason `json:"reason"`
+
+	// ReasonText Additional free-text explanation for the rejection
+	ReasonText *string `json:"reason_text,omitempty"`
 }
+
+// RejectOfferRequestReason Reason for rejecting the offer
+type RejectOfferRequestReason string
 
 // Shipment Shipment/Order details
 type Shipment struct {
@@ -620,75 +1071,101 @@ type Tracking struct {
 // TrackingOrderStatus Current shipment status in the order lifecycle
 type TrackingOrderStatus string
 
-// TripDetour defines model for TripDetour.
-type TripDetour struct {
-	DeliveryDetourSeconds *int32 `json:"deliveryDetourSeconds,omitempty"`
-	PickupDetourSeconds   *int32 `json:"pickupDetourSeconds,omitempty"`
-	TotalDetourSeconds    *int32 `json:"totalDetourSeconds,omitempty"`
+// TrackingPoint A single GPS tracking data point
+type TrackingPoint struct {
+	// Heading Heading in degrees (0=North, 90=East, 180=South, 270=West)
+	Heading *int32 `json:"heading,omitempty"`
+
+	// Latitude GPS latitude
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// Longitude GPS longitude
+	Longitude *float64 `json:"longitude,omitempty"`
+
+	// SpeedMph Speed in miles per hour
+	SpeedMph *int32 `json:"speed_mph,omitempty"`
+
+	// Timestamp When this position was recorded
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
-// TripFragmentMatch defines model for TripFragmentMatch.
-type TripFragmentMatch struct {
-	DeliveryStopNumber *int32      `json:"deliveryStopNumber,omitempty"`
-	PickupStopNumber   *int32      `json:"pickupStopNumber,omitempty"`
-	TripDetour         *TripDetour `json:"tripDetour,omitempty"`
-	TripFragmentId     *string     `json:"tripFragmentId,omitempty"`
-	TripId             *string     `json:"tripId,omitempty"`
-	VehicleId          *string     `json:"vehicleId,omitempty"`
+// TrackingResponse Tracking history for a shipment
+type TrackingResponse struct {
+	// LastUpdated Timestamp of the most recent tracking point
+	LastUpdated *time.Time `json:"last_updated,omitempty"`
+
+	// OrderNumber Human-readable order number
+	OrderNumber *string `json:"order_number,omitempty"`
+
+	// Points Ordered list of GPS tracking points from pickup to current/delivery
+	Points *[]TrackingPoint `json:"points,omitempty"`
 }
 
-// TripLeg defines model for TripLeg.
-type TripLeg struct {
-	ArrivalWindowEnd    *time.Time `json:"arrivalWindowEnd,omitempty"`
-	ArrivalWindowStart  *time.Time `json:"arrivalWindowStart,omitempty"`
-	AvailableForOffers  *bool      `json:"availableForOffers,omitempty"`
-	EndLat              *float64   `json:"endLat,omitempty"`
-	EndLong             *float64   `json:"endLong,omitempty"`
-	EstDriveTimeMinutes *int32     `json:"estDriveTimeMinutes,omitempty"`
-	StartLat            *float64   `json:"startLat,omitempty"`
-	StartLong           *float64   `json:"startLong,omitempty"`
-	StartTime           *time.Time `json:"startTime,omitempty"`
-	StopNumber          *int32     `json:"stopNumber,omitempty"`
+// UploadUrlRequest Request a pre-signed URL to upload a file (signature image or proof of delivery)
+type UploadUrlRequest struct {
+	// ContentType Content type of the file
+	ContentType UploadUrlRequestContentType `json:"content_type"`
+
+	// DocumentType Type of document being uploaded
+	DocumentType UploadUrlRequestDocumentType `json:"document_type"`
+
+	// FileName Original filename
+	FileName *string `json:"file_name,omitempty"`
 }
 
-// TripRequest defines model for TripRequest.
-type TripRequest struct {
-	CarrierId *string    `json:"carrierId,omitempty"`
-	Id        *string    `json:"id,omitempty"`
-	Legs      *[]TripLeg `json:"legs,omitempty"`
-	TripNo    *string    `json:"tripNo,omitempty"`
-	VehicleId *string    `json:"vehicleId,omitempty"`
+// UploadUrlRequestContentType Content type of the file
+type UploadUrlRequestContentType string
+
+// UploadUrlRequestDocumentType Type of document being uploaded
+type UploadUrlRequestDocumentType string
+
+// UploadUrlResponse Pre-signed URL for uploading a file directly to storage
+type UploadUrlResponse struct {
+	// ContentType Content type to use in the PUT request
+	ContentType *string `json:"content_type,omitempty"`
+
+	// DocumentId Document ID — use this to reference the uploaded file
+	DocumentId *string `json:"document_id,omitempty"`
+
+	// ExpiresAt URL expires at this time — upload before then
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// UploadUrl Pre-signed PUT URL — upload your file directly to this URL using HTTP PUT with the specified content type
+	UploadUrl *string `json:"upload_url,omitempty"`
 }
 
-// VehicleLocationSnapshot defines model for VehicleLocationSnapshot.
-type VehicleLocationSnapshot struct {
-	Heading                *int32     `json:"heading,omitempty"`
-	Id                     *string    `json:"id,omitempty"`
-	LastUpdated            *time.Time `json:"lastUpdated,omitempty"`
-	Location               *string    `json:"location,omitempty"`
-	NumHexesAwayFromPickup *int32     `json:"numHexesAwayFromPickup,omitempty"`
-	Speed                  *int32     `json:"speed,omitempty"`
-	VehicleId              *string    `json:"vehicleId,omitempty"`
-	VehicleName            *string    `json:"vehicleName,omitempty"`
+// Violation A single field-level validation failure.
+type Violation struct {
+	// Field Field path that failed validation
+	Field *string `json:"field,omitempty"`
+
+	// Reason Human-readable reason the field is invalid
+	Reason *string `json:"reason,omitempty"`
 }
 
-// AddGpsDataJSONBody defines parameters for AddGpsData.
-type AddGpsDataJSONBody = []GpsData
-
-// GetJobsParams defines parameters for GetJobs.
-type GetJobsParams struct {
-	// ActiveOnly If true, only return currently active jobs
-	ActiveOnly *bool `form:"activeOnly,omitempty" json:"activeOnly,omitempty"`
-
-	// StartTime Filter jobs created after this time (ISO 8601 format)
-	StartTime *time.Time `form:"startTime,omitempty" json:"startTime,omitempty"`
-
-	// EndTime Filter jobs created before this time (ISO 8601 format)
-	EndTime *time.Time `form:"endTime,omitempty" json:"endTime,omitempty"`
+// GetBundlesParams defines parameters for GetBundles.
+type GetBundlesParams struct {
+	// Status Filter bundles by status (OPEN, ACCEPTED, DECLINED, EXPIRED)
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
 }
 
 // AddTripsJSONBody defines parameters for AddTrips.
-type AddTripsJSONBody = []TripRequest
+type AddTripsJSONBody = []CarrierTripRequest
+
+// GetShipmentsParams defines parameters for GetShipments.
+type GetShipmentsParams struct {
+	// ActiveOnly If true, only return currently active shipments (excludes delivered)
+	ActiveOnly *bool `form:"activeOnly,omitempty" json:"activeOnly,omitempty"`
+
+	// StartTime Filter shipments after this time (ISO 8601 format)
+	StartTime *time.Time `form:"startTime,omitempty" json:"startTime,omitempty"`
+
+	// EndTime Filter shipments before this time (ISO 8601 format)
+	EndTime *time.Time `form:"endTime,omitempty" json:"endTime,omitempty"`
+}
+
+// GetShipmentDocumentParamsDocumentType defines parameters for GetShipmentDocument.
+type GetShipmentDocumentParamsDocumentType string
 
 // GetDocumentParamsDocumentType defines parameters for GetDocument.
 type GetDocumentParamsDocumentType string
@@ -696,11 +1173,32 @@ type GetDocumentParamsDocumentType string
 // GetTokenJSONRequestBody defines body for GetToken for application/json ContentType.
 type GetTokenJSONRequestBody = TokenRequest
 
-// AddGpsDataJSONRequestBody defines body for AddGpsData for application/json ContentType.
-type AddGpsDataJSONRequestBody = AddGpsDataJSONBody
+// AcceptBundleJSONRequestBody defines body for AcceptBundle for application/json ContentType.
+type AcceptBundleJSONRequestBody = AcceptBundleRequest
 
 // AddTripsJSONRequestBody defines body for AddTrips for application/json ContentType.
 type AddTripsJSONRequestBody = AddTripsJSONBody
+
+// AcceptOfferJSONRequestBody defines body for AcceptOffer for application/json ContentType.
+type AcceptOfferJSONRequestBody = AcceptOfferRequest
+
+// RejectOfferJSONRequestBody defines body for RejectOffer for application/json ContentType.
+type RejectOfferJSONRequestBody = RejectOfferRequest
+
+// ConfirmDeliveryJSONRequestBody defines body for ConfirmDelivery for application/json ContentType.
+type ConfirmDeliveryJSONRequestBody = DeliveryConfirmationRequest
+
+// ReportExceptionJSONRequestBody defines body for ReportException for application/json ContentType.
+type ReportExceptionJSONRequestBody = ExceptionReportRequest
+
+// SubmitLocationJSONRequestBody defines body for SubmitLocation for application/json ContentType.
+type SubmitLocationJSONRequestBody = OfferLocationUpdate
+
+// ConfirmPickupJSONRequestBody defines body for ConfirmPickup for application/json ContentType.
+type ConfirmPickupJSONRequestBody = PickupConfirmationRequest
+
+// RequestUploadUrlJSONRequestBody defines body for RequestUploadUrl for application/json ContentType.
+type RequestUploadUrlJSONRequestBody = UploadUrlRequest
 
 // RequestQuoteJSONRequestBody defines body for RequestQuote for application/json ContentType.
 type RequestQuoteJSONRequestBody = QuoteRequest
@@ -786,21 +1284,77 @@ type ClientInterface interface {
 
 	GetToken(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetCarrierApiConfig request
-	GetCarrierApiConfig(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetBundles request
+	GetBundles(ctx context.Context, params *GetBundlesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddGpsDataWithBody request with any body
-	AddGpsDataWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetBundle request
+	GetBundle(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddGpsData(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AcceptBundleWithBody request with any body
+	AcceptBundleWithBody(ctx context.Context, bundleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetJobs request
-	GetJobs(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AcceptBundle(ctx context.Context, bundleId string, body AcceptBundleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RejectBundle request
+	RejectBundle(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AddTripsWithBody request with any body
-	AddTripsWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddTripsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddTrips(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddTrips(ctx context.Context, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOffers request
+	GetOffers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOffer request
+	GetOffer(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AcceptOfferWithBody request with any body
+	AcceptOfferWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AcceptOffer(ctx context.Context, identifier string, body AcceptOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RejectOfferWithBody request with any body
+	RejectOfferWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RejectOffer(ctx context.Context, identifier string, body RejectOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShipments request
+	GetShipments(ctx context.Context, params *GetShipmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShipment1 request
+	GetShipment1(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmDeliveryWithBody request with any body
+	ConfirmDeliveryWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmDelivery(ctx context.Context, identifier string, body ConfirmDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShipmentDocument request
+	GetShipmentDocument(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReportExceptionWithBody request with any body
+	ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ReportException(ctx context.Context, identifier string, body ReportExceptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitLocationWithBody request with any body
+	SubmitLocationWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SubmitLocation(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmPickupWithBody request with any body
+	ConfirmPickupWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmPickup(ctx context.Context, identifier string, body ConfirmPickupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetShipmentTracking request
+	GetShipmentTracking(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RequestUploadUrlWithBody request with any body
+	RequestUploadUrlWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RequestUploadUrl(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RequestQuoteWithBody request with any body
 	RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -858,8 +1412,8 @@ func (c *Client) GetToken(ctx context.Context, body GetTokenJSONRequestBody, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCarrierApiConfig(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetCarrierApiConfigRequest(c.Server, carrierId)
+func (c *Client) GetBundles(ctx context.Context, params *GetBundlesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBundlesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -870,8 +1424,8 @@ func (c *Client) GetCarrierApiConfig(ctx context.Context, carrierId string, reqE
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddGpsDataWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddGpsDataRequestWithBody(c.Server, carrierId, contentType, body)
+func (c *Client) GetBundle(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBundleRequest(c.Server, bundleId)
 	if err != nil {
 		return nil, err
 	}
@@ -882,8 +1436,8 @@ func (c *Client) AddGpsDataWithBody(ctx context.Context, carrierId string, conte
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddGpsData(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddGpsDataRequest(c.Server, carrierId, body)
+func (c *Client) AcceptBundleWithBody(ctx context.Context, bundleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptBundleRequestWithBody(c.Server, bundleId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -894,8 +1448,8 @@ func (c *Client) AddGpsData(ctx context.Context, carrierId string, body AddGpsDa
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetJobs(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetJobsRequest(c.Server, carrierId, params)
+func (c *Client) AcceptBundle(ctx context.Context, bundleId string, body AcceptBundleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptBundleRequest(c.Server, bundleId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -906,8 +1460,8 @@ func (c *Client) GetJobs(ctx context.Context, carrierId string, params *GetJobsP
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddTripsWithBody(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddTripsRequestWithBody(c.Server, carrierId, contentType, body)
+func (c *Client) RejectBundle(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRejectBundleRequest(c.Server, bundleId)
 	if err != nil {
 		return nil, err
 	}
@@ -918,8 +1472,260 @@ func (c *Client) AddTripsWithBody(ctx context.Context, carrierId string, content
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddTrips(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddTripsRequest(c.Server, carrierId, body)
+func (c *Client) AddTripsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTripsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddTrips(ctx context.Context, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddTripsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOffers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOffersRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOffer(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOfferRequest(c.Server, identifier)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcceptOfferWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptOfferRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcceptOffer(ctx context.Context, identifier string, body AcceptOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptOfferRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RejectOfferWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRejectOfferRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RejectOffer(ctx context.Context, identifier string, body RejectOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRejectOfferRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShipments(ctx context.Context, params *GetShipmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShipmentsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShipment1(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShipment1Request(c.Server, identifier)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmDeliveryWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmDeliveryRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmDelivery(ctx context.Context, identifier string, body ConfirmDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmDeliveryRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShipmentDocument(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShipmentDocumentRequest(c.Server, identifier, documentType)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReportExceptionRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReportException(ctx context.Context, identifier string, body ReportExceptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReportExceptionRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SubmitLocationWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitLocationRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SubmitLocation(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitLocationRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmPickupWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmPickupRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmPickup(ctx context.Context, identifier string, body ConfirmPickupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmPickupRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetShipmentTracking(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetShipmentTrackingRequest(c.Server, identifier)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RequestUploadUrlWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRequestUploadUrlRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RequestUploadUrl(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRequestUploadUrlRequest(c.Server, identifier, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1102,13 +1908,62 @@ func NewGetTokenRequestWithBody(server string, contentType string, body io.Reade
 	return req, nil
 }
 
-// NewGetCarrierApiConfigRequest generates requests for GetCarrierApiConfig
-func NewGetCarrierApiConfigRequest(server string, carrierId string) (*http.Request, error) {
+// NewGetBundlesRequest generates requests for GetBundles
+func NewGetBundlesRequest(server string, params *GetBundlesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/bundles")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBundleRequest generates requests for GetBundle
+func NewGetBundleRequest(server string, bundleId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "bundleId", runtime.ParamLocationPath, bundleId)
 	if err != nil {
 		return nil, err
 	}
@@ -1118,7 +1973,7 @@ func NewGetCarrierApiConfigRequest(server string, carrierId string) (*http.Reque
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/carrier/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/carrier/bundles/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1136,24 +1991,24 @@ func NewGetCarrierApiConfigRequest(server string, carrierId string) (*http.Reque
 	return req, nil
 }
 
-// NewAddGpsDataRequest calls the generic AddGpsData builder with application/json body
-func NewAddGpsDataRequest(server string, carrierId string, body AddGpsDataJSONRequestBody) (*http.Request, error) {
+// NewAcceptBundleRequest calls the generic AcceptBundle builder with application/json body
+func NewAcceptBundleRequest(server string, bundleId string, body AcceptBundleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddGpsDataRequestWithBody(server, carrierId, "application/json", bodyReader)
+	return NewAcceptBundleRequestWithBody(server, bundleId, "application/json", bodyReader)
 }
 
-// NewAddGpsDataRequestWithBody generates requests for AddGpsData with any type of body
-func NewAddGpsDataRequestWithBody(server string, carrierId string, contentType string, body io.Reader) (*http.Request, error) {
+// NewAcceptBundleRequestWithBody generates requests for AcceptBundle with any type of body
+func NewAcceptBundleRequestWithBody(server string, bundleId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "bundleId", runtime.ParamLocationPath, bundleId)
 	if err != nil {
 		return nil, err
 	}
@@ -1163,7 +2018,81 @@ func NewAddGpsDataRequestWithBody(server string, carrierId string, contentType s
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/carrier/%s/gps-data", pathParam0)
+	operationPath := fmt.Sprintf("/v1/carrier/bundles/%s/accept", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRejectBundleRequest generates requests for RejectBundle
+func NewRejectBundleRequest(server string, bundleId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "bundleId", runtime.ParamLocationPath, bundleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/bundles/%s/reject", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddTripsRequest calls the generic AddTrips builder with application/json body
+func NewAddTripsRequest(server string, body AddTripsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddTripsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAddTripsRequestWithBody generates requests for AddTrips with any type of body
+func NewAddTripsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/coverage/trips")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1183,13 +2112,40 @@ func NewAddGpsDataRequestWithBody(server string, carrierId string, contentType s
 	return req, nil
 }
 
-// NewGetJobsRequest generates requests for GetJobs
-func NewGetJobsRequest(server string, carrierId string, params *GetJobsParams) (*http.Request, error) {
+// NewGetOffersRequest generates requests for GetOffers
+func NewGetOffersRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOfferRequest generates requests for GetOffer
+func NewGetOfferRequest(server string, identifier string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
 	if err != nil {
 		return nil, err
 	}
@@ -1199,7 +2155,128 @@ func NewGetJobsRequest(server string, carrierId string, params *GetJobsParams) (
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/carrier/%s/jobs", pathParam0)
+	operationPath := fmt.Sprintf("/v1/carrier/offers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAcceptOfferRequest calls the generic AcceptOffer builder with application/json body
+func NewAcceptOfferRequest(server string, identifier string, body AcceptOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcceptOfferRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewAcceptOfferRequestWithBody generates requests for AcceptOffer with any type of body
+func NewAcceptOfferRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/offers/%s/accept", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRejectOfferRequest calls the generic RejectOffer builder with application/json body
+func NewRejectOfferRequest(server string, identifier string, body RejectOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRejectOfferRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewRejectOfferRequestWithBody generates requests for RejectOffer with any type of body
+func NewRejectOfferRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/offers/%s/reject", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetShipmentsRequest generates requests for GetShipments
+func NewGetShipmentsRequest(server string, params *GetShipmentsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1271,24 +2348,13 @@ func NewGetJobsRequest(server string, carrierId string, params *GetJobsParams) (
 	return req, nil
 }
 
-// NewAddTripsRequest calls the generic AddTrips builder with application/json body
-func NewAddTripsRequest(server string, carrierId string, body AddTripsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAddTripsRequestWithBody(server, carrierId, "application/json", bodyReader)
-}
-
-// NewAddTripsRequestWithBody generates requests for AddTrips with any type of body
-func NewAddTripsRequestWithBody(server string, carrierId string, contentType string, body io.Reader) (*http.Request, error) {
+// NewGetShipment1Request generates requests for GetShipment1
+func NewGetShipment1Request(server string, identifier string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "carrierId", runtime.ParamLocationPath, carrierId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
 	if err != nil {
 		return nil, err
 	}
@@ -1298,7 +2364,315 @@ func NewAddTripsRequestWithBody(server string, carrierId string, contentType str
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/carrier/%s/trips", pathParam0)
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConfirmDeliveryRequest calls the generic ConfirmDelivery builder with application/json body
+func NewConfirmDeliveryRequest(server string, identifier string, body ConfirmDeliveryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmDeliveryRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewConfirmDeliveryRequestWithBody generates requests for ConfirmDelivery with any type of body
+func NewConfirmDeliveryRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/deliver", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetShipmentDocumentRequest generates requests for GetShipmentDocument
+func NewGetShipmentDocumentRequest(server string, identifier string, documentType GetShipmentDocumentParamsDocumentType) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "documentType", runtime.ParamLocationPath, documentType)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/document/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewReportExceptionRequest calls the generic ReportException builder with application/json body
+func NewReportExceptionRequest(server string, identifier string, body ReportExceptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewReportExceptionRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewReportExceptionRequestWithBody generates requests for ReportException with any type of body
+func NewReportExceptionRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/exception", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSubmitLocationRequest calls the generic SubmitLocation builder with application/json body
+func NewSubmitLocationRequest(server string, identifier string, body SubmitLocationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitLocationRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewSubmitLocationRequestWithBody generates requests for SubmitLocation with any type of body
+func NewSubmitLocationRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/location", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewConfirmPickupRequest calls the generic ConfirmPickup builder with application/json body
+func NewConfirmPickupRequest(server string, identifier string, body ConfirmPickupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmPickupRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewConfirmPickupRequestWithBody generates requests for ConfirmPickup with any type of body
+func NewConfirmPickupRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/pickup", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetShipmentTrackingRequest generates requests for GetShipmentTracking
+func NewGetShipmentTrackingRequest(server string, identifier string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/tracking", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRequestUploadUrlRequest calls the generic RequestUploadUrl builder with application/json body
+func NewRequestUploadUrlRequest(server string, identifier string, body RequestUploadUrlJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRequestUploadUrlRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewRequestUploadUrlRequestWithBody generates requests for RequestUploadUrl with any type of body
+func NewRequestUploadUrlRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/upload", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1691,21 +3065,77 @@ type ClientWithResponsesInterface interface {
 
 	GetTokenWithResponse(ctx context.Context, body GetTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetTokenResponse, error)
 
-	// GetCarrierApiConfigWithResponse request
-	GetCarrierApiConfigWithResponse(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*GetCarrierApiConfigResponse, error)
+	// GetBundlesWithResponse request
+	GetBundlesWithResponse(ctx context.Context, params *GetBundlesParams, reqEditors ...RequestEditorFn) (*GetBundlesResponse, error)
 
-	// AddGpsDataWithBodyWithResponse request with any body
-	AddGpsDataWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error)
+	// GetBundleWithResponse request
+	GetBundleWithResponse(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*GetBundleResponse, error)
 
-	AddGpsDataWithResponse(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error)
+	// AcceptBundleWithBodyWithResponse request with any body
+	AcceptBundleWithBodyWithResponse(ctx context.Context, bundleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptBundleResponse, error)
 
-	// GetJobsWithResponse request
-	GetJobsWithResponse(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*GetJobsResponse, error)
+	AcceptBundleWithResponse(ctx context.Context, bundleId string, body AcceptBundleJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptBundleResponse, error)
+
+	// RejectBundleWithResponse request
+	RejectBundleWithResponse(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*RejectBundleResponse, error)
 
 	// AddTripsWithBodyWithResponse request with any body
-	AddTripsWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
+	AddTripsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
 
-	AddTripsWithResponse(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
+	AddTripsWithResponse(ctx context.Context, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error)
+
+	// GetOffersWithResponse request
+	GetOffersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOffersResponse, error)
+
+	// GetOfferWithResponse request
+	GetOfferWithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetOfferResponse, error)
+
+	// AcceptOfferWithBodyWithResponse request with any body
+	AcceptOfferWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptOfferResponse, error)
+
+	AcceptOfferWithResponse(ctx context.Context, identifier string, body AcceptOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptOfferResponse, error)
+
+	// RejectOfferWithBodyWithResponse request with any body
+	RejectOfferWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RejectOfferResponse, error)
+
+	RejectOfferWithResponse(ctx context.Context, identifier string, body RejectOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*RejectOfferResponse, error)
+
+	// GetShipmentsWithResponse request
+	GetShipmentsWithResponse(ctx context.Context, params *GetShipmentsParams, reqEditors ...RequestEditorFn) (*GetShipmentsResponse, error)
+
+	// GetShipment1WithResponse request
+	GetShipment1WithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetShipment1Response, error)
+
+	// ConfirmDeliveryWithBodyWithResponse request with any body
+	ConfirmDeliveryWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmDeliveryResponse, error)
+
+	ConfirmDeliveryWithResponse(ctx context.Context, identifier string, body ConfirmDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmDeliveryResponse, error)
+
+	// GetShipmentDocumentWithResponse request
+	GetShipmentDocumentWithResponse(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetShipmentDocumentResponse, error)
+
+	// ReportExceptionWithBodyWithResponse request with any body
+	ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error)
+
+	ReportExceptionWithResponse(ctx context.Context, identifier string, body ReportExceptionJSONRequestBody, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error)
+
+	// SubmitLocationWithBodyWithResponse request with any body
+	SubmitLocationWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitLocationResponse, error)
+
+	SubmitLocationWithResponse(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitLocationResponse, error)
+
+	// ConfirmPickupWithBodyWithResponse request with any body
+	ConfirmPickupWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmPickupResponse, error)
+
+	ConfirmPickupWithResponse(ctx context.Context, identifier string, body ConfirmPickupJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmPickupResponse, error)
+
+	// GetShipmentTrackingWithResponse request
+	GetShipmentTrackingWithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetShipmentTrackingResponse, error)
+
+	// RequestUploadUrlWithBodyWithResponse request with any body
+	RequestUploadUrlWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error)
+
+	RequestUploadUrlWithResponse(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error)
 
 	// RequestQuoteWithBodyWithResponse request with any body
 	RequestQuoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestQuoteResponse, error)
@@ -1763,18 +3193,17 @@ func (r GetTokenResponse) StatusCode() int {
 	return 0
 }
 
-type GetCarrierApiConfigResponse struct {
+type GetBundlesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CarrierApiConfigResponse
+	JSON200      *[]Bundle
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
-	JSON404      *ProblemDetail
 	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r GetCarrierApiConfigResponse) Status() string {
+func (r GetBundlesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1782,18 +3211,17 @@ func (r GetCarrierApiConfigResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetCarrierApiConfigResponse) StatusCode() int {
+func (r GetBundlesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type AddGpsDataResponse struct {
+type GetBundleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *int32
-	JSON400      *ProblemDetail
+	JSON200      *Bundle
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
 	JSON404      *ProblemDetail
@@ -1801,7 +3229,7 @@ type AddGpsDataResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r AddGpsDataResponse) Status() string {
+func (r GetBundleResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1809,25 +3237,26 @@ func (r AddGpsDataResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddGpsDataResponse) StatusCode() int {
+func (r GetBundleResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetJobsResponse struct {
+type AcceptBundleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]OfferWithOrderDataDTO
+	JSON200      *Bundle
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
 	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
 	JSON500      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
-func (r GetJobsResponse) Status() string {
+func (r AcceptBundleResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1835,7 +3264,34 @@ func (r GetJobsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetJobsResponse) StatusCode() int {
+func (r AcceptBundleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RejectBundleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Bundle
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r RejectBundleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RejectBundleResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1863,6 +3319,357 @@ func (r AddTripsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AddTripsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOffersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Offer
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOffersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOffersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOfferResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Offer
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOfferResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOfferResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AcceptOfferResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Offer
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r AcceptOfferResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcceptOfferResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RejectOfferResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Offer
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r RejectOfferResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RejectOfferResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetShipmentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]CarrierShipment
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShipmentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShipmentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetShipment1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CarrierShipment
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShipment1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShipment1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfirmDeliveryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CarrierShipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmDeliveryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmDeliveryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetShipmentDocumentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CarrierDocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShipmentDocumentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShipmentDocumentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ReportExceptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ExceptionResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ReportExceptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReportExceptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SubmitLocationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *LocationAcknowledgment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitLocationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfirmPickupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CarrierShipment
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmPickupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmPickupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetShipmentTrackingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TrackingResponse
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetShipmentTrackingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetShipmentTrackingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RequestUploadUrlResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UploadUrlResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r RequestUploadUrlResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RequestUploadUrlResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2125,56 +3932,238 @@ func (c *ClientWithResponses) GetTokenWithResponse(ctx context.Context, body Get
 	return ParseGetTokenResponse(rsp)
 }
 
-// GetCarrierApiConfigWithResponse request returning *GetCarrierApiConfigResponse
-func (c *ClientWithResponses) GetCarrierApiConfigWithResponse(ctx context.Context, carrierId string, reqEditors ...RequestEditorFn) (*GetCarrierApiConfigResponse, error) {
-	rsp, err := c.GetCarrierApiConfig(ctx, carrierId, reqEditors...)
+// GetBundlesWithResponse request returning *GetBundlesResponse
+func (c *ClientWithResponses) GetBundlesWithResponse(ctx context.Context, params *GetBundlesParams, reqEditors ...RequestEditorFn) (*GetBundlesResponse, error) {
+	rsp, err := c.GetBundles(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetCarrierApiConfigResponse(rsp)
+	return ParseGetBundlesResponse(rsp)
 }
 
-// AddGpsDataWithBodyWithResponse request with arbitrary body returning *AddGpsDataResponse
-func (c *ClientWithResponses) AddGpsDataWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error) {
-	rsp, err := c.AddGpsDataWithBody(ctx, carrierId, contentType, body, reqEditors...)
+// GetBundleWithResponse request returning *GetBundleResponse
+func (c *ClientWithResponses) GetBundleWithResponse(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*GetBundleResponse, error) {
+	rsp, err := c.GetBundle(ctx, bundleId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddGpsDataResponse(rsp)
+	return ParseGetBundleResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddGpsDataWithResponse(ctx context.Context, carrierId string, body AddGpsDataJSONRequestBody, reqEditors ...RequestEditorFn) (*AddGpsDataResponse, error) {
-	rsp, err := c.AddGpsData(ctx, carrierId, body, reqEditors...)
+// AcceptBundleWithBodyWithResponse request with arbitrary body returning *AcceptBundleResponse
+func (c *ClientWithResponses) AcceptBundleWithBodyWithResponse(ctx context.Context, bundleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptBundleResponse, error) {
+	rsp, err := c.AcceptBundleWithBody(ctx, bundleId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddGpsDataResponse(rsp)
+	return ParseAcceptBundleResponse(rsp)
 }
 
-// GetJobsWithResponse request returning *GetJobsResponse
-func (c *ClientWithResponses) GetJobsWithResponse(ctx context.Context, carrierId string, params *GetJobsParams, reqEditors ...RequestEditorFn) (*GetJobsResponse, error) {
-	rsp, err := c.GetJobs(ctx, carrierId, params, reqEditors...)
+func (c *ClientWithResponses) AcceptBundleWithResponse(ctx context.Context, bundleId string, body AcceptBundleJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptBundleResponse, error) {
+	rsp, err := c.AcceptBundle(ctx, bundleId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetJobsResponse(rsp)
+	return ParseAcceptBundleResponse(rsp)
+}
+
+// RejectBundleWithResponse request returning *RejectBundleResponse
+func (c *ClientWithResponses) RejectBundleWithResponse(ctx context.Context, bundleId string, reqEditors ...RequestEditorFn) (*RejectBundleResponse, error) {
+	rsp, err := c.RejectBundle(ctx, bundleId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRejectBundleResponse(rsp)
 }
 
 // AddTripsWithBodyWithResponse request with arbitrary body returning *AddTripsResponse
-func (c *ClientWithResponses) AddTripsWithBodyWithResponse(ctx context.Context, carrierId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
-	rsp, err := c.AddTripsWithBody(ctx, carrierId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) AddTripsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
+	rsp, err := c.AddTripsWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseAddTripsResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddTripsWithResponse(ctx context.Context, carrierId string, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
-	rsp, err := c.AddTrips(ctx, carrierId, body, reqEditors...)
+func (c *ClientWithResponses) AddTripsWithResponse(ctx context.Context, body AddTripsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddTripsResponse, error) {
+	rsp, err := c.AddTrips(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseAddTripsResponse(rsp)
+}
+
+// GetOffersWithResponse request returning *GetOffersResponse
+func (c *ClientWithResponses) GetOffersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOffersResponse, error) {
+	rsp, err := c.GetOffers(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOffersResponse(rsp)
+}
+
+// GetOfferWithResponse request returning *GetOfferResponse
+func (c *ClientWithResponses) GetOfferWithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetOfferResponse, error) {
+	rsp, err := c.GetOffer(ctx, identifier, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOfferResponse(rsp)
+}
+
+// AcceptOfferWithBodyWithResponse request with arbitrary body returning *AcceptOfferResponse
+func (c *ClientWithResponses) AcceptOfferWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptOfferResponse, error) {
+	rsp, err := c.AcceptOfferWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptOfferResponse(rsp)
+}
+
+func (c *ClientWithResponses) AcceptOfferWithResponse(ctx context.Context, identifier string, body AcceptOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptOfferResponse, error) {
+	rsp, err := c.AcceptOffer(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptOfferResponse(rsp)
+}
+
+// RejectOfferWithBodyWithResponse request with arbitrary body returning *RejectOfferResponse
+func (c *ClientWithResponses) RejectOfferWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RejectOfferResponse, error) {
+	rsp, err := c.RejectOfferWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRejectOfferResponse(rsp)
+}
+
+func (c *ClientWithResponses) RejectOfferWithResponse(ctx context.Context, identifier string, body RejectOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*RejectOfferResponse, error) {
+	rsp, err := c.RejectOffer(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRejectOfferResponse(rsp)
+}
+
+// GetShipmentsWithResponse request returning *GetShipmentsResponse
+func (c *ClientWithResponses) GetShipmentsWithResponse(ctx context.Context, params *GetShipmentsParams, reqEditors ...RequestEditorFn) (*GetShipmentsResponse, error) {
+	rsp, err := c.GetShipments(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShipmentsResponse(rsp)
+}
+
+// GetShipment1WithResponse request returning *GetShipment1Response
+func (c *ClientWithResponses) GetShipment1WithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetShipment1Response, error) {
+	rsp, err := c.GetShipment1(ctx, identifier, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShipment1Response(rsp)
+}
+
+// ConfirmDeliveryWithBodyWithResponse request with arbitrary body returning *ConfirmDeliveryResponse
+func (c *ClientWithResponses) ConfirmDeliveryWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmDeliveryResponse, error) {
+	rsp, err := c.ConfirmDeliveryWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmDeliveryResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmDeliveryWithResponse(ctx context.Context, identifier string, body ConfirmDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmDeliveryResponse, error) {
+	rsp, err := c.ConfirmDelivery(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmDeliveryResponse(rsp)
+}
+
+// GetShipmentDocumentWithResponse request returning *GetShipmentDocumentResponse
+func (c *ClientWithResponses) GetShipmentDocumentWithResponse(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetShipmentDocumentResponse, error) {
+	rsp, err := c.GetShipmentDocument(ctx, identifier, documentType, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShipmentDocumentResponse(rsp)
+}
+
+// ReportExceptionWithBodyWithResponse request with arbitrary body returning *ReportExceptionResponse
+func (c *ClientWithResponses) ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error) {
+	rsp, err := c.ReportExceptionWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReportExceptionResponse(rsp)
+}
+
+func (c *ClientWithResponses) ReportExceptionWithResponse(ctx context.Context, identifier string, body ReportExceptionJSONRequestBody, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error) {
+	rsp, err := c.ReportException(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReportExceptionResponse(rsp)
+}
+
+// SubmitLocationWithBodyWithResponse request with arbitrary body returning *SubmitLocationResponse
+func (c *ClientWithResponses) SubmitLocationWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitLocationResponse, error) {
+	rsp, err := c.SubmitLocationWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitLocationResponse(rsp)
+}
+
+func (c *ClientWithResponses) SubmitLocationWithResponse(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitLocationResponse, error) {
+	rsp, err := c.SubmitLocation(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitLocationResponse(rsp)
+}
+
+// ConfirmPickupWithBodyWithResponse request with arbitrary body returning *ConfirmPickupResponse
+func (c *ClientWithResponses) ConfirmPickupWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmPickupResponse, error) {
+	rsp, err := c.ConfirmPickupWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmPickupResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmPickupWithResponse(ctx context.Context, identifier string, body ConfirmPickupJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmPickupResponse, error) {
+	rsp, err := c.ConfirmPickup(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmPickupResponse(rsp)
+}
+
+// GetShipmentTrackingWithResponse request returning *GetShipmentTrackingResponse
+func (c *ClientWithResponses) GetShipmentTrackingWithResponse(ctx context.Context, identifier string, reqEditors ...RequestEditorFn) (*GetShipmentTrackingResponse, error) {
+	rsp, err := c.GetShipmentTracking(ctx, identifier, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetShipmentTrackingResponse(rsp)
+}
+
+// RequestUploadUrlWithBodyWithResponse request with arbitrary body returning *RequestUploadUrlResponse
+func (c *ClientWithResponses) RequestUploadUrlWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error) {
+	rsp, err := c.RequestUploadUrlWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRequestUploadUrlResponse(rsp)
+}
+
+func (c *ClientWithResponses) RequestUploadUrlWithResponse(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error) {
+	rsp, err := c.RequestUploadUrl(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRequestUploadUrlResponse(rsp)
 }
 
 // RequestQuoteWithBodyWithResponse request with arbitrary body returning *RequestQuoteResponse
@@ -2314,22 +4303,69 @@ func ParseGetTokenResponse(rsp *http.Response) (*GetTokenResponse, error) {
 	return response, nil
 }
 
-// ParseGetCarrierApiConfigResponse parses an HTTP response from a GetCarrierApiConfigWithResponse call
-func ParseGetCarrierApiConfigResponse(rsp *http.Response) (*GetCarrierApiConfigResponse, error) {
+// ParseGetBundlesResponse parses an HTTP response from a GetBundlesWithResponse call
+func ParseGetBundlesResponse(rsp *http.Response) (*GetBundlesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetCarrierApiConfigResponse{
+	response := &GetBundlesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CarrierApiConfigResponse
+		var dest []Bundle
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBundleResponse parses an HTTP response from a GetBundleWithResponse call
+func ParseGetBundleResponse(rsp *http.Response) (*GetBundleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBundleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Bundle
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2368,15 +4404,137 @@ func ParseGetCarrierApiConfigResponse(rsp *http.Response) (*GetCarrierApiConfigR
 	return response, nil
 }
 
-// ParseAddGpsDataResponse parses an HTTP response from a AddGpsDataWithResponse call
-func ParseAddGpsDataResponse(rsp *http.Response) (*AddGpsDataResponse, error) {
+// ParseAcceptBundleResponse parses an HTTP response from a AcceptBundleWithResponse call
+func ParseAcceptBundleResponse(rsp *http.Response) (*AcceptBundleResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddGpsDataResponse{
+	response := &AcceptBundleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Bundle
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRejectBundleResponse parses an HTTP response from a RejectBundleWithResponse call
+func ParseRejectBundleResponse(rsp *http.Response) (*RejectBundleResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RejectBundleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Bundle
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddTripsResponse parses an HTTP response from a AddTripsWithResponse call
+func ParseAddTripsResponse(rsp *http.Response) (*AddTripsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddTripsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2429,22 +4587,22 @@ func ParseAddGpsDataResponse(rsp *http.Response) (*AddGpsDataResponse, error) {
 	return response, nil
 }
 
-// ParseGetJobsResponse parses an HTTP response from a GetJobsWithResponse call
-func ParseGetJobsResponse(rsp *http.Response) (*GetJobsResponse, error) {
+// ParseGetOffersResponse parses an HTTP response from a GetOffersWithResponse call
+func ParseGetOffersResponse(rsp *http.Response) (*GetOffersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetJobsResponse{
+	response := &GetOffersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []OfferWithOrderDataDTO
+		var dest []Offer
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2483,22 +4641,700 @@ func ParseGetJobsResponse(rsp *http.Response) (*GetJobsResponse, error) {
 	return response, nil
 }
 
-// ParseAddTripsResponse parses an HTTP response from a AddTripsWithResponse call
-func ParseAddTripsResponse(rsp *http.Response) (*AddTripsResponse, error) {
+// ParseGetOfferResponse parses an HTTP response from a GetOfferWithResponse call
+func ParseGetOfferResponse(rsp *http.Response) (*GetOfferResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddTripsResponse{
+	response := &GetOfferResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest int32
+		var dest Offer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAcceptOfferResponse parses an HTTP response from a AcceptOfferWithResponse call
+func ParseAcceptOfferResponse(rsp *http.Response) (*AcceptOfferResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcceptOfferResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Offer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRejectOfferResponse parses an HTTP response from a RejectOfferWithResponse call
+func ParseRejectOfferResponse(rsp *http.Response) (*RejectOfferResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RejectOfferResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Offer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShipmentsResponse parses an HTTP response from a GetShipmentsWithResponse call
+func ParseGetShipmentsResponse(rsp *http.Response) (*GetShipmentsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShipmentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []CarrierShipment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShipment1Response parses an HTTP response from a GetShipment1WithResponse call
+func ParseGetShipment1Response(rsp *http.Response) (*GetShipment1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShipment1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CarrierShipment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfirmDeliveryResponse parses an HTTP response from a ConfirmDeliveryWithResponse call
+func ParseConfirmDeliveryResponse(rsp *http.Response) (*ConfirmDeliveryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmDeliveryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CarrierShipment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShipmentDocumentResponse parses an HTTP response from a GetShipmentDocumentWithResponse call
+func ParseGetShipmentDocumentResponse(rsp *http.Response) (*GetShipmentDocumentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShipmentDocumentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CarrierDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReportExceptionResponse parses an HTTP response from a ReportExceptionWithResponse call
+func ParseReportExceptionResponse(rsp *http.Response) (*ReportExceptionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReportExceptionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ExceptionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSubmitLocationResponse parses an HTTP response from a SubmitLocationWithResponse call
+func ParseSubmitLocationResponse(rsp *http.Response) (*SubmitLocationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitLocationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest LocationAcknowledgment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfirmPickupResponse parses an HTTP response from a ConfirmPickupWithResponse call
+func ParseConfirmPickupResponse(rsp *http.Response) (*ConfirmPickupResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmPickupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CarrierShipment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetShipmentTrackingResponse parses an HTTP response from a GetShipmentTrackingWithResponse call
+func ParseGetShipmentTrackingResponse(rsp *http.Response) (*GetShipmentTrackingResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetShipmentTrackingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TrackingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRequestUploadUrlResponse parses an HTTP response from a RequestUploadUrlWithResponse call
+func ParseRequestUploadUrlResponse(rsp *http.Response) (*RequestUploadUrlResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RequestUploadUrlResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UploadUrlResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -1,30 +1,66 @@
 package oway
 
-import "github.com/Oway-Inc/oway-sdk/packages/go/client"
+import (
+	"time"
 
-// Clean type aliases for public API
-
-// Request types
-type (
-	QuoteRequest    = client.QuoteRequest
-	ShipmentRequest = client.CreateShipmentRequest
+	"github.com/Oway-Inc/oway-sdk/packages/go/client"
 )
 
-// Response types
-type (
-	Quote    = client.QuoteResponse
-	Shipment = client.Shipment
-	Tracking = client.Tracking
-	Invoice  = client.InvoiceResponse
-)
+// Quote is the response payload returned by RequestQuote and GetQuote.
+type Quote = client.QuoteResponse
 
-// Common types
-type (
-	Address        = client.Address
-	OrderComponent = client.OrderComponent
-	Document       = client.DocumentResponse
-	DocumentType   = client.GetDocumentParamsDocumentType
-)
+// Shipment is the response payload returned by shipment endpoints.
+type Shipment = client.Shipment
+
+// Tracking is the response payload returned by TrackShipment.
+type Tracking = client.Tracking
+
+// Invoice is the response payload returned by GetInvoice.
+type Invoice = client.InvoiceResponse
+
+// Address is a pickup or delivery address.
+type Address = client.Address
+
+// Dimensions describes pallet dimensions in inches.
+type Dimensions = client.Dimensions
+
+// Document is a downloadable shipment document (BOL, label, invoice, POD).
+type Document = client.DocumentResponse
+
+// DocumentType identifies a kind of shipment document.
+type DocumentType = client.GetDocumentParamsDocumentType
+
+// OrderComponent describes a pallet group within a shipment. The SDK exposes
+// only the modern `Dimensions` shape; the deprecated array form on the
+// underlying generated type is not surfaced.
+type OrderComponent struct {
+	PalletCount  int32       `json:"palletCount"`
+	PoundsWeight int32       `json:"poundsWeight"`
+	Dimensions   *Dimensions `json:"dimensions,omitempty"`
+}
+
+// QuoteRequest mirrors the generated client.QuoteRequest but uses the
+// SDK-local OrderComponent (no deprecated fields).
+type QuoteRequest struct {
+	PickupAddress      Address          `json:"pickupAddress"`
+	DeliveryAddress    Address          `json:"deliveryAddress"`
+	OrderComponents    []OrderComponent `json:"orderComponents"`
+	RequiredPickupDate *time.Time       `json:"requiredPickupDate,omitempty"`
+}
+
+// ShipmentRequest mirrors the generated client.CreateShipmentRequest but
+// uses the SDK-local OrderComponent (no deprecated fields).
+type ShipmentRequest struct {
+	PickupAddress      Address          `json:"pickupAddress"`
+	DeliveryAddress    Address          `json:"deliveryAddress"`
+	Description        string           `json:"description"`
+	OrderComponents    []OrderComponent `json:"orderComponents"`
+	QuoteID            *string          `json:"quoteId,omitempty"`
+	PoNumber           *string          `json:"poNumber,omitempty"`
+	RefNumber          *string          `json:"refNumber,omitempty"`
+	RequiredPickupDate *time.Time       `json:"requiredPickupDate,omitempty"`
+	RequiredDeliveryBy *time.Time       `json:"requiredDeliveryBy,omitempty"`
+}
 
 // Document type constants
 const (
@@ -34,7 +70,37 @@ const (
 	DocumentTypePOD           DocumentType = "POD"
 )
 
-// Additional aliases for EDI Gateway compatibility
-type (
-	CreateShipmentRequest = ShipmentRequest
-)
+func toClientOrderComponents(in []OrderComponent) []client.OrderComponent {
+	out := make([]client.OrderComponent, len(in))
+	for i, c := range in {
+		out[i] = client.OrderComponent{
+			PalletCount:  c.PalletCount,
+			PoundsWeight: c.PoundsWeight,
+			Dimensions:   c.Dimensions,
+		}
+	}
+	return out
+}
+
+func (q *QuoteRequest) toClient() client.QuoteRequest {
+	return client.QuoteRequest{
+		PickupAddress:      q.PickupAddress,
+		DeliveryAddress:    q.DeliveryAddress,
+		OrderComponents:    toClientOrderComponents(q.OrderComponents),
+		RequiredPickupDate: q.RequiredPickupDate,
+	}
+}
+
+func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
+	return client.CreateShipmentRequest{
+		PickupAddress:      s.PickupAddress,
+		DeliveryAddress:    s.DeliveryAddress,
+		Description:        s.Description,
+		OrderComponents:    toClientOrderComponents(s.OrderComponents),
+		QuoteId:            s.QuoteID,
+		PoNumber:           s.PoNumber,
+		RefNumber:          s.RefNumber,
+		RequiredPickupDate: s.RequiredPickupDate,
+		RequiredDeliveryBy: s.RequiredDeliveryBy,
+	}
+}
