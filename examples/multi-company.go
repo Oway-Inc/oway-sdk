@@ -1,4 +1,7 @@
-// Multi-company integration example
+// Multi-company integration example.
+//
+// A single SDK client serves several companies by attaching a per-request
+// API key to context with WithCompanyAPIKey.
 package main
 
 import (
@@ -10,26 +13,28 @@ import (
 )
 
 func main() {
-	// M2M credentials from Sales Engineering
-	client, _ := oway.New(oway.Config{
+	client, err := oway.New(oway.Config{
 		ClientID:     os.Getenv("OWAY_M2M_CLIENT_ID"),
 		ClientSecret: os.Getenv("OWAY_M2M_CLIENT_SECRET"),
-		APIKey:       "oway_sk_default", // Optional default
+		// Optional default; per-request keys below override it.
+		APIKey: "oway_sk_default",
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	ctx := context.Background()
-
-	// Per-company API keys
 	keys := map[string]string{
-		"acme": "oway_sk_acme_123",
+		"acme":    "oway_sk_acme_123",
 		"widgets": "oway_sk_widgets_456",
 	}
 
-	// Quote for ACME (uses their API key)
-	quoteA, _ := client.RequestQuoteForCompany(ctx, &oway.QuoteRequest{}, keys["acme"])
-	fmt.Printf("ACME: %s\n", quoteA.Id)
-
-	// Quote for Widgets (uses their API key)
-	quoteB, _ := client.RequestQuoteForCompany(ctx, &oway.QuoteRequest{}, keys["widgets"])
-	fmt.Printf("Widgets: %s\n", quoteB.Id)
+	for tenant, apiKey := range keys {
+		ctx := oway.WithCompanyAPIKey(context.Background(), apiKey)
+		quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{ /* ... */ })
+		if err != nil {
+			fmt.Printf("%s: %v\n", tenant, err)
+			continue
+		}
+		fmt.Printf("%s: %s\n", tenant, *quote.Id)
+	}
 }

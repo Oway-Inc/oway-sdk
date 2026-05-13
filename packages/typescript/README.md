@@ -184,26 +184,38 @@ const oway = new Oway({
 
 ## Error Handling
 
+Every method throws `OwayError` on a non-2xx response. The error carries the parsed RFC 9457 `ProblemDetail`, the server-issued request id, and per-field validation failures when present.
+
 ```typescript
 import { OwayError } from '@oway/sdk';
 
 try {
-  const quote = await oway.quotes.create({ ... });
+  const shipment = await oway.shipments.create({ ... });
 } catch (error) {
   if (error instanceof OwayError) {
-    console.error({
-      message: error.message,
-      code: error.code,             // Error code
-      statusCode: error.statusCode, // HTTP status
-      requestId: error.requestId,   // For support
-    });
-
-    if (error.isRetryable()) {
-      // Retry logic - SDK retries automatically up to maxRetries
+    // Programmatic branching:
+    switch (error.code) {
+      case 'no_coverage':         /* lane not in coverage */ break;
+      case 'account_restriction': /* service not enabled */ break;
+      case 'daily_trip_limit':    /* trip cap hit */         break;
     }
+
+    // Per-field validation failures (when present):
+    for (const v of error.violations) {
+      console.error(`  ${v.field}: ${v.reason}`);
+    }
+
+    console.error({
+      message: error.message,         // server detail or title
+      statusCode: error.statusCode,   // HTTP status
+      code: error.code,               // machine-readable reason
+      requestId: error.requestId,     // quote when reporting an issue
+    });
   }
 }
 ```
+
+`OwayError.isRetryable()` is true for 408, 429, 500, 502, 503, and 504. The SDK retries those automatically with full-jitter exponential backoff (capped at 30 s); the helper is exposed so callers can decide how to surface failures.
 
 ## TypeScript Support
 

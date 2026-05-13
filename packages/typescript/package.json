@@ -1,6 +1,6 @@
 {
   "name": "@oway/sdk",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Official Oway JavaScript/TypeScript SDK",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -46,10 +46,14 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
     "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^10.3.0",
     "openapi-typescript": "^7.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
+    "typescript-eslint": "^8.59.3",
     "vitest": "^1.2.0"
   },
   "engines": {

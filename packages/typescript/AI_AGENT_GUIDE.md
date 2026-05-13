@@ -156,8 +156,16 @@ try {
   await oway.quotes.create(params);
 } catch (error) {
   if (error instanceof OwayError) {
-    console.log(error.code, error.requestId);
-    // AI can parse structured errors
+    // Machine-readable code from ProblemDetail.reason
+    console.log(error.code);
+
+    // Per-field validation failures, when present
+    for (const v of error.violations) {
+      console.log(`${v.field}: ${v.reason}`);
+    }
+
+    // Quote this when reporting an issue
+    console.log(error.requestId);
   }
 }
 ```

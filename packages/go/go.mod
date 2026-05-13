@@ -1,6 +1,6 @@
 module github.com/Oway-Inc/oway-sdk/packages/go
 
-go 1.24.0
+go 1.22
 
 require github.com/oapi-codegen/runtime v1.1.1
 

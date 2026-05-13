@@ -80,6 +80,145 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/carrier/shipments/{identifier}/pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Confirm shipment pickup
+         * @description Confirm that the shipment has been picked up. Transitions the order to IN_TRANSIT status.
+         *
+         *     **Required fields:** `pickupTime` is required. All other fields (location, coordinates, signedBy, notes) are optional but recommended.
+         *
+         *     **State requirement:** The shipment must be in ACCEPTED status.
+         */
+        put: operations["confirmPickup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Confirm shipment delivery
+         * @description Confirm that the shipment has been delivered. Transitions the order to DELIVERED status and initiates carrier payout.
+         *
+         *     **Required fields:** `deliveryTime` is required. Proof of delivery fields (`signedBy`, `signatureImageUrl`, `proofOfDeliveryUrl`) are optional but recommended.
+         *
+         *     **State requirement:** The shipment must be in ACCEPTED or PICKED_UP status.
+         */
+        put: operations["confirmDelivery"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/offers/{identifier}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Reject an offer
+         * @description Reject a pending offer with a reason.
+         *
+         *     **Required fields:** `reason` (enum) is required. `reasonText` is optional but recommended for context.
+         *
+         *     **Reason values:** `capacity_unavailable`, `outside_service_area`, `rate_not_acceptable`, `timeline_not_feasible`, `other`
+         *
+         *     **State requirement:** The offer must be in PENDING status.
+         */
+        put: operations["rejectOffer"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/offers/{identifier}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Accept an offer
+         * @description Accept a pending offer. Once accepted, the offer becomes a shipment and is accessible via `/shipments` endpoints.
+         *
+         *     **Optional fields:** All request body fields are optional. You can provide driver details and a carrier reference number now, or update them later.
+         *
+         *     **State requirement:** The offer must be in PENDING status. Returns 409 if the offer has already been accepted, rejected, or expired.
+         */
+        put: operations["acceptOffer"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/bundles/{bundleId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reject a bundle */
+        put: operations["rejectBundle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/bundles/{bundleId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Accept a bundle
+         * @description Accept a bundle of offers. You can optionally exclude specific offers from the bundle using `offerIdsToExclude`.
+         *
+         *     Carrier tracking data (reference number, driver info) provided in the request body is applied to all accepted offers in the bundle.
+         *
+         *     **State requirement:** The bundle must be in OPEN status.
+         */
+        put: operations["acceptBundle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/shipper/shipment": {
         parameters: {
             query?: never;
@@ -130,7 +269,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/carrier/{carrierId}/trips": {
+    "/v1/carrier/shipments/{identifier}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request upload URL for signature or proof of delivery
+         * @description Returns a pre-signed URL for uploading a file directly to storage. Use HTTP PUT to upload the file to the returned URL with the specified content type.
+         *
+         *     **Document types:** `SIGNATURE` (signature image), `PROOF_OF_DELIVERY` (POD document)
+         *
+         *     **Content types:** `image/png`, `image/jpeg`, `application/pdf`
+         *
+         *     **Upload flow:**
+         *     1. Call this endpoint to get a pre-signed URL
+         *     2. PUT your file to the returned `uploadUrl` with `Content-Type` header matching `contentType`
+         *     3. URL expires in 15 minutes
+         */
+        post: operations["requestUploadUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit GPS location for a shipment
+         * @description Submit a GPS location update tied to a specific shipment.
+         *
+         *     **State requirement:** The shipment must be in ACCEPTED or PICKED_UP status.
+         */
+        post: operations["submitLocation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/exception": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a shipment exception or delay
+         * @description Report an exception such as weather delay, vehicle breakdown, or address issue.
+         *
+         *     **State requirement:** The shipment must be in ACCEPTED or PICKED_UP status.
+         */
+        post: operations["reportException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/coverage/trips": {
         parameters: {
             query?: never;
             header?: never;
@@ -144,26 +356,6 @@ export interface paths {
          * @description Submit trip data for carrier vehicles. Each trip must include vehicle ID, trip number, and legs with start/end coordinates and arrival windows.
          */
         post: operations["addTrips"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/carrier/{carrierId}/gps-data": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Submit GPS data
-         * @description Submit GPS location data for carrier vehicles. Each data point must include vehicle ID, coordinates, timestamp, heading, and speed.
-         */
-        post: operations["addGpsData"];
         delete?: never;
         options?: never;
         head?: never;
@@ -305,7 +497,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/carrier/{carrierId}": {
+    "/v1/carrier/shipments": {
         parameters: {
             query?: never;
             header?: never;
@@ -313,10 +505,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get carrier API configuration
-         * @description Retrieves the API configuration for a carrier including company name, API version, and available endpoints.
+         * List shipments
+         * @description Retrieves active and completed shipments (accepted offers) for this carrier. Filter by time range.
          */
-        get: operations["getCarrierApiConfig"];
+        get: operations["getShipments"];
         put?: never;
         post?: never;
         delete?: never;
@@ -325,7 +517,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/carrier/{carrierId}/jobs": {
+    "/v1/carrier/shipments/{identifier}": {
         parameters: {
             query?: never;
             header?: never;
@@ -333,10 +525,135 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get carrier jobs
-         * @description Retrieves jobs (offers with order data) for a carrier. Filter by active status and time range.
+         * Get shipment by identifier
+         * @description Retrieves shipment details. The identifier can be an offerId, orderNumber, or carrierReference.
          */
-        get: operations["getJobs"];
+        get: operations["getShipment_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/tracking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get shipment tracking history
+         * @description Retrieves GPS location history for a specific shipment.
+         */
+        get: operations["getShipmentTracking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/document/{documentType}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get shipment document
+         * @description Retrieves a document for a shipment. Returns a pre-signed download URL.
+         *
+         *     **Supported document types:**
+         *     - `BILL_OF_LADING` — Bill of lading (driver version)
+         *     - `SHIPPING_LABEL` — Shipping label
+         */
+        get: operations["getShipmentDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List offers
+         * @description Retrieves pending offers for this carrier. These are offers that have not yet been accepted or rejected.
+         *
+         *     **Note:** Accepted offers appear under `/shipments` instead.
+         */
+        get: operations["getOffers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/offers/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get offer by identifier
+         * @description Retrieves offer details. The identifier can be an offerId, orderNumber, or carrierReference.
+         */
+        get: operations["getOffer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/bundles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List bundles for this carrier
+         * @description Retrieves bundles for this carrier. A bundle is a group of related offers presented together.
+         *
+         *     **Bundle statuses:** OPEN (awaiting response), ACCEPTED, DECLINED, SUBSET_ACCEPTED (some offers accepted), EXPIRED
+         */
+        get: operations["getBundles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/bundles/{bundleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single bundle by ID */
+        get: operations["getBundle"];
         put?: never;
         post?: never;
         delete?: never;
@@ -375,6 +692,21 @@ export interface components {
             /**
              * @description A machine-readable reason code for programmatic handling
              * @example pickup_not_covered
+             */
+            reason?: string;
+            /** @description Per-field validation failures when a request is rejected for one or more invalid fields. Present only on validation-style errors. */
+            violations?: components["schemas"]["Violation"][];
+        };
+        /** @description A single field-level validation failure. */
+        Violation: {
+            /**
+             * @description Field path that failed validation
+             * @example orderComponents[0].dimensions
+             */
+            field?: string;
+            /**
+             * @description Human-readable reason the field is invalid
+             * @example Component dimensions of 77x71x86 are invalid (pallets must be less than 95x95x96, and either length or width may exceed 60 but not both)
              */
             reason?: string;
         };
@@ -424,6 +756,621 @@ export interface components {
              * @example 2025-02-27T22:51:49.865Z
              */
             updatedAt?: string;
+        };
+        /** @description GPS coordinates for a shipment event */
+        EventCoordinates: {
+            /**
+             * Format: double
+             * @description Latitude in decimal degrees
+             * @example 33.7701
+             */
+            latitude?: number;
+            /**
+             * Format: double
+             * @description Longitude in decimal degrees
+             * @example -118.1937
+             */
+            longitude?: number;
+        };
+        /** @description Location where a shipment event occurred */
+        EventLocation: {
+            /**
+             * @description Primary street address
+             * @example 1531 Junipero Avenue
+             */
+            address1?: string;
+            /**
+             * @description Secondary address line (suite, unit, etc.)
+             * @example Dock 5
+             */
+            address2?: string;
+            /**
+             * @description City name
+             * @example Long Beach
+             */
+            city?: string;
+            /**
+             * @description Two-letter state abbreviation
+             * @example CA
+             */
+            state?: string;
+            /**
+             * @description 5-digit ZIP code
+             * @example 90804
+             */
+            zip_code?: string;
+            /**
+             * @description Country code
+             * @example US
+             */
+            country?: string;
+        };
+        /** @description Request body for confirming shipment pickup */
+        PickupConfirmationRequest: {
+            /**
+             * Format: date-time
+             * @description Time the shipment was picked up
+             */
+            pickup_time: string;
+            location?: components["schemas"]["EventLocation"];
+            coordinates?: components["schemas"]["EventCoordinates"];
+            /** @description Name of the driver who performed the pickup */
+            driver_name?: string;
+            /** @description Name of the person who signed at pickup */
+            signed_by?: string;
+            /** @description Additional notes about the pickup */
+            notes?: string;
+        };
+        /** @description Address information for pickup or delivery locations */
+        CarrierAddress: {
+            /**
+             * @description Name of the location or business
+             * @example Fairgrounds Distribution Center
+             */
+            name: string;
+            /**
+             * @description Primary street address
+             * @example 1531 Junipero Avenue
+             */
+            address1: string;
+            /**
+             * @description Secondary address line (suite, unit, etc.)
+             * @example Dock 5
+             */
+            address2?: string;
+            /**
+             * @description City name
+             * @example Long Beach
+             */
+            city: string;
+            /**
+             * @description Two-letter state abbreviation
+             * @example CA
+             */
+            state: string;
+            /**
+             * @description 5-digit ZIP code
+             * @example 90804
+             */
+            zip_code: string;
+            /**
+             * @description Contact phone number in E.164 format
+             * @example +18087857650
+             */
+            phone_number: string;
+            /**
+             * @description Name of the contact person at this location
+             * @example Mike Johnson
+             */
+            contact_person: string;
+            /**
+             * @description Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
+             * @example 10:00
+             */
+            open_time?: string;
+            /**
+             * @description Closing time for the location in 24-hour format (HH:mm). Defaults to 16:00 if not provided.
+             * @example 16:00
+             */
+            close_time?: string;
+            /**
+             * @description Additional notes or instructions for the driver
+             * @example Dock 3, enter from back of building
+             */
+            notes?: string;
+            /**
+             * @description Whether a liftgate is required at this location
+             * @example false
+             */
+            liftgate_required?: boolean;
+            /**
+             * @description Whether this is a limited access location (residential, construction site, etc.)
+             * @example false
+             */
+            limited_access?: boolean;
+            /**
+             * @description Whether an appointment is required for pickup/delivery
+             * @example true
+             */
+            appointment_required?: boolean;
+        };
+        /** @description Individual pallet/component details */
+        CarrierComponent: {
+            /**
+             * Format: int32
+             * @description Number of pallets in this component
+             * @example 1
+             */
+            pallet_count?: number;
+            /**
+             * Format: float
+             * @description Weight in pounds for this component
+             * @example 600
+             */
+            pounds_weight?: number;
+            /**
+             * @description Pallet dimensions [length, width, height] in inches
+             * @example [
+             *       48,
+             *       40,
+             *       60
+             *     ]
+             */
+            pallet_dimensions?: number[];
+            /**
+             * @description Freight class code
+             * @example 70
+             */
+            freight_class?: string;
+        };
+        /** @description Carrier shipment details (post-acceptance) */
+        CarrierShipment: {
+            /**
+             * @description Unique offer identifier
+             * @example 507f1f77bcf86cd799439012
+             */
+            id?: string;
+            /**
+             * @description Current status of the carrier offer
+             * @enum {string}
+             */
+            status?: "PENDING" | "ACCEPTED" | "PICKED_UP" | "DELIVERED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            /**
+             * @description Carrier's own tracking reference number
+             * @example CARRIER-TRK-789
+             */
+            carrier_reference?: string;
+            /** @description Reason for rejection (populated when status is REJECTED) */
+            rejection_reason?: string;
+            /** @description Free-text explanation for rejection */
+            rejection_reason_text?: string;
+            order?: components["schemas"]["Order"];
+            pickup?: components["schemas"]["CarrierAddress"];
+            delivery?: components["schemas"]["CarrierAddress"];
+            tracking?: components["schemas"]["CarrierTracking"];
+            payout?: components["schemas"]["Payout"];
+            assigned_driver?: components["schemas"]["Driver"];
+            pickup_confirmation?: components["schemas"]["PickupConfirmation"];
+            delivery_confirmation?: components["schemas"]["DeliveryConfirmation"];
+            /**
+             * @description PIN code for pickup verification
+             * @example 1234
+             */
+            pickup_pin?: string;
+            /**
+             * @description PIN code for delivery verification
+             * @example 5678
+             */
+            delivery_pin?: string;
+            /**
+             * Format: date-time
+             * @description Offer expiration time — must accept or reject before this time
+             * @example 2026-01-15T12:00:00Z
+             */
+            deadline?: string;
+            /**
+             * Format: date-time
+             * @description When this offer was created
+             * @example 2026-01-15T08:00:00Z
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description When this offer was last updated
+             * @example 2026-01-15T10:30:00Z
+             */
+            updated_at?: string;
+        };
+        /** @description Shipment tracking information */
+        CarrierTracking: {
+            /**
+             * @description Human-readable PRO number for the shipment (5-character alphanumeric)
+             * @example ZKYQ5
+             */
+            order_number?: string;
+            /**
+             * @description Current shipment status in the order lifecycle
+             * @example PICKED_UP
+             * @enum {string}
+             */
+            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            /**
+             * Format: date-time
+             * @description Actual pickup date/time (ISO 8601 format)
+             * @example 2024-12-23T10:30:00Z
+             */
+            actual_pickup_date?: string;
+            /**
+             * Format: date-time
+             * @description Actual delivery date/time (ISO 8601 format)
+             * @example 2024-12-25T14:00:00Z
+             */
+            actual_delivery_date?: string;
+            /**
+             * Format: date-time
+             * @description Estimated pickup date/time (ISO 8601 format)
+             * @example 2024-12-23T09:00:00Z
+             */
+            estimated_pickup_date?: string;
+            /**
+             * Format: date-time
+             * @description Estimated delivery date/time (ISO 8601 format)
+             * @example 2024-12-25T12:00:00Z
+             */
+            estimated_delivery_date?: string;
+        };
+        /** @description Carrier-reported delivery confirmation details */
+        DeliveryConfirmation: {
+            /**
+             * Format: date-time
+             * @description Actual delivery time
+             * @example 2026-01-15T14:30:00Z
+             */
+            delivery_time?: string;
+            /**
+             * @description Formatted delivery address
+             * @example 456 Market St, Oakland, CA 94607
+             */
+            address?: string;
+            /**
+             * Format: double
+             * @description GPS latitude at delivery
+             * @example 37.7749
+             */
+            latitude?: number;
+            /**
+             * Format: double
+             * @description GPS longitude at delivery
+             * @example -122.4194
+             */
+            longitude?: number;
+            /**
+             * @description Name of person who received the shipment
+             * @example Recipient Name
+             */
+            signed_by?: string;
+            /**
+             * @description URL to signature image
+             * @example https://storage.oway.io/signatures/sig-12345.png
+             */
+            signature_image_url?: string;
+            /**
+             * @description URL to proof of delivery document
+             * @example https://storage.oway.io/pod/pod-12345.pdf
+             */
+            proof_of_delivery_url?: string;
+            /**
+             * @description Additional notes about the delivery
+             * @example Delivered to front desk
+             */
+            notes?: string;
+            /**
+             * Format: date-time
+             * @description When this confirmation was recorded
+             * @example 2026-01-15T14:35:00Z
+             */
+            recorded_at?: string;
+        };
+        /** @description Assigned driver information */
+        Driver: {
+            /**
+             * @description Driver's full name
+             * @example John Smith
+             */
+            name?: string;
+            /**
+             * @description Driver's phone number in E.164 format (e.g., +15551234567)
+             * @example +15551234567
+             */
+            phone?: string;
+            /**
+             * @description Vehicle identifier assigned to this shipment
+             * @example TRUCK-42
+             */
+            vehicle_id?: string;
+        };
+        /** @description Order details visible to the carrier */
+        Order: {
+            /**
+             * @description Human-readable PRO number for the shipment (5-character alphanumeric)
+             * @example Y73Q0
+             */
+            order_number?: string;
+            /**
+             * @description Current shipment status in the order lifecycle
+             * @example CONFIRMED
+             * @enum {string}
+             */
+            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            /**
+             * @description Cargo description
+             * @example Electronics - 2 pallets shrink-wrapped
+             */
+            description?: string;
+            /**
+             * Format: int32
+             * @description Total number of pallets
+             * @example 2
+             */
+            total_pallet_count?: number;
+            /**
+             * Format: float
+             * @description Total weight in pounds
+             * @example 1200
+             */
+            total_pounds_weight?: number;
+            /**
+             * @description Shipper's purchase order number
+             * @example PO-2026-4521
+             */
+            po_number?: string;
+            /**
+             * @description Shipper's reference number
+             * @example REF-8834
+             */
+            ref_number?: string;
+            /** @description Individual pallet/component details */
+            components?: components["schemas"]["CarrierComponent"][];
+            /**
+             * Format: date-time
+             * @description When the order was created
+             * @example 2026-01-15T08:00:00Z
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description When the order was last updated
+             * @example 2026-01-15T10:30:00Z
+             */
+            updated_at?: string;
+        };
+        /** @description Carrier payout information */
+        Payout: {
+            /**
+             * Format: int32
+             * @description Total payout amount in cents (USD). Includes base payout plus all additional charges.
+             * @example 125000
+             */
+            total_in_cents?: number;
+        };
+        /** @description Carrier-reported pickup confirmation details */
+        PickupConfirmation: {
+            /**
+             * Format: date-time
+             * @description Actual pickup time
+             * @example 2026-01-15T10:30:00Z
+             */
+            pickup_time?: string;
+            /**
+             * @description Formatted pickup address
+             * @example 123 Main St, San Francisco, CA 94102
+             */
+            address?: string;
+            /**
+             * Format: double
+             * @description GPS latitude at pickup
+             * @example 37.7749
+             */
+            latitude?: number;
+            /**
+             * Format: double
+             * @description GPS longitude at pickup
+             * @example -122.4194
+             */
+            longitude?: number;
+            /**
+             * @description Name of driver who picked up
+             * @example John Smith
+             */
+            driver_name?: string;
+            /**
+             * @description Name of person who handed over the shipment
+             * @example Jane Doe
+             */
+            signed_by?: string;
+            /**
+             * @description Additional notes about the pickup
+             * @example Picked up from dock 3
+             */
+            notes?: string;
+            /**
+             * Format: date-time
+             * @description When this confirmation was recorded
+             * @example 2026-01-15T10:35:00Z
+             */
+            recorded_at?: string;
+        };
+        /** @description Request body for confirming shipment delivery */
+        DeliveryConfirmationRequest: {
+            /**
+             * Format: date-time
+             * @description Time the shipment was delivered
+             */
+            delivery_time: string;
+            location?: components["schemas"]["EventLocation"];
+            coordinates?: components["schemas"]["EventCoordinates"];
+            /** @description Name of the person who signed for the delivery */
+            signed_by?: string;
+            /** @description URL to the signature image */
+            signature_image_url?: string;
+            /** @description URL to the proof of delivery document */
+            proof_of_delivery_url?: string;
+            /** @description Additional notes about the delivery */
+            notes?: string;
+        };
+        /** @description Request body for rejecting an offer */
+        RejectOfferRequest: {
+            /**
+             * @description Reason for rejecting the offer
+             * @enum {string}
+             */
+            reason: "capacity_unavailable" | "outside_service_area" | "rate_not_acceptable" | "timeline_not_feasible" | "other";
+            /** @description Additional free-text explanation for the rejection */
+            reason_text?: string;
+        };
+        /** @description Carrier offer details */
+        Offer: {
+            /**
+             * @description Unique offer identifier
+             * @example 507f1f77bcf86cd799439012
+             */
+            id?: string;
+            /**
+             * @description Current status of the carrier offer
+             * @enum {string}
+             */
+            status?: "PENDING" | "ACCEPTED" | "PICKED_UP" | "DELIVERED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+            /**
+             * @description Carrier's own tracking reference number
+             * @example CARRIER-TRK-789
+             */
+            carrier_reference?: string;
+            /** @description Reason for rejection (populated when status is REJECTED) */
+            rejection_reason?: string;
+            /** @description Free-text explanation for rejection */
+            rejection_reason_text?: string;
+            order?: components["schemas"]["Order"];
+            pickup?: components["schemas"]["CarrierAddress"];
+            delivery?: components["schemas"]["CarrierAddress"];
+            tracking?: components["schemas"]["CarrierTracking"];
+            payout?: components["schemas"]["Payout"];
+            assigned_driver?: components["schemas"]["Driver"];
+            pickup_confirmation?: components["schemas"]["PickupConfirmation"];
+            delivery_confirmation?: components["schemas"]["DeliveryConfirmation"];
+            /**
+             * @description PIN code for pickup verification
+             * @example 1234
+             */
+            pickup_pin?: string;
+            /**
+             * @description PIN code for delivery verification
+             * @example 5678
+             */
+            delivery_pin?: string;
+            /**
+             * Format: date-time
+             * @description Offer expiration time — must accept or reject before this time
+             * @example 2026-01-15T12:00:00Z
+             */
+            deadline?: string;
+            /**
+             * Format: date-time
+             * @description When this offer was created
+             * @example 2026-01-15T08:00:00Z
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description When this offer was last updated
+             * @example 2026-01-15T10:30:00Z
+             */
+            updated_at?: string;
+        };
+        /** @description Request body for accepting an offer */
+        AcceptOfferRequest: {
+            /**
+             * Format: date-time
+             * @description Estimated time of pickup
+             * @example 2026-01-16T14:00:00Z
+             */
+            estimated_pickup_time?: string;
+            /**
+             * @description Carrier's internal reference number for this shipment
+             * @example CARRIER-TRK-789
+             */
+            carrier_reference?: string;
+            /**
+             * @description Name of the assigned driver
+             * @example John Smith
+             */
+            driver_name?: string;
+            /**
+             * @description Phone number of the assigned driver
+             * @example +15551234567
+             */
+            driver_phone?: string;
+            /**
+             * @description Identifier of the vehicle assigned to this shipment
+             * @example TRUCK-42
+             */
+            vehicle_id?: string;
+        };
+        /** @description A bundle of offers presented to a carrier */
+        Bundle: {
+            /**
+             * @description Unique bundle identifier
+             * @example 507f1f77bcf86cd799439012
+             */
+            id?: string;
+            /**
+             * @description Current bundle status
+             * @enum {string}
+             */
+            status?: "OPEN" | "EXPIRED" | "DECLINED" | "SUBSET_ACCEPTED" | "ACCEPTED";
+            /** @description List of offers in this bundle with full details */
+            offers?: components["schemas"]["Offer"][];
+            /**
+             * Format: date-time
+             * @description When this bundle was created
+             * @example 2026-01-15T08:00:00Z
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description When this bundle was last updated
+             * @example 2026-01-15T10:30:00Z
+             */
+            updated_at?: string;
+        };
+        /** @description Request body for accepting a bundle, optionally excluding specific offers */
+        AcceptBundleRequest: {
+            /**
+             * @description List of offer IDs to exclude from the bundle acceptance
+             * @example [
+             *       "507f1f77bcf86cd799439011"
+             *     ]
+             */
+            offer_ids_to_exclude?: string[];
+            /**
+             * @description Carrier's internal reference number for this bundle
+             * @example CARRIER-BATCH-001
+             */
+            carrier_reference?: string;
+            /**
+             * @description Name of the assigned driver
+             * @example John Smith
+             */
+            driver_name?: string;
+            /**
+             * @description Phone number of the assigned driver
+             * @example +1-555-0100
+             */
+            driver_phone?: string;
+            /**
+             * @description Identifier of the vehicle assigned to this bundle
+             * @example TRUCK-42
+             */
+            vehicle_id?: string;
         };
         /** @description Address information for pickup or delivery locations */
         Address: {
@@ -497,6 +1444,11 @@ export interface components {
              * @example true
              */
             appointmentRequired?: boolean;
+            /**
+             * @description Whether a call-ahead notification is required before pickup/delivery. When true, the carrier will call the contact person before arriving at the location.
+             * @example true
+             */
+            callAheadRequired?: boolean;
         };
         /** @description Request to create a new shipment */
         CreateShipmentRequest: {
@@ -537,6 +1489,27 @@ export interface components {
              */
             requiredDeliveryBy?: string;
         };
+        /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
+        Dimensions: {
+            /**
+             * Format: int32
+             * @description Length in inches
+             * @example 48
+             */
+            length?: number;
+            /**
+             * Format: int32
+             * @description Width in inches
+             * @example 48
+             */
+            width?: number;
+            /**
+             * Format: int32
+             * @description Height in inches
+             * @example 72
+             */
+            height?: number;
+        };
         /** @description A cargo component (pallet group) in a shipment */
         OrderComponent: {
             /**
@@ -552,14 +1525,16 @@ export interface components {
              */
             poundsWeight: number;
             /**
-             * @description Pallet dimensions as [height, length, width] in inches
+             * @deprecated
+             * @description Pallet dimensions as [height, length, width] in inches. Deprecated: prefer the 'dimensions' object. Optional: if both 'palletDimensions' and 'dimensions' are omitted, the API defaults to 40 x 48 x 60 in. (length x width x height).
              * @example [
+             *       72,
              *       48,
-             *       40,
              *       48
              *     ]
              */
-            palletDimensions: number[];
+            palletDimensions?: number[];
+            dimensions?: components["schemas"]["Dimensions"];
         };
         /** @description Request to generate a shipping quote. Quotes are valid for 2 days from creation. */
         QuoteRequest: {
@@ -593,72 +1568,233 @@ export interface components {
              * @example 2024-12-20T15:30:00Z
              */
             quoteExpirationTime?: string;
-        };
-        TripLeg: {
-            /** Format: double */
-            startLat?: number;
-            /** Format: double */
-            startLong?: number;
-            /** Format: date-time */
-            startTime?: string;
-            /** Format: double */
-            endLat?: number;
-            /** Format: double */
-            endLong?: number;
-            /** Format: date-time */
-            arrivalWindowStart?: string;
-            /** Format: date-time */
-            arrivalWindowEnd?: string;
-            availableForOffers?: boolean;
-            /** Format: int32 */
-            estDriveTimeMinutes?: number;
-            /** Format: int32 */
-            stopNumber?: number;
-        };
-        TripRequest: {
-            id?: string;
-            carrierId?: string;
-            vehicleId?: string;
-            tripNo?: string;
-            legs?: components["schemas"]["TripLeg"][];
-        };
-        /** @description GPS location data point for a vehicle */
-        GpsData: {
             /**
-             * @description Unique identifier for the vehicle
-             * @example TRUCK-001
+             * Format: int32
+             * @description Number of business days to deliver the shipment after pickup. Pickup day is excluded; weekends are not counted. May be null when the ETA cannot be computed.
+             * @example 2
              */
-            vehicleId: string;
+            transitDays?: number | null;
             /**
              * Format: date-time
-             * @description Timestamp of the GPS reading (ISO 8601 format). Must not be in the future.
-             * @example 2025-02-20T17:33:15Z
+             * @description Estimated delivery date and time (ISO 8601 format, UTC). May be null when the ETA cannot be computed.
+             * @example 2024-12-22T15:30:00Z
              */
-            timestamp: string;
+            estimatedDeliveryDate?: string | null;
+        };
+        /** @description Request a pre-signed URL to upload a file (signature image or proof of delivery) */
+        UploadUrlRequest: {
+            /**
+             * @description Type of document being uploaded
+             * @example SIGNATURE
+             * @enum {string}
+             */
+            document_type: "SIGNATURE" | "PROOF_OF_DELIVERY";
+            /**
+             * @description Content type of the file
+             * @example image/png
+             * @enum {string}
+             */
+            content_type: "image/png" | "image/jpeg" | "application/pdf";
+            /**
+             * @description Original filename
+             * @example signature-Y73Q0.png
+             */
+            file_name?: string;
+        };
+        /** @description Pre-signed URL for uploading a file directly to storage */
+        UploadUrlResponse: {
+            /**
+             * @description Document ID — use this to reference the uploaded file
+             * @example a1b2c3d4-e5f6-7890-abcd-ef1234567890
+             */
+            document_id?: string;
+            /**
+             * @description Pre-signed PUT URL — upload your file directly to this URL using HTTP PUT with the specified content type
+             * @example https://s3.amazonaws.com/oway-docs/...
+             */
+            upload_url?: string;
+            /**
+             * @description Content type to use in the PUT request
+             * @example image/png
+             */
+            content_type?: string;
+            /**
+             * Format: date-time
+             * @description URL expires at this time — upload before then
+             * @example 2026-01-15T11:00:00Z
+             */
+            expires_at?: string;
+        };
+        /** @description Real-time location update for a shipment in transit */
+        OfferLocationUpdate: {
             /**
              * Format: double
-             * @description Latitude coordinate
-             * @example 33.787363
+             * @description Latitude in decimal degrees
+             * @example 33.7701
              */
             latitude: number;
             /**
              * Format: double
-             * @description Longitude coordinate
-             * @example -118.163715
+             * @description Longitude in decimal degrees
+             * @example -118.1937
              */
             longitude: number;
             /**
              * Format: int32
-             * @description Heading in degrees (0-359, where 0 is North)
+             * @description Heading in degrees (0-359, where 0 is north; -1 for unknown)
              * @example 270
              */
-            heading: number;
+            heading?: number;
             /**
              * Format: int32
-             * @description Speed in km/h
+             * @description Speed in miles per hour
              * @example 65
              */
-            speed: number;
+            speed_mph?: number;
+            /**
+             * Format: date-time
+             * @description Timestamp of this location reading
+             */
+            timestamp: string;
+        };
+        /** @description Acknowledgment of a location update */
+        LocationAcknowledgment: {
+            /**
+             * @description Whether the location update was recorded
+             * @example true
+             */
+            recorded?: boolean;
+            /**
+             * @description Human-readable order number
+             * @example Y73Q0
+             */
+            order_number?: string;
+        };
+        /** @description Request body for reporting a shipment exception */
+        ExceptionReportRequest: {
+            /**
+             * @description Type of exception that occurred
+             * @enum {string}
+             */
+            exception_type: "no_capacity" | "wrong_equipment" | "load_not_ready" | "failed_pickup" | "truck_breakdown" | "driver_hos_expired" | "damage_upon_receipt" | "damage_in_transit" | "damage_at_delivery" | "weather_delay" | "traffic_delay" | "address_incorrect" | "recipient_unavailable" | "customs_delay" | "delivery_attempted" | "other";
+            /**
+             * Format: date-time
+             * @description Time the exception occurred
+             */
+            exception_time: string;
+            /** @description Description of the exception */
+            description?: string;
+            /**
+             * Format: date-time
+             * @description Revised estimated delivery time following the exception
+             */
+            estimated_delivery_time?: string;
+            location?: components["schemas"]["EventLocation"];
+        };
+        /** @description Response after reporting a shipment exception */
+        ExceptionResponse: {
+            /**
+             * @description Human-readable order number
+             * @example Y73Q0
+             */
+            order_number?: string;
+            /**
+             * @description Whether the exception was successfully recorded
+             * @example true
+             */
+            exception_recorded?: boolean;
+            /**
+             * @description Whether notifications were sent to relevant parties (reserved for future use)
+             * @example false
+             */
+            notifications_sent?: boolean;
+        };
+        /** @description A single leg of a trip */
+        CarrierTripLeg: {
+            /**
+             * Format: double
+             * @description Start latitude
+             * @example 33.787363
+             */
+            start_lat?: number;
+            /**
+             * Format: double
+             * @description Start longitude
+             * @example -118.163715
+             */
+            start_long?: number;
+            /**
+             * Format: date-time
+             * @description Departure time (ISO 8601 format)
+             * @example 2025-02-20T08:00:00Z
+             */
+            start_time?: string;
+            /**
+             * Format: double
+             * @description End latitude
+             * @example 34.052235
+             */
+            end_lat?: number;
+            /**
+             * Format: double
+             * @description End longitude
+             * @example -118.243683
+             */
+            end_long?: number;
+            /**
+             * Format: date-time
+             * @description Earliest arrival time (ISO 8601 format)
+             * @example 2025-02-20T12:00:00Z
+             */
+            arrival_window_start?: string;
+            /**
+             * Format: date-time
+             * @description Latest arrival time (ISO 8601 format)
+             * @example 2025-02-20T16:00:00Z
+             */
+            arrival_window_end?: string;
+            /**
+             * @description Whether the vehicle is available for offers on this leg
+             * @example true
+             */
+            available_for_offers?: boolean;
+            /**
+             * Format: int32
+             * @description Estimated drive time in minutes
+             * @example 240
+             */
+            est_drive_time_minutes?: number;
+            /**
+             * Format: int32
+             * @description Stop sequence number (0-based)
+             * @example 0
+             */
+            stop_number?: number;
+        };
+        /** @description Trip data for a carrier vehicle */
+        CarrierTripRequest: {
+            /**
+             * @description Trip identifier
+             * @example trip-001
+             */
+            id?: string;
+            /**
+             * @description Carrier identifier
+             * @example carrier-123
+             */
+            carrier_id?: string;
+            /**
+             * @description Vehicle identifier
+             * @example TRUCK-001
+             */
+            vehicle_id?: string;
+            /**
+             * @description Trip number
+             * @example TRIP-2026-100
+             */
+            trip_no?: string;
+            /** @description Ordered list of trip legs */
+            legs?: components["schemas"]["CarrierTripLeg"][];
         };
         /** @description Token request containing client credentials */
         TokenRequest: {
@@ -672,6 +1808,19 @@ export interface components {
              * @example secret_xyz789
              */
             clientSecret: string;
+        };
+        /** @description Error response for token requests */
+        TokenErrorResponse: {
+            /**
+             * @description Error code
+             * @example invalid_client
+             */
+            error?: string;
+            /**
+             * @description Human-readable error description
+             * @example Invalid client credentials
+             */
+            errorDescription?: string;
         };
         /** @description Successful token response */
         TokenResponse: {
@@ -691,19 +1840,6 @@ export interface components {
              * @example 86400
              */
             expiresIn?: number;
-        };
-        /** @description Error response for token requests */
-        TokenErrorResponse: {
-            /**
-             * @description Error code
-             * @example invalid_client
-             */
-            error?: string;
-            /**
-             * @description Human-readable error description
-             * @example Invalid client credentials
-             */
-            errorDescription?: string;
         };
         /** @description Shipment tracking information */
         Tracking: {
@@ -881,249 +2017,72 @@ export interface components {
              */
             downloadLink?: string;
         };
-        /** @description Carrier API configuration response */
-        CarrierApiConfigResponse: {
+        /** @description A single GPS tracking data point */
+        TrackingPoint: {
             /**
-             * @description Name of the carrier company
-             * @example ABC Logistics
+             * Format: double
+             * @description GPS latitude
+             * @example 37.7749
              */
-            companyName?: string;
+            latitude?: number;
             /**
-             * @description Whether the API is enabled for this carrier
-             * @example true
+             * Format: double
+             * @description GPS longitude
+             * @example -122.4194
              */
-            apiEnabled?: boolean;
+            longitude?: number;
             /**
-             * @description Current API version
-             * @example v0.2.1
+             * Format: int32
+             * @description Heading in degrees (0=North, 90=East, 180=South, 270=West)
+             * @example 180
              */
-            apiVersion?: string;
-            /** @description List of available API endpoints for this carrier */
-            availableEndpoints?: string[];
-        };
-        AddressAccessorialSnapshot: {
-            liftgateRequired?: boolean;
-            limitedAccess?: boolean;
-            residential?: boolean;
-            appointmentRequired?: boolean;
-            /** @enum {string} */
-            callAheadRequired?: "HALF_HOUR" | "ONE_HOUR" | "TWO_HOURS" | "START_OF_DAY" | "DAY_BEFORE";
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            values?: {
-                [key: string]: boolean;
-            };
-        };
-        AppliedPricingRule: {
-            ruleId?: string;
-            /** @enum {string} */
-            type?: "add_on_margin" | "max_margin_cap";
-            /** Format: double */
-            ruleValue?: number;
-            /** Format: int32 */
-            adjustmentInCents?: number;
-        };
-        ComponentDetails: {
-            /** Format: int32 */
-            palletCount?: number;
-            /** Format: float */
-            poundsWeight?: number;
-            palletDimensions?: number[];
-            freightClass?: string;
-        };
-        OfferWithOrderDataDTO: {
-            id?: string;
-            driverId?: string;
-            carrierId?: string;
-            /** Format: date-time */
-            deadline?: string;
-            orderId?: string;
-            state?: string;
-            /** Format: date-time */
-            decidedAt?: string;
-            /** Format: int32 */
-            centsPayOut?: number;
-            routeId?: string;
-            /** Format: double */
-            routeScore?: number;
-            /** @enum {string} */
-            matchingMethod?: "MANUAL" | "REGION" | "LANE" | "TERMINAL" | "TRIP";
-            pickupPin?: string;
-            deliveryPin?: string;
-            contacted?: boolean;
-            communicationExpired?: boolean;
-            /** Format: int32 */
-            carrierCounterOfferPriceInCents?: number;
-            emailThreadId?: string;
-            /** Format: int32 */
-            manualCentsPayoutOverride?: number;
-            additionalPayoutsInCents?: {
-                [key: string]: number;
-            };
-            /** Format: int32 */
-            totalPayoutInCents?: number;
-            realTimeVehicleLocationSnapshots?: components["schemas"]["VehicleLocationSnapshot"][];
-            tripFragmentMatches?: components["schemas"]["TripFragmentMatch"][];
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            orderData?: components["schemas"]["Order"];
-            pickupAddressData?: components["schemas"]["Address"];
-            dropoffAddressData?: components["schemas"]["Address"];
-            orderAccessorials?: components["schemas"]["OrderAccessorials"];
-        };
-        Order: {
-            id?: string;
-            customerId?: string;
-            companyId?: string;
-            additionalCustomerIds?: string[];
-            apiOrder?: boolean;
-            orderNumber?: string;
-            pickupAddressId?: string;
-            deliveryAddressId?: string;
-            logisticsId?: string;
-            /** Format: int32 */
-            totalPalletCount?: number;
-            /** Format: float */
-            totalPoundsWeight?: number;
-            description?: string;
-            ltlCode?: string;
-            quote?: components["schemas"]["Quote"];
-            billingAddressId?: string;
-            paid?: boolean;
-            /** Format: int32 */
-            amountDue?: number;
-            /** Format: date-time */
-            paidAt?: string;
-            paidBy?: string;
-            paymentMethod?: string;
-            paymentNotes?: string;
-            confirmed?: boolean;
-            state?: string;
-            /** @enum {string} */
-            cancellationReason?: "unspecified" | "customer_cancellation" | "shipment_entry_error" | "low_coverage" | "unacceptable_margin" | "expired" | "carrier_exception" | "shipper_exception" | "tonu" | "chargeback_other";
-            orderComponents?: components["schemas"]["ComponentDetails"][];
-            poNumber?: string;
-            refNumber?: string;
-            emailThreadId?: string;
-            /** Format: date-time */
-            decidedAt?: string;
-            /** Format: date-time */
-            paymentDueAt?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            searchMatches?: components["schemas"]["SearchMatch"][];
-            /** Format: double */
-            avgPoundsPerCubicFoot?: number;
-            /** Format: double */
-            totalCubicFeet?: number;
-            orderPreConfirmation?: boolean;
-            /** Format: int32 */
-            totalPriceInCents?: number;
-            /** Format: int32 */
-            totalPriceInCentsWithoutBrokerCharges?: number;
-        };
-        OrderAccessorials: {
-            pickupAccessorials?: components["schemas"]["AddressAccessorialSnapshot"];
-            deliveryAccessorials?: components["schemas"]["AddressAccessorialSnapshot"];
-            hazmat?: boolean;
-            reefer?: boolean;
-        };
-        Quote: {
-            id?: string;
-            customerId?: string;
-            shipperId?: string;
-            orderId?: string;
-            pickupZip?: string;
-            dropoffZip?: string;
-            /** Format: int32 */
-            numPallets?: number;
-            /** Format: float */
-            totalWeight?: number;
-            /** Format: int32 */
-            centsCharge?: number;
-            /** Format: date-time */
-            timeStamp?: string;
-            exposePrice?: boolean;
-            coverageDenialReason?: string;
-            /** Format: int32 */
-            suggestedCarrierPayoutCents?: number;
-            /** Format: double */
-            carrierProbability?: number;
-            /** Format: double */
-            shipperProbability?: number;
-            /** Format: double */
-            pickupScoreSurroundingNormalized?: number;
-            /** Format: double */
-            dropoffScoreSurroundingNormalized?: number;
-            /** Format: double */
-            originalPrice?: number;
-            /** Format: double */
-            miles?: number;
-            additionalChargesInCents?: {
-                [key: string]: number;
-            };
-            brokerChargesInCents?: {
-                [key: string]: number;
-            };
-            /** Format: int32 */
-            pricingRuleAdjustmentInCents?: number;
-            appliedPricingRules?: components["schemas"]["AppliedPricingRule"][];
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            /** Format: int32 */
-            totalCentsChargeWithBrokerCharges?: number;
-            /** @enum {string} */
-            status?: "open" | "display" | "price_locked" | "confirmed" | "rejected";
-            /** @enum {string} */
-            quoteSource?: "pricing_model" | "manual_entry" | "pricing_model_v2";
-        };
-        SearchMatch: {
-            field?: string;
-            value?: string;
-            /** Format: int32 */
-            startIndex?: number;
-            /** Format: int32 */
-            endIndex?: number;
-        };
-        TripDetour: {
-            /** Format: int32 */
-            totalDetourSeconds?: number;
-            /** Format: int32 */
-            pickupDetourSeconds?: number;
-            /** Format: int32 */
-            deliveryDetourSeconds?: number;
-        };
-        TripFragmentMatch: {
-            tripId?: string;
-            tripFragmentId?: string;
-            vehicleId?: string;
-            /** Format: int32 */
-            pickupStopNumber?: number;
-            /** Format: int32 */
-            deliveryStopNumber?: number;
-            tripDetour?: components["schemas"]["TripDetour"];
-        };
-        VehicleLocationSnapshot: {
-            id?: string;
-            vehicleId?: string;
-            vehicleName?: string;
-            location?: string;
-            /** Format: int32 */
             heading?: number;
-            /** Format: int32 */
-            speed?: number;
-            /** Format: date-time */
-            lastUpdated?: string;
-            /** Format: int32 */
-            numHexesAwayFromPickup?: number;
+            /**
+             * Format: int32
+             * @description Speed in miles per hour
+             * @example 65
+             */
+            speed_mph?: number;
+            /**
+             * Format: date-time
+             * @description When this position was recorded
+             * @example 2026-01-15T10:30:00Z
+             */
+            timestamp?: string;
+        };
+        /** @description Tracking history for a shipment */
+        TrackingResponse: {
+            /**
+             * @description Human-readable order number
+             * @example Y73Q0
+             */
+            order_number?: string;
+            /** @description Ordered list of GPS tracking points from pickup to current/delivery */
+            points?: components["schemas"]["TrackingPoint"][];
+            /**
+             * Format: date-time
+             * @description Timestamp of the most recent tracking point
+             * @example 2026-01-15T14:30:00Z
+             */
+            last_updated?: string;
+        };
+        /** @description Document download information */
+        CarrierDocumentResponse: {
+            /**
+             * @description Name of the document file
+             * @example bol-ZKYQ5.pdf
+             */
+            filename?: string;
+            /**
+             * @description MIME type of the document
+             * @example application/pdf
+             */
+            file_type?: string;
+            /**
+             * @description Pre-signed download URL (valid for limited time)
+             * @example https://s3.amazonaws.com/...
+             */
+            download_link?: string;
         };
     };
     responses: never;
@@ -1258,6 +2217,488 @@ export interface operations {
             };
             /** @description Shipment not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    confirmPickup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PickupConfirmationRequest"];
+            };
+        };
+        responses: {
+            /** @description Pickup confirmed, order status updated to PICKED_UP */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierShipment"];
+                };
+            };
+            /** @description Invalid request: pickupTime is required */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not in valid state for pickup confirmation */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    confirmDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryConfirmationRequest"];
+            };
+        };
+        responses: {
+            /** @description Delivery confirmed, order status updated to DELIVERED */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierShipment"];
+                };
+            };
+            /** @description Invalid request: deliveryTime is required */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not in valid state for delivery confirmation */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    rejectOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Offer identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description Offer rejected successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Offer"];
+                };
+            };
+            /** @description Invalid request: reason is required */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Offer not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Offer not in valid state for rejection */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    acceptOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Offer identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AcceptOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description Offer accepted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Offer"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Offer not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Offer not in valid state for acceptance */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    rejectBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Bundle ID
+                 * @example 507f1f77bcf86cd799439012
+                 */
+                bundleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bundle rejected successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bundle"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Bundle not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Bundle not in valid state for rejection */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    acceptBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Bundle ID
+                 * @example 507f1f77bcf86cd799439012
+                 */
+                bundleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AcceptBundleRequest"];
+            };
+        };
+        responses: {
+            /** @description Bundle accepted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bundle"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Bundle not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Bundle not in valid state for acceptance */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1426,32 +2867,35 @@ export interface operations {
             };
         };
     };
-    addTrips: {
+    requestUploadUrl: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description The unique identifier of the carrier */
-                carrierId: string;
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TripRequest"][];
+                "application/json": components["schemas"]["UploadUrlRequest"];
             };
         };
         responses: {
-            /** @description Trips accepted and processed; returns count of trips added */
+            /** @description Upload URL generated */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["UploadUrlResponse"];
                 };
             };
-            /** @description Invalid request: missing required fields or invalid trip data */
+            /** @description Invalid document type or content type */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1469,7 +2913,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Forbidden: API access is not enabled for this carrier */
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1478,7 +2922,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Carrier not found */
+            /** @description Shipment not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1498,23 +2942,188 @@ export interface operations {
             };
         };
     };
-    addGpsData: {
+    submitLocation: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description The unique identifier of the carrier */
-                carrierId: string;
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GpsData"][];
+                "application/json": components["schemas"]["OfferLocationUpdate"];
             };
         };
         responses: {
-            /** @description GPS data accepted and processed; returns count of data points added */
+            /** @description Location update acknowledged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationAcknowledgment"];
+                };
+            };
+            /** @description Invalid request: latitude, longitude, and timestamp are required */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not in valid state for location updates */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    reportException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExceptionReportRequest"];
+            };
+        };
+        responses: {
+            /** @description Exception recorded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExceptionResponse"];
+                };
+            };
+            /** @description Invalid request: exceptionType and exceptionTime are required */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not in valid state for exception reporting */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    addTrips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CarrierTripRequest"][];
+            };
+        };
+        responses: {
+            /** @description Trips accepted and processed; returns count of trips added */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1523,7 +3132,7 @@ export interface operations {
                     "application/json": number;
                 };
             };
-            /** @description Invalid request: malformed JSON, missing fields, or invalid data */
+            /** @description Invalid request: missing required fields or invalid trip data */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1930,25 +3539,273 @@ export interface operations {
             };
         };
     };
-    getCarrierApiConfig: {
+    getShipments: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description The unique identifier of the carrier */
-                carrierId: string;
+            query?: {
+                /** @description If true, only return currently active shipments (excludes delivered) */
+                activeOnly?: boolean;
+                /** @description Filter shipments after this time (ISO 8601 format) */
+                startTime?: string;
+                /** @description Filter shipments before this time (ISO 8601 format) */
+                endTime?: string;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Configuration retrieved successfully */
+            /** @description Shipments retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CarrierApiConfigResponse"];
+                    "application/json": components["schemas"]["CarrierShipment"][];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getShipment_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierShipment"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getShipmentTracking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tracking data retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingResponse"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getShipmentDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+                /** @description Document type */
+                documentType: "BILL_OF_LADING" | "SHIPPING_LABEL";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Document URL retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarrierDocumentResponse"];
+                };
+            };
+            /** @description Invalid document type */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment or document not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offers retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Offer"][];
                 };
             };
             /** @description Unauthorized: missing or invalid bearer token */
@@ -1989,32 +3846,28 @@ export interface operations {
             };
         };
     };
-    getJobs: {
+    getOffer: {
         parameters: {
-            query?: {
-                /** @description If true, only return currently active jobs */
-                activeOnly?: boolean;
-                /** @description Filter jobs created after this time (ISO 8601 format) */
-                startTime?: string;
-                /** @description Filter jobs created before this time (ISO 8601 format) */
-                endTime?: string;
-            };
+            query?: never;
             header?: never;
             path: {
-                /** @description The unique identifier of the carrier */
-                carrierId: string;
+                /**
+                 * @description Offer identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Jobs retrieved successfully */
+            /** @description Offer retrieved successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OfferWithOrderDataDTO"][];
+                    "application/json": components["schemas"]["Offer"];
                 };
             };
             /** @description Unauthorized: missing or invalid bearer token */
@@ -2026,7 +3879,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Forbidden: API access is not enabled for this carrier */
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2035,7 +3888,119 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Carrier not found */
+            /** @description Offer not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getBundles: {
+        parameters: {
+            query?: {
+                /** @description Filter bundles by status (OPEN, ACCEPTED, DECLINED, EXPIRED) */
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bundles retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bundle"][];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getBundle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Bundle ID
+                 * @example 507f1f77bcf86cd799439012
+                 */
+                bundleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bundle retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bundle"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key or API access not enabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Bundle not found */
             404: {
                 headers: {
                     [name: string]: unknown;

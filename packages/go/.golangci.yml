@@ -1,0 +1,39 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unused
+  settings:
+    revive:
+      rules:
+        - name: exported
+          severity: warning
+        - name: var-naming
+        - name: receiver-naming
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+  exclusions:
+    rules:
+      - path: client/generated\.go
+        linters:
+          - errcheck
+          - govet
+          - staticcheck
+          - unused
+          - revive
+          - misspell
+
+formatters:
+  enable:
+    - gofmt
