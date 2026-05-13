@@ -333,6 +333,9 @@ func decode[T any](status int, body []byte, httpResp *http.Response, json200 *T)
 // RequestQuote requests a shipping quote. Use WithCompanyAPIKey on the
 // context to override the default API key for multi-tenant calls.
 func (c *Client) RequestQuote(ctx context.Context, req *QuoteRequest) (*Quote, error) {
+	if req == nil {
+		return nil, errors.New("oway: QuoteRequest is required")
+	}
 	body := req.toClient()
 	var out *Quote
 	err := c.retry(ctx, func() error {
@@ -348,6 +351,9 @@ func (c *Client) RequestQuote(ctx context.Context, req *QuoteRequest) (*Quote, e
 
 // CreateShipment creates a shipment.
 func (c *Client) CreateShipment(ctx context.Context, req *ShipmentRequest) (*Shipment, error) {
+	if req == nil {
+		return nil, errors.New("oway: ShipmentRequest is required")
+	}
 	body := req.toClient()
 	var out *Shipment
 	err := c.retry(ctx, func() error {

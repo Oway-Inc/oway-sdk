@@ -319,6 +319,20 @@ func TestRequestID_IsUniquePerRequest(t *testing.T) {
 	}
 }
 
+func TestNilRequestReturnsError(t *testing.T) {
+	c, srv := newTestServer(t, okToken, func(http.ResponseWriter, *http.Request) {
+		t.Error("server should not be called when request is nil")
+	})
+	defer srv.Close()
+
+	if _, err := c.RequestQuote(context.Background(), nil); err == nil {
+		t.Error("expected error for nil QuoteRequest")
+	}
+	if _, err := c.CreateShipment(context.Background(), nil); err == nil {
+		t.Error("expected error for nil ShipmentRequest")
+	}
+}
+
 func TestAsError(t *testing.T) {
 	oe := &Error{StatusCode: 422, Code: "no_coverage"}
 	if got, ok := AsError(oe); !ok || got.Code != "no_coverage" {
