@@ -24,6 +24,23 @@ type Address = client.Address
 // Dimensions describes pallet dimensions in inches.
 type Dimensions = client.Dimensions
 
+// PalletDims returns a *Dimensions with all three sides populated. It exists
+// so callers can write Dimensions inline without needing to take the address
+// of each int32. Pass zero for any side that should be left unspecified.
+func PalletDims(length, width, height int32) *Dimensions {
+	d := &Dimensions{}
+	if length > 0 {
+		d.Length = &length
+	}
+	if width > 0 {
+		d.Width = &width
+	}
+	if height > 0 {
+		d.Height = &height
+	}
+	return d
+}
+
 // Document is a downloadable shipment document (BOL, label, invoice, POD).
 type Document = client.DocumentResponse
 

@@ -57,7 +57,7 @@ func main() {
 			ContactPerson: "Jane Smith",
 		},
 		OrderComponents: []oway.OrderComponent{
-			{PalletCount: 2, PoundsWeight: 1000, PalletDimensions: []int32{48, 40, 48}},
+			{PalletCount: 2, PoundsWeight: 1000, Dimensions: oway.PalletDims(48, 40, 48)},
 		},
 	})
 	if err != nil {
@@ -66,11 +66,11 @@ func main() {
 	fmt.Printf("Quote: $%.2f\n", float64(*quote.QuotedPriceInCents)/100)
 
 	shipment, err := client.CreateShipment(ctx, &oway.ShipmentRequest{
-		QuoteId:         quote.Id,
+		QuoteID:         quote.Id,
 		PickupAddress:   oway.Address{ /* ... */ },
 		DeliveryAddress: oway.Address{ /* ... */ },
 		OrderComponents: []oway.OrderComponent{
-			{PalletCount: 2, PoundsWeight: 1000, PalletDimensions: []int32{48, 40, 48}},
+			{PalletCount: 2, PoundsWeight: 1000, Dimensions: oway.PalletDims(48, 40, 48)},
 		},
 	})
 	if err != nil {

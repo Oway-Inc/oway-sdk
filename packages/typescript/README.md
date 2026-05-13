@@ -44,7 +44,7 @@ const quote = await oway.quotes.create({
     contactPerson: 'Jane Smith',
   },
   orderComponents: [
-    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+    { palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } },
   ],
 });
 
@@ -56,7 +56,7 @@ const shipment = await oway.shipments.create({
   pickupAddress: { /* same as above */ },
   deliveryAddress: { /* same as above */ },
   orderComponents: [
-    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+    { palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } },
   ],
   description: 'Electronics - fragile',
 });
@@ -96,7 +96,7 @@ You provide credentials once at initialization - token management is automatic.
 const quote = await oway.quotes.create({
   pickupAddress: { name, address1, city, state, zipCode, phoneNumber, contactPerson },
   deliveryAddress: { name, address1, city, state, zipCode, phoneNumber, contactPerson },
-  orderComponents: [{ palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] }],
+  orderComponents: [{ palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } }],
 });
 
 // Retrieve a quote by ID
@@ -111,7 +111,7 @@ const shipment = await oway.shipments.create({
   quoteId: quote.id,           // Optional: lock in quoted price
   pickupAddress: { ... },
   deliveryAddress: { ... },
-  orderComponents: [{ palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] }],
+  orderComponents: [{ palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } }],
   description: 'Palletized freight',
   poNumber: 'PO-2024-12345',  // Optional
 });

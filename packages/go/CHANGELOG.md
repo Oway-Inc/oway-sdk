@@ -2,6 +2,20 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.1]
+
+### Added
+
+- `oway.PalletDims(length, width, height int32) *Dimensions` helper. Lets callers construct dimensions inline without taking the address of each int32.
+
+### Fixed
+
+- README examples no longer show the deprecated `PalletDimensions []int32` field; they now use the modern `Dimensions` object via `oway.PalletDims`.
+
+### Note
+
+- The `packages/go/v0.2.0` tag was published to the Go module proxy against an older revision before the v0.2.0 work landed on main. Because proxy content is immutable per version, the actual v0.2.0 changes ship under this v0.2.1 tag.
+
 ## [0.2.0]
 
 ### Added
