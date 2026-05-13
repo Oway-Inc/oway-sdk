@@ -59,7 +59,7 @@ const quote = await oway.quotes.create({
     contactPerson: 'Jane Smith',
   },
   orderComponents: [
-    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+    { palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } },
   ],
 });
 
@@ -71,7 +71,7 @@ const shipment = await oway.shipments.create({
   pickupAddress: quote.pickupAddress,
   deliveryAddress: quote.deliveryAddress,
   orderComponents: [
-    { palletCount: 2, poundsWeight: 1000, palletDimensions: [48, 40, 48] },
+    { palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } },
   ],
   description: 'Electronics - fragile',
 });
@@ -151,7 +151,7 @@ func main() {
 			ContactPerson: "Jane Smith",
 		},
 		OrderComponents: []oway.OrderComponent{
-			{PalletCount: 2, PoundsWeight: 1000, PalletDimensions: []int32{48, 40, 48}},
+			{PalletCount: 2, PoundsWeight: 1000, Dimensions: oway.PalletDims(48, 40, 48)},
 		},
 	})
 	if err != nil {
@@ -174,7 +174,7 @@ func main() {
 			PhoneNumber: "+15555678901", ContactPerson: "Jane Smith",
 		},
 		OrderComponents: []oway.OrderComponent{
-			{PalletCount: 2, PoundsWeight: 1000, PalletDimensions: []int32{48, 40, 48}},
+			{PalletCount: 2, PoundsWeight: 1000, Dimensions: oway.PalletDims(48, 40, 48)},
 		},
 		Description: "Electronics - fragile",
 	})
