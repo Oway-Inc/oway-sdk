@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0]
 
 ### Added
+
 - Typed `OwayError` carrying the parsed `ProblemDetail`: `statusCode`, `code` (machine-readable reason), `message` (server detail or title), `requestId`, `violations[]`, and `rawBody`.
 - `parseHttpError(status, requestId, body)` helper exported for advanced callers that consume responses directly.
 - Public `ProblemDetail` and `Violation` type re-exports for users who need to read structured validation failures.
@@ -15,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESLint flat-config baseline with TypeScript rules.
 
 ### Changed
+
 - **Breaking:** `OwayError` constructor now takes an options object (`new OwayError({ message, statusCode, code, requestId, violations, rawBody })`). Old positional form (`new OwayError(message, code, statusCode, requestId)`) is removed.
 - `isRetryable()` is now consistent across the SDK and recognizes `408 Request Timeout` in addition to `429/500/502/503/504`.
 - Request IDs use `crypto.randomUUID()` when available, falling back to a 128-bit random hex string. Replaces the hand-rolled UUID-like generator.
 
 ### Fixed
+
 - Error message extraction now reads `ProblemDetail.detail` / `.title` instead of a non-existent `message` field.
 - Error code extraction now reads `ProblemDetail.reason` instead of a non-existent `code` field.
 - Removed dead `companyApiKey` field from `OwayConfig`; per-request override flows through the existing `companyApiKey` argument on resource methods.
@@ -27,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-02-19
 
 ### Added
+
 - Initial release of Oway TypeScript SDK
 - M2M authentication with `clientId` and `clientSecret`
 - Per-company API key support for multi-tenant integrations
@@ -40,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model Context Protocol (MCP) server for AI agents
 
 ### Documentation
+
 - Complete API reference
 - Authentication guide (M2M + API keys)
 - AI agent integration guide

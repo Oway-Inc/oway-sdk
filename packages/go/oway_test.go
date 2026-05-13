@@ -3,6 +3,7 @@ package oway
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -59,7 +60,9 @@ func TestRefreshToken_DecodesAccessToken(t *testing.T) {
 	)
 	defer srv.Close()
 
-	_, _ = c.GetShipment(context.Background(), "ABC12")
+	if _, err := c.GetShipment(context.Background(), "ABC12"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	if got := atomic.LoadInt32(&calls); got != 1 {
 		t.Errorf("expected 1 token call, got %d", got)
@@ -80,7 +83,9 @@ func TestRefreshToken_CachesAcrossCalls(t *testing.T) {
 	defer srv.Close()
 
 	for i := 0; i < 5; i++ {
-		_, _ = c.GetShipment(context.Background(), "ABC12")
+		if _, err := c.GetShipment(context.Background(), "ABC12"); err != nil {
+			t.Fatalf("unexpected error on iteration %d: %v", i, err)
+		}
 	}
 	if got := atomic.LoadInt32(&tokenCalls); got != 1 {
 		t.Errorf("expected token cached, got %d calls", got)
@@ -257,6 +262,9 @@ func TestRetry_RespectsContextCancellation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected context error")
 	}
+	if !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context cancellation error, got %v", err)
+	}
 }
 
 func TestWithCompanyAPIKey_OverridesDefault(t *testing.T) {
@@ -271,7 +279,9 @@ func TestWithCompanyAPIKey_OverridesDefault(t *testing.T) {
 	defer srv.Close()
 
 	ctx := WithCompanyAPIKey(context.Background(), "oway_sk_tenant_xyz")
-	_, _ = c.GetShipment(ctx, "ABC12")
+	if _, err := c.GetShipment(ctx, "ABC12"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if got, _ := seenKey.Load().(string); got != "oway_sk_tenant_xyz" {
 		t.Errorf("expected per-request key, got %q", got)
 	}
@@ -297,7 +307,9 @@ func TestRequestID_IsUniquePerRequest(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, _ = c.GetShipment(context.Background(), "ABC12")
+			if _, err := c.GetShipment(context.Background(), "ABC12"); err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
 		}()
 	}
 	wg.Wait()

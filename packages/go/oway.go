@@ -282,10 +282,13 @@ func (c *Client) retry(ctx context.Context, op func() error) error {
 
 // backoffDelay returns a randomized exponential wait time bounded at 30s.
 // Full-jitter (random across [0, base)) spreads retries from clients that
-// hit a 429 storm at the same wall-clock instant.
+// hit a 429 storm at the same wall-clock instant. The lower bound guards
+// against overflow from very large attempt counts.
 func backoffDelay(attempt int) time.Duration {
 	base := time.Duration(math.Pow(2, float64(attempt))) * time.Second
-	if base > 30*time.Second {
+	if base <= 0 {
+		base = time.Second
+	} else if base > 30*time.Second {
 		base = 30 * time.Second
 	}
 	return time.Duration(mrand.Int63n(int64(base) + 1))

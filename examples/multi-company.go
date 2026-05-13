@@ -35,6 +35,10 @@ func main() {
 			fmt.Printf("%s: %v\n", tenant, err)
 			continue
 		}
-		fmt.Printf("%s: %s\n", tenant, *quote.Id)
+		quoteID := "<no id>"
+		if quote.Id != nil {
+			quoteID = *quote.Id
+		}
+		fmt.Printf("%s: %s\n", tenant, quoteID)
 	}
 }

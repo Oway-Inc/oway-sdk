@@ -5,6 +5,7 @@ All notable changes to the Oway Go SDK will be documented in this file.
 ## [0.2.0]
 
 ### Added
+
 - `Error` now exposes `Code` (from `ProblemDetail.reason`), `Message` (server `detail` or `title`), `RequestID`, `Violations []Violation`, and `RawBody []byte`.
 - `Violation{Field, Reason}` type and `AsError(err) (*Error, bool)` helper for use with `errors.As`.
 - `parseHTTPError(status, requestID, body)` helper for advanced callers that bypass the wrapper.
@@ -14,6 +15,7 @@ All notable changes to the Oway Go SDK will be documented in this file.
 - `golangci-lint` baseline configuration (gofmt, govet, errcheck, ineffassign, staticcheck, unused, misspell, revive).
 
 ### Changed
+
 - **Breaking:** Dropped the `*ForCompany` method variants. Use `WithCompanyAPIKey(ctx, key)` on the context, then call the regular method.
 - **Breaking:** `Client.GetClient()` renamed to `Client.GeneratedClient()` to reflect its purpose.
 - **Breaking:** `GetQuoteByID` renamed to `GetQuote` for consistency with other resource accessors.
@@ -21,6 +23,7 @@ All notable changes to the Oway Go SDK will be documented in this file.
 - Request IDs are now 128-bit random hex from `crypto/rand`. Replaces the nanosecond-timestamp scheme, which collided under concurrency.
 
 ### Fixed
+
 - `refreshToken` now surfaces JSON decode errors instead of silently returning an empty token + zero expiry.
 - `refreshToken` validates `accessToken` is non-empty and `expiresIn` is positive before caching.
 - Removed `fmt.Printf` debug write from `New`; debug output now flows through `Config.Logger`.
@@ -30,6 +33,7 @@ All notable changes to the Oway Go SDK will be documented in this file.
 ## [0.1.0] - 2026-02-19
 
 ### Added
+
 - Initial release of Oway Go SDK
 - M2M authentication with `ClientID` and `ClientSecret`
 - Per-company API key support
