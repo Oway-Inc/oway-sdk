@@ -5,6 +5,12 @@ All notable changes to the Oway TypeScript SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2]
+
+### Added
+
+- `OrderComponent` now carries optional per-line-item freight fields: `description`, `nmfcCode`, `packagingType`, `pieceCount`. All four are optional and pass through to the server unchanged when set. Existing callers that only set `palletCount`, `poundsWeight`, and `dimensions` continue to work without changes.
+
 ## [0.2.1]
 
 ### Fixed

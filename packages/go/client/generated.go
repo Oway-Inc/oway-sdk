@@ -850,8 +850,17 @@ type OrderOrderStatus string
 
 // OrderComponent A cargo component (pallet group) in a shipment
 type OrderComponent struct {
+	// Description Per-component freight description (e.g. NMFC item name)
+	Description *string `json:"description,omitempty"`
+
 	// Dimensions Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied.
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
+
+	// NmfcCode NMFC commodity code for this component
+	NmfcCode *string `json:"nmfcCode,omitempty"`
+
+	// PackagingType Packaging type for this component (e.g. Pallets, Boxes, Crates)
+	PackagingType *string `json:"packagingType,omitempty"`
 
 	// PalletCount Number of pallets in this component
 	PalletCount int32 `json:"palletCount"`
@@ -859,6 +868,9 @@ type OrderComponent struct {
 	// PalletDimensions Pallet dimensions as [height, length, width] in inches. Deprecated: prefer the 'dimensions' object. Optional: if both 'palletDimensions' and 'dimensions' are omitted, the API defaults to 40 x 48 x 60 in. (length x width x height).
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	PalletDimensions *[]int32 `json:"palletDimensions,omitempty"`
+
+	// PieceCount Number of pieces (loose items) in this component, distinct from pallet count
+	PieceCount *int32 `json:"pieceCount,omitempty"`
 
 	// PoundsWeight Weight per pallet in pounds
 	PoundsWeight int32 `json:"poundsWeight"`

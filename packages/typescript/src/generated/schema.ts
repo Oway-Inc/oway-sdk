@@ -1535,6 +1535,27 @@ export interface components {
              */
             palletDimensions?: number[];
             dimensions?: components["schemas"]["Dimensions"];
+            /**
+             * @description Per-component freight description (e.g. NMFC item name)
+             * @example Stone NOI
+             */
+            description?: string;
+            /**
+             * @description NMFC commodity code for this component
+             * @example 90500-04
+             */
+            nmfcCode?: string;
+            /**
+             * @description Packaging type for this component (e.g. Pallets, Boxes, Crates)
+             * @example Pallets
+             */
+            packagingType?: string;
+            /**
+             * Format: int32
+             * @description Number of pieces (loose items) in this component, distinct from pallet count
+             * @example 0
+             */
+            pieceCount?: number;
         };
         /** @description Request to generate a shipping quote. Quotes are valid for 2 days from creation. */
         QuoteRequest: {

@@ -2,6 +2,12 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.2]
+
+### Added
+
+- `OrderComponent` now carries optional per-line-item freight fields: `Description`, `NmfcCode`, `PackagingType`, `PieceCount`. All four are pointer types and pass through to the server unchanged when set. Existing callers that only set `PalletCount`, `PoundsWeight`, and `Dimensions` continue to work without changes.
+
 ## [0.2.1]
 
 ### Added
