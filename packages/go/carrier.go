@@ -20,7 +20,11 @@ import (
 	"github.com/Oway-Inc/oway-sdk/packages/go/client"
 )
 
-// Carrier-side type aliases (re-exported from the generated client).
+// Carrier-side type aliases re-exported from the generated client so callers
+// don't need to import the client package directly. The aliased types carry
+// their own doc comments in the generated code.
+//
+//nolint:revive // re-exports; doc lives on the generated types
 type (
 	Offer                       = client.Offer
 	AcceptOfferRequest          = client.AcceptOfferRequest

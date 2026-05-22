@@ -2,6 +2,17 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.2]
+
+### Added
+
+- `OrderComponent` now carries optional per-line-item freight fields: `Description`, `NmfcCode`, `PackagingType`, `PieceCount`. All four are pointer types and pass through to the server unchanged when set. Existing callers that only set `PalletCount`, `PoundsWeight`, and `Dimensions` continue to work without changes.
+- Generated client picks up everything else that landed on sandbox between v0.2.1 and v0.2.2, including the new appointment endpoints (`GetAppointment`, `UpsertAppointment`, `GetAppointmentPdf`, appointment-document upload/delete) and the optional `Idempotency-Key` header on shipment creation. Convenience wrappers for the appointment endpoints will arrive in a follow-up.
+
+### Changed
+
+- The generated `CreateShipmentWithResponse` signature now takes a `*CreateShipmentParams` (for the optional `Idempotency-Key` header). The SDK-level `Client.CreateShipment` wrapper still presents the same `(ctx, *ShipmentRequest)` shape and passes `nil` params internally; callers who need idempotency can drop down to `GeneratedClient()` for now.
+
 ## [0.2.1]
 
 ### Added

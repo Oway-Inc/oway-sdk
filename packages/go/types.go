@@ -52,9 +52,13 @@ type DocumentType = client.GetDocumentParamsDocumentType
 // only the modern `Dimensions` shape; the deprecated array form on the
 // underlying generated type is not surfaced.
 type OrderComponent struct {
-	PalletCount  int32       `json:"palletCount"`
-	PoundsWeight int32       `json:"poundsWeight"`
-	Dimensions   *Dimensions `json:"dimensions,omitempty"`
+	PalletCount   int32       `json:"palletCount"`
+	PoundsWeight  int32       `json:"poundsWeight"`
+	Dimensions    *Dimensions `json:"dimensions,omitempty"`
+	Description   *string     `json:"description,omitempty"`
+	NmfcCode      *string     `json:"nmfcCode,omitempty"`
+	PackagingType *string     `json:"packagingType,omitempty"`
+	PieceCount    *int32      `json:"pieceCount,omitempty"`
 }
 
 // QuoteRequest mirrors the generated client.QuoteRequest but uses the
@@ -92,9 +96,13 @@ func toClientOrderComponents(in []OrderComponent) []client.OrderComponent {
 	out := make([]client.OrderComponent, len(in))
 	for i, c := range in {
 		out[i] = client.OrderComponent{
-			PalletCount:  c.PalletCount,
-			PoundsWeight: c.PoundsWeight,
-			Dimensions:   c.Dimensions,
+			PalletCount:   c.PalletCount,
+			PoundsWeight:  c.PoundsWeight,
+			Dimensions:    c.Dimensions,
+			Description:   c.Description,
+			NmfcCode:      c.NmfcCode,
+			PackagingType: c.PackagingType,
+			PieceCount:    c.PieceCount,
 		}
 	}
 	return out

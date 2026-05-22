@@ -15,6 +15,34 @@ import (
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+// Defines values for AppointmentDocumentResponseStop.
+const (
+	AppointmentDocumentResponseStopDELIVERY AppointmentDocumentResponseStop = "DELIVERY"
+	AppointmentDocumentResponseStopPICKUP   AppointmentDocumentResponseStop = "PICKUP"
+)
+
+// Defines values for AppointmentDocumentResponseType.
+const (
+	AppointmentDocumentResponseTypeAPPOINTMENTDOCUMENT AppointmentDocumentResponseType = "APPOINTMENT_DOCUMENT"
+	AppointmentDocumentResponseTypeCUSTOMERBOL         AppointmentDocumentResponseType = "CUSTOMER_BOL"
+	AppointmentDocumentResponseTypePACKINGSLIP         AppointmentDocumentResponseType = "PACKING_SLIP"
+)
+
+// Defines values for AppointmentRequirementRequestChannel.
+const (
+	AppointmentRequirementRequestChannelEMAIL  AppointmentRequirementRequestChannel = "EMAIL"
+	AppointmentRequirementRequestChannelPHONE  AppointmentRequirementRequestChannel = "PHONE"
+	AppointmentRequirementRequestChannelPORTAL AppointmentRequirementRequestChannel = "PORTAL"
+)
+
+// Defines values for AppointmentRequirementResponseChannel.
+const (
+	AppointmentRequirementResponseChannelEMAIL  AppointmentRequirementResponseChannel = "EMAIL"
+	AppointmentRequirementResponseChannelPHONE  AppointmentRequirementResponseChannel = "PHONE"
+	AppointmentRequirementResponseChannelPORTAL AppointmentRequirementResponseChannel = "PORTAL"
 )
 
 // Defines values for BundleStatus.
@@ -67,6 +95,14 @@ const (
 	ExceptionReportRequestExceptionTypeTruckBreakdown       ExceptionReportRequestExceptionType = "truck_breakdown"
 	ExceptionReportRequestExceptionTypeWeatherDelay         ExceptionReportRequestExceptionType = "weather_delay"
 	ExceptionReportRequestExceptionTypeWrongEquipment       ExceptionReportRequestExceptionType = "wrong_equipment"
+)
+
+// Defines values for MergedDiagnosticFields.
+const (
+	NONE          MergedDiagnosticFields = "NONE"
+	ORDER         MergedDiagnosticFields = "ORDER"
+	PLACE         MergedDiagnosticFields = "PLACE"
+	PLACEANDORDER MergedDiagnosticFields = "PLACE_AND_ORDER"
 )
 
 // Defines values for OfferStatus.
@@ -142,6 +178,50 @@ const (
 const (
 	GetShipmentDocumentParamsDocumentTypeBILLOFLADING  GetShipmentDocumentParamsDocumentType = "BILL_OF_LADING"
 	GetShipmentDocumentParamsDocumentTypeSHIPPINGLABEL GetShipmentDocumentParamsDocumentType = "SHIPPING_LABEL"
+)
+
+// Defines values for GetAppointmentParamsStop.
+const (
+	GetAppointmentParamsStopDELIVERY GetAppointmentParamsStop = "DELIVERY"
+	GetAppointmentParamsStopPICKUP   GetAppointmentParamsStop = "PICKUP"
+)
+
+// Defines values for UpsertAppointmentParamsStop.
+const (
+	UpsertAppointmentParamsStopDELIVERY UpsertAppointmentParamsStop = "DELIVERY"
+	UpsertAppointmentParamsStopPICKUP   UpsertAppointmentParamsStop = "PICKUP"
+)
+
+// Defines values for DeleteDocumentParamsStop.
+const (
+	DeleteDocumentParamsStopDELIVERY DeleteDocumentParamsStop = "DELIVERY"
+	DeleteDocumentParamsStopPICKUP   DeleteDocumentParamsStop = "PICKUP"
+)
+
+// Defines values for DeleteDocumentParamsDocumentType.
+const (
+	DeleteDocumentParamsDocumentTypeAPPOINTMENTDOCUMENT DeleteDocumentParamsDocumentType = "APPOINTMENT_DOCUMENT"
+	DeleteDocumentParamsDocumentTypeCUSTOMERBOL         DeleteDocumentParamsDocumentType = "CUSTOMER_BOL"
+	DeleteDocumentParamsDocumentTypePACKINGSLIP         DeleteDocumentParamsDocumentType = "PACKING_SLIP"
+)
+
+// Defines values for UploadDocumentParamsStop.
+const (
+	UploadDocumentParamsStopDELIVERY UploadDocumentParamsStop = "DELIVERY"
+	UploadDocumentParamsStopPICKUP   UploadDocumentParamsStop = "PICKUP"
+)
+
+// Defines values for UploadDocumentParamsDocumentType.
+const (
+	APPOINTMENTDOCUMENT UploadDocumentParamsDocumentType = "APPOINTMENT_DOCUMENT"
+	CUSTOMERBOL         UploadDocumentParamsDocumentType = "CUSTOMER_BOL"
+	PACKINGSLIP         UploadDocumentParamsDocumentType = "PACKING_SLIP"
+)
+
+// Defines values for GetAppointmentPdfParamsStop.
+const (
+	GetAppointmentPdfParamsStopDELIVERY GetAppointmentPdfParamsStop = "DELIVERY"
+	GetAppointmentPdfParamsStopPICKUP   GetAppointmentPdfParamsStop = "PICKUP"
 )
 
 // Defines values for GetDocumentParamsDocumentType.
@@ -234,6 +314,117 @@ type Address struct {
 
 	// ZipCode 5-digit ZIP code
 	ZipCode string `json:"zipCode"`
+}
+
+// AppointmentContact A single contact for the appointment. At least one of email or phone must be present.
+type AppointmentContact struct {
+	// Email Email address
+	Email *string `json:"email,omitempty"`
+
+	// Name Contact name
+	Name string `json:"name"`
+
+	// Phone Phone in E.164 format
+	Phone *string `json:"phone,omitempty"`
+
+	// Role Role of the contact at the facility
+	Role *string `json:"role,omitempty"`
+}
+
+// AppointmentDocumentResponse Metadata for an uploaded appointment supporting document.
+type AppointmentDocumentResponse struct {
+	// ContentType Stored content type (always application/pdf)
+	ContentType *string `json:"contentType,omitempty"`
+
+	// Filename Original filename (renamed to .pdf if needed)
+	Filename *string `json:"filename,omitempty"`
+
+	// Id Document ID
+	Id *string `json:"id,omitempty"`
+
+	// SizeBytes Size in bytes after storage (images converted to PDF)
+	SizeBytes *int64 `json:"sizeBytes,omitempty"`
+
+	// Stop Stop the document is attached to
+	Stop *AppointmentDocumentResponseStop `json:"stop,omitempty"`
+
+	// Type Document type
+	Type *AppointmentDocumentResponseType `json:"type,omitempty"`
+
+	// UploadedAt Upload timestamp
+	UploadedAt *time.Time `json:"uploadedAt,omitempty"`
+
+	// UploadedBy User ID that performed the upload
+	UploadedBy *string `json:"uploadedBy,omitempty"`
+}
+
+// AppointmentDocumentResponseStop Stop the document is attached to
+type AppointmentDocumentResponseStop string
+
+// AppointmentDocumentResponseType Document type
+type AppointmentDocumentResponseType string
+
+// AppointmentRequirementRequest Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment.
+type AppointmentRequirementRequest struct {
+	// Channel How the appointment is scheduled
+	Channel AppointmentRequirementRequestChannel `json:"channel"`
+
+	// Contacts Contacts the carrier can use to schedule the appointment
+	Contacts *[]AppointmentContact `json:"contacts,omitempty"`
+
+	// Instructions Free-text instructions shown to the carrier. Max 2000 chars.
+	Instructions *string `json:"instructions,omitempty"`
+
+	// LeadTimeHours Minimum advance notice (in hours) the receiver requires. 0–168.
+	LeadTimeHours *int32 `json:"leadTimeHours,omitempty"`
+
+	// PortalUrl Portal URL where the carrier will book the appointment. Required when channel == PORTAL, must be omitted otherwise.
+	PortalUrl *string `json:"portalUrl,omitempty"`
+
+	// ReferenceNumbers Reference numbers (PO, customer pickup #, etc.) the carrier will be asked for. Max 10 entries, each max 64 chars.
+	ReferenceNumbers *[]string `json:"referenceNumbers,omitempty"`
+}
+
+// AppointmentRequirementRequestChannel How the appointment is scheduled
+type AppointmentRequirementRequestChannel string
+
+// AppointmentRequirementResponse The effective (merged) appointment requirement for one stop, with per-field provenance in the _merged diagnostic.
+type AppointmentRequirementResponse struct {
+	// UnderscoreMerged Per-field provenance for the merged appointment requirement. Tells the caller whether each field came from the place-level default, the order-level override, both, or neither.
+	UnderscoreMerged *MergedDiagnostic `json:"_merged,omitempty"`
+
+	// AppointmentRequired Whether the merged effective appointmentRequired is true (OR of place-level and order-level booleans).
+	AppointmentRequired *bool `json:"appointmentRequired,omitempty"`
+
+	// Channel Channel for booking the appointment
+	Channel *AppointmentRequirementResponseChannel `json:"channel,omitempty"`
+
+	// Contacts Contacts the carrier can use
+	Contacts *[]AppointmentContact `json:"contacts,omitempty"`
+
+	// Instructions Free-text instructions
+	Instructions *string `json:"instructions,omitempty"`
+
+	// LeadTimeHours Minimum advance notice in hours
+	LeadTimeHours *int32 `json:"leadTimeHours,omitempty"`
+
+	// PortalUrl Portal URL when channel is PORTAL
+	PortalUrl *string `json:"portalUrl,omitempty"`
+
+	// ReferenceNumbers Reference numbers
+	ReferenceNumbers *[]string `json:"referenceNumbers,omitempty"`
+}
+
+// AppointmentRequirementResponseChannel Channel for booking the appointment
+type AppointmentRequirementResponseChannel string
+
+// AppointmentsBlock Optional inline-on-create block on POST /v1/shipper/shipment. Each entry is the AppointmentRequirementRequest for the corresponding stop, applied only if that address has appointmentRequired=true.
+type AppointmentsBlock struct {
+	// Delivery Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment.
+	Delivery *AppointmentRequirementRequest `json:"delivery,omitempty"`
+
+	// Pickup Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment.
+	Pickup *AppointmentRequirementRequest `json:"pickup,omitempty"`
 }
 
 // Bundle A bundle of offers presented to a carrier
@@ -466,6 +657,9 @@ type CarrierTripRequest struct {
 
 // CreateShipmentRequest Request to create a new shipment
 type CreateShipmentRequest struct {
+	// Appointments Optional inline-on-create block on POST /v1/shipper/shipment. Each entry is the AppointmentRequirementRequest for the corresponding stop, applied only if that address has appointmentRequired=true.
+	Appointments *AppointmentsBlock `json:"appointments,omitempty"`
+
 	// DeliveryAddress Address information for pickup or delivery locations
 	DeliveryAddress Address `json:"deliveryAddress"`
 
@@ -484,7 +678,7 @@ type CreateShipmentRequest struct {
 	// QuoteId Optional ID of a previously generated quote.
 	QuoteId *string `json:"quoteId,omitempty"`
 
-	// RefNumber Additional reference number
+	// RefNumber Your reference number for this shipment (typically your Bill of Lading number). Prints on partner-branded BOLs alongside the Oway order number.
 	RefNumber *string `json:"refNumber,omitempty"`
 
 	// RequiredDeliveryBy Required delivery by date (ISO 8601 format)
@@ -734,6 +928,15 @@ type LocationAcknowledgment struct {
 	Recorded *bool `json:"recorded,omitempty"`
 }
 
+// MergedDiagnostic Per-field provenance for the merged appointment requirement. Tells the caller whether each field came from the place-level default, the order-level override, both, or neither.
+type MergedDiagnostic struct {
+	// Fields Map of field name -> source. Field names: channel, portalUrl, contacts, instructions, referenceNumbers, leadTimeHours. Values: PLACE | ORDER | PLACE_AND_ORDER | NONE.
+	Fields *map[string]MergedDiagnosticFields `json:"fields,omitempty"`
+}
+
+// MergedDiagnosticFields Map of field name -> source. Field names: channel, portalUrl, contacts, instructions, referenceNumbers, leadTimeHours. Values: PLACE | ORDER | PLACE_AND_ORDER | NONE.
+type MergedDiagnosticFields string
+
 // Offer Carrier offer details
 type Offer struct {
 	// AssignedDriver Assigned driver information
@@ -850,8 +1053,17 @@ type OrderOrderStatus string
 
 // OrderComponent A cargo component (pallet group) in a shipment
 type OrderComponent struct {
+	// Description Per-component freight description (e.g. NMFC item name)
+	Description *string `json:"description,omitempty"`
+
 	// Dimensions Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied.
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
+
+	// NmfcCode NMFC commodity code for this component
+	NmfcCode *string `json:"nmfcCode,omitempty"`
+
+	// PackagingType Packaging type for this component (e.g. Pallets, Boxes, Crates)
+	PackagingType *string `json:"packagingType,omitempty"`
 
 	// PalletCount Number of pallets in this component
 	PalletCount int32 `json:"palletCount"`
@@ -859,6 +1071,9 @@ type OrderComponent struct {
 	// PalletDimensions Pallet dimensions as [height, length, width] in inches. Deprecated: prefer the 'dimensions' object. Optional: if both 'palletDimensions' and 'dimensions' are omitted, the API defaults to 40 x 48 x 60 in. (length x width x height).
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	PalletDimensions *[]int32 `json:"palletDimensions,omitempty"`
+
+	// PieceCount Number of pieces (loose items) in this component, distinct from pallet count
+	PieceCount *int32 `json:"pieceCount,omitempty"`
 
 	// PoundsWeight Weight per pallet in pounds
 	PoundsWeight int32 `json:"poundsWeight"`
@@ -1167,6 +1382,38 @@ type GetShipmentsParams struct {
 // GetShipmentDocumentParamsDocumentType defines parameters for GetShipmentDocument.
 type GetShipmentDocumentParamsDocumentType string
 
+// CreateShipmentParams defines parameters for CreateShipment.
+type CreateShipmentParams struct {
+	// IdempotencyKey Optional idempotency key. Retrying the same request with the same key within 24h returns the original response without creating a second shipment. Reusing the key with a different body returns 409 idempotency_key_conflict.
+	IdempotencyKey *string `json:"Idempotency-Key,omitempty"`
+}
+
+// GetAppointmentParamsStop defines parameters for GetAppointment.
+type GetAppointmentParamsStop string
+
+// UpsertAppointmentParamsStop defines parameters for UpsertAppointment.
+type UpsertAppointmentParamsStop string
+
+// DeleteDocumentParamsStop defines parameters for DeleteDocument.
+type DeleteDocumentParamsStop string
+
+// DeleteDocumentParamsDocumentType defines parameters for DeleteDocument.
+type DeleteDocumentParamsDocumentType string
+
+// UploadDocumentMultipartBody defines parameters for UploadDocument.
+type UploadDocumentMultipartBody struct {
+	File openapi_types.File `json:"file"`
+}
+
+// UploadDocumentParamsStop defines parameters for UploadDocument.
+type UploadDocumentParamsStop string
+
+// UploadDocumentParamsDocumentType defines parameters for UploadDocument.
+type UploadDocumentParamsDocumentType string
+
+// GetAppointmentPdfParamsStop defines parameters for GetAppointmentPdf.
+type GetAppointmentPdfParamsStop string
+
 // GetDocumentParamsDocumentType defines parameters for GetDocument.
 type GetDocumentParamsDocumentType string
 
@@ -1205,6 +1452,12 @@ type RequestQuoteJSONRequestBody = QuoteRequest
 
 // CreateShipmentJSONRequestBody defines body for CreateShipment for application/json ContentType.
 type CreateShipmentJSONRequestBody = CreateShipmentRequest
+
+// UpsertAppointmentJSONRequestBody defines body for UpsertAppointment for application/json ContentType.
+type UpsertAppointmentJSONRequestBody = AppointmentRequirementRequest
+
+// UploadDocumentMultipartRequestBody defines body for UploadDocument for multipart/form-data ContentType.
+type UploadDocumentMultipartRequestBody UploadDocumentMultipartBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1365,12 +1618,29 @@ type ClientInterface interface {
 	GetQuote(ctx context.Context, quoteId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateShipmentWithBody request with any body
-	CreateShipmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateShipmentWithBody(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateShipment(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateShipment(ctx context.Context, params *CreateShipmentParams, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetShipment request
 	GetShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAppointment request
+	GetAppointment(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpsertAppointmentWithBody request with any body
+	UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDocument request
+	DeleteDocument(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UploadDocumentWithBody request with any body
+	UploadDocumentWithBody(ctx context.Context, orderNumber string, stop UploadDocumentParamsStop, documentType UploadDocumentParamsDocumentType, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAppointmentPdf request
+	GetAppointmentPdf(ctx context.Context, orderNumber string, stop GetAppointmentPdfParamsStop, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CancelShipment request
 	CancelShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1772,8 +2042,8 @@ func (c *Client) GetQuote(ctx context.Context, quoteId string, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateShipmentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateShipmentRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateShipmentWithBody(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateShipmentRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1784,8 +2054,8 @@ func (c *Client) CreateShipmentWithBody(ctx context.Context, contentType string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateShipment(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateShipmentRequest(c.Server, body)
+func (c *Client) CreateShipment(ctx context.Context, params *CreateShipmentParams, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateShipmentRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1798,6 +2068,78 @@ func (c *Client) CreateShipment(ctx context.Context, body CreateShipmentJSONRequ
 
 func (c *Client) GetShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetShipmentRequest(c.Server, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAppointment(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAppointmentRequest(c.Server, orderNumber, stop)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAppointmentRequestWithBody(c.Server, orderNumber, stop, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAppointmentRequest(c.Server, orderNumber, stop, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDocument(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDocumentRequest(c.Server, orderNumber, stop, documentType)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UploadDocumentWithBody(ctx context.Context, orderNumber string, stop UploadDocumentParamsStop, documentType UploadDocumentParamsDocumentType, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUploadDocumentRequestWithBody(c.Server, orderNumber, stop, documentType, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAppointmentPdf(ctx context.Context, orderNumber string, stop GetAppointmentPdfParamsStop, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAppointmentPdfRequest(c.Server, orderNumber, stop)
 	if err != nil {
 		return nil, err
 	}
@@ -2767,18 +3109,18 @@ func NewGetQuoteRequest(server string, quoteId string) (*http.Request, error) {
 }
 
 // NewCreateShipmentRequest calls the generic CreateShipment builder with application/json body
-func NewCreateShipmentRequest(server string, body CreateShipmentJSONRequestBody) (*http.Request, error) {
+func NewCreateShipmentRequest(server string, params *CreateShipmentParams, body CreateShipmentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateShipmentRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateShipmentRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewCreateShipmentRequestWithBody generates requests for CreateShipment with any type of body
-func NewCreateShipmentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateShipmentRequestWithBody(server string, params *CreateShipmentParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2803,6 +3145,21 @@ func NewCreateShipmentRequestWithBody(server string, contentType string, body io
 
 	req.Header.Add("Content-Type", contentType)
 
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Idempotency-Key", runtime.ParamLocationHeader, *params.IdempotencyKey)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
 	return req, nil
 }
 
@@ -2823,6 +3180,240 @@ func NewGetShipmentRequest(server string, orderNumber string) (*http.Request, er
 	}
 
 	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAppointmentRequest generates requests for GetAppointment
+func NewGetAppointmentRequest(server string, orderNumber string, stop GetAppointmentParamsStop) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "orderNumber", runtime.ParamLocationPath, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "stop", runtime.ParamLocationPath, stop)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s/appointment/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpsertAppointmentRequest calls the generic UpsertAppointment builder with application/json body
+func NewUpsertAppointmentRequest(server string, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpsertAppointmentRequestWithBody(server, orderNumber, stop, "application/json", bodyReader)
+}
+
+// NewUpsertAppointmentRequestWithBody generates requests for UpsertAppointment with any type of body
+func NewUpsertAppointmentRequestWithBody(server string, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "orderNumber", runtime.ParamLocationPath, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "stop", runtime.ParamLocationPath, stop)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s/appointment/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDocumentRequest generates requests for DeleteDocument
+func NewDeleteDocumentRequest(server string, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "orderNumber", runtime.ParamLocationPath, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "stop", runtime.ParamLocationPath, stop)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "documentType", runtime.ParamLocationPath, documentType)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s/appointment/%s/document/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUploadDocumentRequestWithBody generates requests for UploadDocument with any type of body
+func NewUploadDocumentRequestWithBody(server string, orderNumber string, stop UploadDocumentParamsStop, documentType UploadDocumentParamsDocumentType, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "orderNumber", runtime.ParamLocationPath, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "stop", runtime.ParamLocationPath, stop)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "documentType", runtime.ParamLocationPath, documentType)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s/appointment/%s/document/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAppointmentPdfRequest generates requests for GetAppointmentPdf
+func NewGetAppointmentPdfRequest(server string, orderNumber string, stop GetAppointmentPdfParamsStop) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "orderNumber", runtime.ParamLocationPath, orderNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "stop", runtime.ParamLocationPath, stop)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/shipment/%s/appointment/%s/pdf", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3146,12 +3737,29 @@ type ClientWithResponsesInterface interface {
 	GetQuoteWithResponse(ctx context.Context, quoteId string, reqEditors ...RequestEditorFn) (*GetQuoteResponse, error)
 
 	// CreateShipmentWithBodyWithResponse request with any body
-	CreateShipmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
+	CreateShipmentWithBodyWithResponse(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
 
-	CreateShipmentWithResponse(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
+	CreateShipmentWithResponse(ctx context.Context, params *CreateShipmentParams, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
 
 	// GetShipmentWithResponse request
 	GetShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetShipmentResponse, error)
+
+	// GetAppointmentWithResponse request
+	GetAppointmentWithResponse(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*GetAppointmentResponse, error)
+
+	// UpsertAppointmentWithBodyWithResponse request with any body
+	UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
+
+	UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
+
+	// DeleteDocumentWithResponse request
+	DeleteDocumentWithResponse(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*DeleteDocumentResponse, error)
+
+	// UploadDocumentWithBodyWithResponse request with any body
+	UploadDocumentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UploadDocumentParamsStop, documentType UploadDocumentParamsDocumentType, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadDocumentResponse, error)
+
+	// GetAppointmentPdfWithResponse request
+	GetAppointmentPdfWithResponse(ctx context.Context, orderNumber string, stop GetAppointmentPdfParamsStop, reqEditors ...RequestEditorFn) (*GetAppointmentPdfResponse, error)
 
 	// CancelShipmentWithResponse request
 	CancelShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*CancelShipmentResponse, error)
@@ -3782,6 +4390,124 @@ func (r GetShipmentResponse) StatusCode() int {
 	return 0
 }
 
+type GetAppointmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AppointmentRequirementResponse
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAppointmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAppointmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpsertAppointmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AppointmentRequirementResponse
+	JSON400      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r UpsertAppointmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpsertAppointmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDocumentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDocumentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDocumentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UploadDocumentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AppointmentDocumentResponse
+	JSON400      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON413      *ProblemDetail
+	JSON415      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r UploadDocumentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UploadDocumentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAppointmentPdfResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAppointmentPdfResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAppointmentPdfResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CancelShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4193,16 +4919,16 @@ func (c *ClientWithResponses) GetQuoteWithResponse(ctx context.Context, quoteId 
 }
 
 // CreateShipmentWithBodyWithResponse request with arbitrary body returning *CreateShipmentResponse
-func (c *ClientWithResponses) CreateShipmentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error) {
-	rsp, err := c.CreateShipmentWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateShipmentWithBodyWithResponse(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error) {
+	rsp, err := c.CreateShipmentWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateShipmentResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateShipmentWithResponse(ctx context.Context, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error) {
-	rsp, err := c.CreateShipment(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateShipmentWithResponse(ctx context.Context, params *CreateShipmentParams, body CreateShipmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error) {
+	rsp, err := c.CreateShipment(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4216,6 +4942,59 @@ func (c *ClientWithResponses) GetShipmentWithResponse(ctx context.Context, order
 		return nil, err
 	}
 	return ParseGetShipmentResponse(rsp)
+}
+
+// GetAppointmentWithResponse request returning *GetAppointmentResponse
+func (c *ClientWithResponses) GetAppointmentWithResponse(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*GetAppointmentResponse, error) {
+	rsp, err := c.GetAppointment(ctx, orderNumber, stop, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAppointmentResponse(rsp)
+}
+
+// UpsertAppointmentWithBodyWithResponse request with arbitrary body returning *UpsertAppointmentResponse
+func (c *ClientWithResponses) UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
+	rsp, err := c.UpsertAppointmentWithBody(ctx, orderNumber, stop, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertAppointmentResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
+	rsp, err := c.UpsertAppointment(ctx, orderNumber, stop, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertAppointmentResponse(rsp)
+}
+
+// DeleteDocumentWithResponse request returning *DeleteDocumentResponse
+func (c *ClientWithResponses) DeleteDocumentWithResponse(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*DeleteDocumentResponse, error) {
+	rsp, err := c.DeleteDocument(ctx, orderNumber, stop, documentType, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDocumentResponse(rsp)
+}
+
+// UploadDocumentWithBodyWithResponse request with arbitrary body returning *UploadDocumentResponse
+func (c *ClientWithResponses) UploadDocumentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UploadDocumentParamsStop, documentType UploadDocumentParamsDocumentType, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadDocumentResponse, error) {
+	rsp, err := c.UploadDocumentWithBody(ctx, orderNumber, stop, documentType, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUploadDocumentResponse(rsp)
+}
+
+// GetAppointmentPdfWithResponse request returning *GetAppointmentPdfResponse
+func (c *ClientWithResponses) GetAppointmentPdfWithResponse(ctx context.Context, orderNumber string, stop GetAppointmentPdfParamsStop, reqEditors ...RequestEditorFn) (*GetAppointmentPdfResponse, error) {
+	rsp, err := c.GetAppointmentPdf(ctx, orderNumber, stop, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAppointmentPdfResponse(rsp)
 }
 
 // CancelShipmentWithResponse request returning *CancelShipmentResponse
@@ -5604,6 +6383,192 @@ func ParseGetShipmentResponse(rsp *http.Response) (*GetShipmentResponse, error) 
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAppointmentResponse parses an HTTP response from a GetAppointmentWithResponse call
+func ParseGetAppointmentResponse(rsp *http.Response) (*GetAppointmentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAppointmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AppointmentRequirementResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpsertAppointmentResponse parses an HTTP response from a UpsertAppointmentWithResponse call
+func ParseUpsertAppointmentResponse(rsp *http.Response) (*UpsertAppointmentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpsertAppointmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AppointmentRequirementResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDocumentResponse parses an HTTP response from a DeleteDocumentWithResponse call
+func ParseDeleteDocumentResponse(rsp *http.Response) (*DeleteDocumentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDocumentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUploadDocumentResponse parses an HTTP response from a UploadDocumentWithResponse call
+func ParseUploadDocumentResponse(rsp *http.Response) (*UploadDocumentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UploadDocumentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AppointmentDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 415:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON415 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAppointmentPdfResponse parses an HTTP response from a GetAppointmentPdfWithResponse call
+func ParseGetAppointmentPdfResponse(rsp *http.Response) (*GetAppointmentPdfResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAppointmentPdfResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case rsp.StatusCode == 404:
+		// Content-type (application/pdf) unsupported
 
 	}
 

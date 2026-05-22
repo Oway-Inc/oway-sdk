@@ -78,27 +78,68 @@ jobs:
   test-go:
     name: Test Go (${{ matrix.go }})
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+
     strategy:
       fail-fast: false
       matrix:
         go: ['1.22', '1.23']
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           cache-dependency-path: packages/go/go.sum
-      
+
       - name: Run tests
         working-directory: packages/go
         run: go test -v -race -coverprofile=coverage.out ./...
-      
+
       - name: Build
         working-directory: packages/go
         run: go build ./...
+
+  generated-up-to-date:
+    name: Generated artifacts match spec
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: packages/go/go.sum
+
+      - name: Install oapi-codegen
+        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
+
+      - name: Regenerate from existing spec
+        run: node scripts/generate.js --skip-fetch
+
+      - name: Verify regen produces no diff
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Generated artifacts (packages/go/client/generated.go, packages/typescript/src/generated/schema.ts) are out of sync with openapi/spec.json. Run 'node scripts/generate.js --skip-fetch' locally and commit the result."
+            exit 1
+          fi
 
   security:
     name: Security Check
