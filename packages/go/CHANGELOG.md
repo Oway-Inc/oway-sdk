@@ -2,6 +2,13 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.3]
+
+### Added
+
+- `Appointments`, `AppointmentRequirement`, `AppointmentContact`, and `AppointmentChannel` type aliases on the public SDK surface, so callers can populate the appointment block without dropping into the `client` package. The underlying generated types landed in 0.2.2; this release exposes them through the hand-written wrapper.
+- `ShipmentRequest.Appointments *Appointments` field. Pass an `*Appointments` value to attach pickup and/or delivery `AppointmentRequirement` payloads on shipment create. Existing callers that leave it `nil` send the same JSON body as before.
+
 ## [0.2.2]
 
 ### Added
