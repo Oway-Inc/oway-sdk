@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `OrderComponent` now carries optional per-line-item freight fields: `description`, `nmfcCode`, `packagingType`, `pieceCount`. All four are optional and pass through to the server unchanged when set. Existing callers that only set `palletCount`, `poundsWeight`, and `dimensions` continue to work without changes.
+- Generated schema picks up everything else that landed on sandbox between v0.2.1 and v0.2.2, including the new appointment endpoints (`GET/PUT/DELETE /v1/shipper/shipment/{orderNumber}/appointment/{stop}` and the appointment-document + PDF variants) and the optional `Idempotency-Key` header on shipment creation.
 
 ## [0.2.1]
 

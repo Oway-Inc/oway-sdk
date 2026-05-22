@@ -80,6 +80,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/shipper/shipment/{orderNumber}/appointment/{stop}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read merged appointment requirement for a stop
+         * @description Returns the effective AppointmentRequirement for one stop, computed as the merge of the place-level default and the order-level override using a "more-strict wins" rule. The `_merged` diagnostic block in the response shows per-field provenance (PLACE | ORDER | PLACE_AND_ORDER | NONE).
+         */
+        get: operations["getAppointment"];
+        /**
+         * Upsert appointment requirement for a stop
+         * @description Idempotent upsert of the order-level AppointmentRequirement for one stop (pickup or delivery). The full provided requirement replaces any prior value. Returns the merged effective requirement (place-level default + this order-level override) with a per-field provenance diagnostic.
+         *
+         *     Mutability: writes are accepted until the order reaches ACCEPTED. Writes against ACCEPTED+ orders return 409 order_accepted_appointment_locked.
+         */
+        put: operations["upsertAppointment"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/carrier/shipments/{identifier}/pickup": {
         parameters: {
             query?: never;
@@ -239,6 +265,34 @@ export interface paths {
          */
         post: operations["createShipment"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shipper/shipment/{orderNumber}/appointment/{stop}/document/{documentType}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a supporting document for an appointment
+         * @description Multipart upload of a supporting document for one stop on an order. Allowed content types: application/pdf, image/jpeg, image/png. Images are wrapped to single-page PDF on upload. Max size 10 MB. Replaces any existing document of the same (stop, type).
+         *
+         *     documentType must be one of: PACKING_SLIP, CUSTOMER_BOL. APPOINTMENT_DOCUMENT is system-only and returns 400 if attempted.
+         *
+         *     Mutability: writes against an order past ACCEPTED return 409 order_accepted_appointment_locked.
+         */
+        post: operations["uploadDocument"];
+        /**
+         * Delete a supporting document for an appointment
+         * @description Idempotent delete. Returns 204 whether or not the document existed.
+         */
+        delete: operations["deleteDocument"];
         options?: never;
         head?: never;
         patch?: never;
@@ -469,6 +523,26 @@ export interface paths {
          * @description Retrieves a download link for a shipment document using the order number (PRO number). Supported document types: BILL_OF_LADING, INVOICE, SHIPPING_LABEL, POD.
          */
         get: operations["getDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shipper/shipment/{orderNumber}/appointment/{stop}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read generated appointment PDF (Phase 2)
+         * @description Returns the generated appointment PDF snapshot for one stop. Phase 1: always returns 404. The PDF doesn't exist until Phase 2 wires up generation at carrier acceptance. The endpoint is defined now to lock the URL contract.
+         */
+        get: operations["getAppointmentPdf"];
         put?: never;
         post?: never;
         delete?: never;
@@ -756,6 +830,95 @@ export interface components {
              * @example 2025-02-27T22:51:49.865Z
              */
             updatedAt?: string;
+        };
+        /** @description A single contact for the appointment. At least one of email or phone must be present. */
+        AppointmentContact: {
+            /**
+             * @description Contact name
+             * @example Maria Lopez
+             */
+            name: string;
+            /**
+             * @description Email address
+             * @example maria@aqua.com
+             */
+            email?: string;
+            /**
+             * @description Phone in E.164 format
+             * @example +15555550101
+             */
+            phone?: string;
+            /**
+             * @description Role of the contact at the facility
+             * @example Warehouse Manager
+             */
+            role?: string;
+        };
+        /** @description Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment. */
+        AppointmentRequirementRequest: {
+            /**
+             * @description How the appointment is scheduled
+             * @example PORTAL
+             * @enum {string}
+             */
+            channel: "PHONE" | "EMAIL" | "PORTAL";
+            /**
+             * @description Portal URL where the carrier will book the appointment. Required when channel == PORTAL, must be omitted otherwise.
+             * @example https://retaillink.example.com/scheduling
+             */
+            portalUrl?: string;
+            /** @description Contacts the carrier can use to schedule the appointment */
+            contacts?: components["schemas"]["AppointmentContact"][];
+            /**
+             * @description Free-text instructions shown to the carrier. Max 2000 chars.
+             * @example Driver must check in at gate B. Lift gate required. Schedule via portal at least 24 hours in advance.
+             */
+            instructions?: string;
+            /**
+             * @description Reference numbers (PO, customer pickup #, etc.) the carrier will be asked for. Max 10 entries, each max 64 chars.
+             * @example [
+             *       "81CRR",
+             *       "DOCK-12"
+             *     ]
+             */
+            referenceNumbers?: string[];
+            /**
+             * Format: int32
+             * @description Minimum advance notice (in hours) the receiver requires. 0–168.
+             * @example 24
+             */
+            leadTimeHours?: number;
+        };
+        /** @description The effective (merged) appointment requirement for one stop, with per-field provenance in the _merged diagnostic. */
+        AppointmentRequirementResponse: {
+            /**
+             * @description Channel for booking the appointment
+             * @enum {string}
+             */
+            channel?: "PHONE" | "EMAIL" | "PORTAL";
+            /** @description Portal URL when channel is PORTAL */
+            portalUrl?: string;
+            /** @description Contacts the carrier can use */
+            contacts?: components["schemas"]["AppointmentContact"][];
+            /** @description Free-text instructions */
+            instructions?: string;
+            /** @description Reference numbers */
+            referenceNumbers?: string[];
+            /**
+             * Format: int32
+             * @description Minimum advance notice in hours
+             */
+            leadTimeHours?: number;
+            /** @description Whether the merged effective appointmentRequired is true (OR of place-level and order-level booleans). */
+            appointmentRequired?: boolean;
+            _merged?: components["schemas"]["MergedDiagnostic"];
+        };
+        /** @description Per-field provenance for the merged appointment requirement. Tells the caller whether each field came from the place-level default, the order-level override, both, or neither. */
+        MergedDiagnostic: {
+            /** @description Map of field name -> source. Field names: channel, portalUrl, contacts, instructions, referenceNumbers, leadTimeHours. Values: PLACE | ORDER | PLACE_AND_ORDER | NONE. */
+            fields?: {
+                [key: string]: "PLACE" | "ORDER" | "PLACE_AND_ORDER" | "NONE";
+            };
         };
         /** @description GPS coordinates for a shipment event */
         EventCoordinates: {
@@ -1450,6 +1613,11 @@ export interface components {
              */
             callAheadRequired?: boolean;
         };
+        /** @description Optional inline-on-create block on POST /v1/shipper/shipment. Each entry is the AppointmentRequirementRequest for the corresponding stop, applied only if that address has appointmentRequired=true. */
+        AppointmentsBlock: {
+            pickup?: components["schemas"]["AppointmentRequirementRequest"];
+            delivery?: components["schemas"]["AppointmentRequirementRequest"];
+        };
         /** @description Request to create a new shipment */
         CreateShipmentRequest: {
             /**
@@ -1472,8 +1640,8 @@ export interface components {
              */
             poNumber?: string;
             /**
-             * @description Additional reference number
-             * @example REF-ABC-123
+             * @description Your reference number for this shipment (typically your Bill of Lading number). Prints on partner-branded BOLs alongside the Oway order number.
+             * @example BOL-2026-04129
              */
             refNumber?: string;
             /**
@@ -1488,6 +1656,7 @@ export interface components {
              * @example 2024-12-26T17:00:00Z
              */
             requiredDeliveryBy?: string;
+            appointments?: components["schemas"]["AppointmentsBlock"];
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
         Dimensions: {
@@ -1556,6 +1725,49 @@ export interface components {
              * @example 0
              */
             pieceCount?: number;
+        };
+        /** @description Metadata for an uploaded appointment supporting document. */
+        AppointmentDocumentResponse: {
+            /**
+             * @description Document ID
+             * @example 65f1a2b3c4d5e6f7a8b9c0d1
+             */
+            id?: string;
+            /**
+             * @description Stop the document is attached to
+             * @example DELIVERY
+             * @enum {string}
+             */
+            stop?: "PICKUP" | "DELIVERY";
+            /**
+             * @description Document type
+             * @example PACKING_SLIP
+             * @enum {string}
+             */
+            type?: "PACKING_SLIP" | "CUSTOMER_BOL" | "APPOINTMENT_DOCUMENT";
+            /**
+             * @description Original filename (renamed to .pdf if needed)
+             * @example packing-slip.pdf
+             */
+            filename?: string;
+            /**
+             * Format: int64
+             * @description Size in bytes after storage (images converted to PDF)
+             * @example 1245678
+             */
+            sizeBytes?: number;
+            /**
+             * @description Stored content type (always application/pdf)
+             * @example application/pdf
+             */
+            contentType?: string;
+            /**
+             * Format: date-time
+             * @description Upload timestamp
+             */
+            uploadedAt?: string;
+            /** @description User ID that performed the upload */
+            uploadedBy?: string;
         };
         /** @description Request to generate a shipping quote. Quotes are valid for 2 days from creation. */
         QuoteRequest: {
@@ -1830,19 +2042,6 @@ export interface components {
              */
             clientSecret: string;
         };
-        /** @description Error response for token requests */
-        TokenErrorResponse: {
-            /**
-             * @description Error code
-             * @example invalid_client
-             */
-            error?: string;
-            /**
-             * @description Human-readable error description
-             * @example Invalid client credentials
-             */
-            errorDescription?: string;
-        };
         /** @description Successful token response */
         TokenResponse: {
             /**
@@ -1861,6 +2060,19 @@ export interface components {
              * @example 86400
              */
             expiresIn?: number;
+        };
+        /** @description Error response for token requests */
+        TokenErrorResponse: {
+            /**
+             * @description Error code
+             * @example invalid_client
+             */
+            error?: string;
+            /**
+             * @description Human-readable error description
+             * @example Invalid client credentials
+             */
+            errorDescription?: string;
         };
         /** @description Shipment tracking information */
         Tracking: {
@@ -2247,6 +2459,102 @@ export interface operations {
             };
             /** @description Internal server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getAppointment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Order number (PRO)
+                 * @example ZKYQ5
+                 */
+                orderNumber: string;
+                /** @description pickup | delivery */
+                stop: "PICKUP" | "DELIVERY";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Merged appointment requirement. Fields are null when neither place nor order has data for that field; `_merged` is always present and shows source of each field. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentRequirementResponse"];
+                };
+            };
+            /** @description Order does not exist or does not belong to your company. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    upsertAppointment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Order number (PRO)
+                 * @example ZKYQ5
+                 */
+                orderNumber: string;
+                /** @description pickup | delivery */
+                stop: "PICKUP" | "DELIVERY";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppointmentRequirementRequest"];
+            };
+        };
+        responses: {
+            /** @description Appointment requirement upserted; body is the merged effective requirement. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentRequirementResponse"];
+                };
+            };
+            /** @description Validation failure. Response body's `violations[]` lists field paths and reasons. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Order does not exist or does not belong to your company. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Order has reached ACCEPTED; appointment data is locked. Contact help@oway.io for changes. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2741,7 +3049,10 @@ export interface operations {
     createShipment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional idempotency key. Retrying the same request with the same key within 24h returns the original response without creating a second shipment. Reusing the key with a different body returns 409 idempotency_key_conflict. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2809,6 +3120,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    uploadDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Order number (PRO)
+                 * @example ZKYQ5
+                 */
+                orderNumber: string;
+                /** @description pickup | delivery */
+                stop: "PICKUP" | "DELIVERY";
+                /** @description Document type: PACKING_SLIP or CUSTOMER_BOL */
+                documentType: "PACKING_SLIP" | "CUSTOMER_BOL" | "APPOINTMENT_DOCUMENT";
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Document uploaded; body is the persisted document metadata. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppointmentDocumentResponse"];
+                };
+            };
+            /** @description Bad request. Includes attempts to upload APPOINTMENT_DOCUMENT (reason: appointment_document_not_user_uploadable). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Order does not exist or does not belong to your company. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Order is past ACCEPTED; appointment data is locked. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description File exceeds the 10 MB upload limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unsupported content type. Allowed: application/pdf, image/jpeg, image/png. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    deleteDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderNumber: string;
+                stop: "PICKUP" | "DELIVERY";
+                documentType: "PACKING_SLIP" | "CUSTOMER_BOL" | "APPOINTMENT_DOCUMENT";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted (or no-op when absent). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Order does not exist or does not belong to your company. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Order is past ACCEPTED; appointment data is locked. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProblemDetail"];
                 };
             };
         };
@@ -3496,6 +3929,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getAppointmentPdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderNumber: string;
+                stop: "PICKUP" | "DELIVERY";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PDF not generated. Phase 1 always returns this; Phase 2 will return the PDF when available. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": components["schemas"]["ProblemDetail"];
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };

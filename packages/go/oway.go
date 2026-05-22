@@ -357,7 +357,10 @@ func (c *Client) CreateShipment(ctx context.Context, req *ShipmentRequest) (*Shi
 	body := req.toClient()
 	var out *Shipment
 	err := c.retry(ctx, func() error {
-		r, err := c.api.CreateShipmentWithResponse(ctx, client.CreateShipmentJSONRequestBody(body))
+		// nil params: the generated client now accepts an optional Idempotency-Key
+		// header on this endpoint. The SDK doesn't surface idempotency yet; callers
+		// who need it can drop down to GeneratedClient() until we add a wrapper option.
+		r, err := c.api.CreateShipmentWithResponse(ctx, nil, client.CreateShipmentJSONRequestBody(body))
 		if err != nil {
 			return err
 		}
