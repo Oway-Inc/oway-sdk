@@ -1,6 +1,8 @@
 package oway
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -43,11 +45,12 @@ func TestOrderComponentMirrorsClient(t *testing.T) {
 }
 
 // TestToClientOrderComponentsCopiesEveryField populates the SDK-local
-// OrderComponent with non-zero values for every exposed field, runs it through
-// toClientOrderComponents, and asserts the corresponding client.OrderComponent
-// fields are also non-zero. Catches the "added the field on the wrapper but
-// forgot to copy it in toClientOrderComponents" mistake — the second half of
-// the gap the wrapper introduces.
+// OrderComponent with distinct non-zero values for every exposed field, runs
+// it through toClientOrderComponents, then JSON-marshals both sides and
+// compares per-tag values. Catches both halves of the wrapper gap: a field
+// the mapper drops on the floor (value missing on the client side), and a
+// field the mapper copies from the wrong source (value present but differs
+// from the SDK source).
 func TestToClientOrderComponentsCopiesEveryField(t *testing.T) {
 	sdk := fullyPopulatedSDKComponent()
 	out := toClientOrderComponents([]OrderComponent{sdk})
@@ -56,23 +59,58 @@ func TestToClientOrderComponentsCopiesEveryField(t *testing.T) {
 	}
 	got := out[0]
 
+	sdkMap := marshalToMap(t, sdk)
+	gotMap := marshalToMap(t, got)
+
 	clientType := reflect.TypeOf(got)
-	clientVal := reflect.ValueOf(got)
 	for i := 0; i < clientType.NumField(); i++ {
-		f := clientType.Field(i)
-		tag := jsonTagName(f.Tag.Get("json"))
+		tag := jsonTagName(clientType.Field(i).Tag.Get("json"))
 		if tag == "" || tag == "-" || deprecatedClientFields[tag] {
 			continue
 		}
-		if isZero(clientVal.Field(i)) {
+		gotVal, gotOK := gotMap[tag]
+		if !gotOK {
 			t.Errorf(
 				"toClientOrderComponents did not copy %q to client.OrderComponent. "+
-					"Either populate it in the test's fullyPopulatedSDKComponent "+
-					"(if the SDK type already exposes it) or update toClientOrderComponents.",
+					"Populate it in fullyPopulatedSDKComponent (if the SDK type exposes "+
+					"it) or update toClientOrderComponents.",
 				tag,
+			)
+			continue
+		}
+		sdkVal, sdkOK := sdkMap[tag]
+		if !sdkOK {
+			t.Errorf(
+				"client.OrderComponent.%q has a value but the SDK source doesn't expose "+
+					"the same JSON tag. Either add the field to oway.OrderComponent or to "+
+					"deprecatedClientFields.",
+				tag,
+			)
+			continue
+		}
+		if !bytes.Equal(sdkVal, gotVal) {
+			t.Errorf(
+				"toClientOrderComponents miscopied %q: source=%s, output=%s. "+
+					"Suggests the mapper read from the wrong field.",
+				tag,
+				string(sdkVal),
+				string(gotVal),
 			)
 		}
 	}
+}
+
+func marshalToMap(t *testing.T, v any) map[string]json.RawMessage {
+	t.Helper()
+	raw, err := json.Marshal(v)
+	if err != nil {
+		t.Fatalf("marshal %T: %v", v, err)
+	}
+	out := map[string]json.RawMessage{}
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatalf("unmarshal %T: %v", v, err)
+	}
+	return out
 }
 
 func jsonTags(t reflect.Type) map[string]bool {
@@ -96,21 +134,16 @@ func jsonTagName(tag string) string {
 	return tag
 }
 
-func isZero(v reflect.Value) bool {
-	if v.Kind() == reflect.Pointer {
-		return v.IsNil()
-	}
-	return v.IsZero()
-}
-
 // fullyPopulatedSDKComponent sets every field on the SDK-local
-// OrderComponent to a non-zero value. New fields should be added here as
-// they're added to OrderComponent so the copy-coverage test stays accurate.
+// OrderComponent to a distinct non-zero value. The miscopy detection in
+// TestToClientOrderComponentsCopiesEveryField relies on values being distinct
+// per field — new fields should be added here with values that don't collide
+// with neighbors so a swapped assignment is detectable.
 func fullyPopulatedSDKComponent() OrderComponent {
 	desc := "Stone NOI"
 	nmfc := "90500-04"
 	pkg := "Pallets"
-	pieces := int32(0)
+	pieces := int32(7)
 	return OrderComponent{
 		PalletCount:   2,
 		PoundsWeight:  3000,
