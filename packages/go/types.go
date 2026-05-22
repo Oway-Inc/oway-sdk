@@ -48,6 +48,30 @@ type Document = client.DocumentResponse
 // DocumentType identifies a kind of shipment document.
 type DocumentType = client.GetDocumentParamsDocumentType
 
+// Appointments is the optional inline appointment block on shipment create.
+// One AppointmentRequirement per stop (pickup / delivery); applied only when
+// that stop is appointment-required.
+type Appointments = client.AppointmentsBlock
+
+// AppointmentRequirement is the structured appointment metadata for a single
+// stop. Sent inside Appointments on shipment create, or stand-alone on
+// PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop}.
+type AppointmentRequirement = client.AppointmentRequirementRequest
+
+// AppointmentContact is a single contact entry on an appointment requirement.
+type AppointmentContact = client.AppointmentContact
+
+// AppointmentChannel enumerates how the appointment is scheduled (PHONE,
+// EMAIL, PORTAL).
+type AppointmentChannel = client.AppointmentRequirementRequestChannel
+
+// AppointmentChannel constants mirror the underlying generated enum.
+const (
+	AppointmentChannelEmail  = client.AppointmentRequirementRequestChannelEMAIL
+	AppointmentChannelPhone  = client.AppointmentRequirementRequestChannelPHONE
+	AppointmentChannelPortal = client.AppointmentRequirementRequestChannelPORTAL
+)
+
 // OrderComponent describes a pallet group within a shipment. The SDK exposes
 // only the modern `Dimensions` shape; the deprecated array form on the
 // underlying generated type is not surfaced.
@@ -82,6 +106,7 @@ type ShipmentRequest struct {
 	RefNumber          *string          `json:"refNumber,omitempty"`
 	RequiredPickupDate *time.Time       `json:"requiredPickupDate,omitempty"`
 	RequiredDeliveryBy *time.Time       `json:"requiredDeliveryBy,omitempty"`
+	Appointments       *Appointments    `json:"appointments,omitempty"`
 }
 
 // Document type constants
@@ -128,5 +153,6 @@ func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
 		RefNumber:          s.RefNumber,
 		RequiredPickupDate: s.RequiredPickupDate,
 		RequiredDeliveryBy: s.RequiredDeliveryBy,
+		Appointments:       s.Appointments,
 	}
 }
