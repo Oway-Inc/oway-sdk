@@ -686,6 +686,9 @@ type CreateShipmentRequest struct {
 
 	// RequiredPickupDate Required pickup date (ISO 8601 format)
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
+
+	// ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
+	ShipperDispatch *ShipperDispatch `json:"shipperDispatch,omitempty"`
 }
 
 // DeliveryConfirmation Carrier-reported delivery confirmation details
@@ -1228,6 +1231,21 @@ type Shipment struct {
 
 // ShipmentOrderStatus Current shipment status in the order lifecycle
 type ShipmentOrderStatus string
+
+// ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
+type ShipperDispatch struct {
+	// Email Dispatch email
+	Email *string `json:"email,omitempty"`
+
+	// Name Dispatch contact name
+	Name string `json:"name"`
+
+	// Phone Dispatch phone in E.164 format
+	Phone *string `json:"phone,omitempty"`
+
+	// Scac Standard Carrier Alpha Code (SCAC), if applicable
+	Scac *string `json:"scac,omitempty"`
+}
 
 // TokenErrorResponse Error response for token requests
 type TokenErrorResponse struct {

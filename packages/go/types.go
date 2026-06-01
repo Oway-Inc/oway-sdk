@@ -72,6 +72,12 @@ const (
 	AppointmentChannelPortal = client.AppointmentRequirementRequestChannelPORTAL
 )
 
+// ShipperDispatch is the optional operational dispatch contact on shipment
+// create: the desk or person responsible for answering questions about the
+// load, distinct from the shipper company itself. At least one of Email or
+// Phone must be set.
+type ShipperDispatch = client.ShipperDispatch
+
 // OrderComponent describes a pallet group within a shipment. The SDK exposes
 // only the modern `Dimensions` shape; the deprecated array form on the
 // underlying generated type is not surfaced.
@@ -107,6 +113,7 @@ type ShipmentRequest struct {
 	RequiredPickupDate *time.Time       `json:"requiredPickupDate,omitempty"`
 	RequiredDeliveryBy *time.Time       `json:"requiredDeliveryBy,omitempty"`
 	Appointments       *Appointments    `json:"appointments,omitempty"`
+	ShipperDispatch    *ShipperDispatch `json:"shipperDispatch,omitempty"`
 }
 
 // Document type constants
@@ -154,5 +161,6 @@ func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
 		RequiredPickupDate: s.RequiredPickupDate,
 		RequiredDeliveryBy: s.RequiredDeliveryBy,
 		Appointments:       s.Appointments,
+		ShipperDispatch:    s.ShipperDispatch,
 	}
 }
