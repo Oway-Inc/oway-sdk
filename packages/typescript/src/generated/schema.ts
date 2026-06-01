@@ -1657,6 +1657,7 @@ export interface components {
              */
             requiredDeliveryBy?: string;
             appointments?: components["schemas"]["AppointmentsBlock"];
+            shipperDispatch?: components["schemas"]["ShipperDispatch"];
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
         Dimensions: {
@@ -2316,6 +2317,29 @@ export interface components {
              * @example https://s3.amazonaws.com/...
              */
             download_link?: string;
+        };
+        /** @description The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present. */
+        ShipperDispatch: {
+            /**
+             * @description Dispatch contact name
+             * @example Acme Logistics
+             */
+            name: string;
+            /**
+             * @description Dispatch email
+             * @example dispatch@example.com
+             */
+            email?: string;
+            /**
+             * @description Dispatch phone in E.164 format
+             * @example +15555550100
+             */
+            phone?: string;
+            /**
+             * @description Standard Carrier Alpha Code (SCAC), if applicable
+             * @example ACME
+             */
+            scac?: string;
         };
     };
     responses: never;

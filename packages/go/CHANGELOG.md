@@ -2,6 +2,13 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.4]
+
+### Added
+
+- `ShipperDispatch` type alias on the public SDK surface, so callers can populate the dispatch contact without dropping into the `client` package.
+- `ShipmentRequest.ShipperDispatch *ShipperDispatch` field. Pass a `*ShipperDispatch` value to attach the operational dispatch contact (the desk responsible for answering questions about the load) on shipment create. At least one of `Email` or `Phone` must be set. Existing callers that leave it `nil` send the same JSON body as before.
+
 ## [0.2.3]
 
 ### Added
