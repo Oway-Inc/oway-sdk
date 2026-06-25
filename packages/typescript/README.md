@@ -170,15 +170,15 @@ const offers = await oway.carrier.offers();
 
 // Accept one
 const accepted = await oway.carrier.acceptOffer(offers[0].id!, {
-  carrierReference: 'YOUR-REF-123',
+  carrier_reference: 'YOUR-REF-123',
 });
 
 // Stream GPS positions while in transit
 await oway.carrier.submitLocation(accepted.id!, { latitude: 34.05, longitude: -118.24 });
 
 // Confirm pickup and delivery
-await oway.carrier.confirmPickup(accepted.id!, { latitude: 34.05, longitude: -118.24 });
-await oway.carrier.confirmDelivery(accepted.id!, { latitude: 40.71, longitude: -74.0 });
+await oway.carrier.confirmPickup(accepted.id!, { coordinates: { latitude: 34.05, longitude: -118.24 } });
+await oway.carrier.confirmDelivery(accepted.id!, { coordinates: { latitude: 40.71, longitude: -74.0 } });
 
 // GPS tracking history for a carrier shipment
 const history = await oway.carrier.tracking(accepted.id!);

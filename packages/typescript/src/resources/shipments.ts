@@ -28,6 +28,15 @@ export class Shipments {
    * @param orderNumber The 5-character PRO number.
    * @param opts.includeLocation Embed the position estimate. Defaults to true.
    * @param companyApiKey Optional per-request company API key.
+   *
+   * @example
+   * // Default: includes the live position estimate
+   * const tracking = await oway.shipments.tracking('ZKYQ5');
+   * console.log(tracking.location?.center, tracking.orderStatus);
+   *
+   * @example
+   * // Lightweight status-only polling (skips the position computation)
+   * const status = await oway.shipments.tracking('ZKYQ5', { includeLocation: false });
    */
   async tracking(
     orderNumber: string,
