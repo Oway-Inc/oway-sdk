@@ -1,6 +1,7 @@
 import { HttpClient, type OwayConfig } from './client';
 import { Quotes } from './resources/quotes';
 import { Shipments } from './resources/shipments';
+import { Carrier } from './resources/carrier';
 
 /**
  * Official Oway SDK for JavaScript/TypeScript
@@ -10,11 +11,13 @@ export class Oway {
 
   public readonly quotes: Quotes;
   public readonly shipments: Shipments;
+  public readonly carrier: Carrier;
 
   constructor(config: OwayConfig) {
     this.client = new HttpClient(config);
     this.quotes = new Quotes(this.client);
     this.shipments = new Shipments(this.client);
+    this.carrier = new Carrier(this.client);
   }
 }
 
@@ -27,6 +30,18 @@ export type {
   Tracking,
   Invoice,
   Address,
+  Offer,
+  AcceptOfferRequest,
+  RejectOfferRequest,
+  CarrierShipment,
+  PickupConfirmationRequest,
+  DeliveryConfirmationRequest,
+  OfferLocationUpdate,
+  LocationAcknowledgment,
+  ExceptionReportRequest,
+  ExceptionResponse,
+  CarrierTripRequest,
+  CarrierTracking,
 } from './types';
 
 // Export errors and config
