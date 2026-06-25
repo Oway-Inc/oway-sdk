@@ -17,5 +17,21 @@ export type Invoice = paths['/v1/shipper/shipment/{orderNumber}/invoice']['get']
 // Common types
 export type Address = components['schemas']['Address'];
 
+// Carrier-side types
+export type Offer = components['schemas']['Offer'];
+export type AcceptOfferRequest = components['schemas']['AcceptOfferRequest'];
+export type RejectOfferRequest = components['schemas']['RejectOfferRequest'];
+export type CarrierShipment = components['schemas']['CarrierShipment'];
+export type PickupConfirmationRequest = components['schemas']['PickupConfirmationRequest'];
+export type DeliveryConfirmationRequest = components['schemas']['DeliveryConfirmationRequest'];
+export type OfferLocationUpdate = components['schemas']['OfferLocationUpdate'];
+export type LocationAcknowledgment = components['schemas']['LocationAcknowledgment'];
+export type ExceptionReportRequest = components['schemas']['ExceptionReportRequest'];
+export type ExceptionResponse = components['schemas']['ExceptionResponse'];
+export type CarrierTripRequest = components['schemas']['CarrierTripRequest'];
+// The carrier tracking endpoint returns the GPS tracking history
+// (order number, last-updated time, and an ordered list of GPS points).
+export type CarrierTracking = components['schemas']['TrackingResponse'];
+
 // Re-export for advanced usage
 export type { paths, components } from './generated/schema';

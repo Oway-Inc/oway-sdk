@@ -1,14 +1,11 @@
 package oway
 
-// Carrier-side convenience wrappers for oway-sim and other carrier
-// integrations. The generated client (`packages/go/client/generated.go`)
-// already exposes the underlying methods; these wrappers add the same
-// retry + decode semantics as the shipper-side wrappers in oway.go.
-//
-// Required by the oway-sim carrier simulator (OWA-1904, Step 11 in
-// notes/projects/oway-sim/06-implementation-sequence.md), which polls
-// for offers, accepts/rejects them, drives a synthetic GPS track, and
-// confirms delivery — all through these SDK methods.
+// Carrier-side convenience wrappers for carrier integrations: poll for
+// offers, accept or reject them, drive a shipment through pickup and
+// delivery, stream GPS positions, report exceptions, and submit trips.
+// The generated client (`packages/go/client/generated.go`) already
+// exposes the underlying methods; these wrappers add the same retry and
+// decode semantics as the shipper-side wrappers in oway.go.
 //
 // Type aliases are re-exported so consumers don't have to import the
 // generated client package directly.
@@ -40,14 +37,13 @@ type (
 	ExceptionReportRequest      = client.ExceptionReportRequest
 	ExceptionType               = client.ExceptionReportRequestExceptionType
 	ExceptionResponse           = client.ExceptionResponse
-	CarrierTracking             = client.CarrierTracking
+	CarrierTracking             = client.TrackingResponse
 	CarrierDocumentResponse     = client.CarrierDocumentResponse
 	CarrierTripRequest          = client.CarrierTripRequest
 )
 
 // ListCarrierOffers returns all pending offers visible to the
-// authenticated carrier. Used by oway-sim's poller to discover new
-// jobs.
+// authenticated carrier.
 func (c *Client) ListCarrierOffers(ctx context.Context) ([]Offer, error) {
 	var out []Offer
 	err := c.retry(ctx, func() error {
@@ -121,7 +117,7 @@ func (c *Client) RejectCarrierOffer(ctx context.Context, identifier string, req 
 
 // GetCarrierShipment fetches the carrier-view shipment for an accepted
 // offer. Carrier-side endpoints return CarrierShipment (vs. shipper-side
-// Shipment) — schemas are currently identical but kept separate to
+// Shipment), schemas are currently identical but kept separate to
 // match the spec. The generated client suffixes the carrier-side
 // method with "1" to disambiguate from the shipper-side GetShipment.
 func (c *Client) GetCarrierShipment(ctx context.Context, identifier string) (*CarrierShipment, error) {
@@ -218,7 +214,7 @@ func (c *Client) ReportException(ctx context.Context, identifier string, req Exc
 // carrier-side coverage API. Called by the simulator after DELIVERED
 // to seed coverage growth tier with synthetic ELD-shaped trip data.
 //
-// AddTrips returns an empty 200 body — no JSON shape to unwrap.
+// AddTrips returns an empty 200 body with no JSON shape to unwrap.
 func (c *Client) SubmitCarrierTrips(ctx context.Context, trips []CarrierTripRequest) error {
 	if len(trips) == 0 {
 		return errors.New("oway: at least one trip is required")
@@ -237,4 +233,22 @@ func (c *Client) SubmitCarrierTrips(ctx context.Context, trips []CarrierTripRequ
 		}
 		return nil
 	})
+}
+
+// GetCarrierTracking fetches GPS tracking history for a carrier
+// shipment by identifier (offerId, orderNumber, or carrierReference).
+func (c *Client) GetCarrierTracking(ctx context.Context, identifier string) (*CarrierTracking, error) {
+	if identifier == "" {
+		return nil, errors.New("oway: shipment identifier is required")
+	}
+	var out *CarrierTracking
+	err := c.retry(ctx, func() error {
+		r, err := c.api.GetShipmentTrackingWithResponse(ctx, identifier)
+		if err != nil {
+			return err
+		}
+		out, err = decode(r.StatusCode(), r.Body, r.HTTPResponse, r.JSON200)
+		return err
+	})
+	return out, err
 }

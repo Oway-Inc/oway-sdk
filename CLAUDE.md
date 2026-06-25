@@ -19,7 +19,7 @@ oway-sdk/
 │   ├── go/                  # Go SDK (future)
 │   └── java/                # Java SDK (future)
 ├── openapi/
-│   └── spec.json           # Source of truth - OpenAPI 3.0.1 spec
+│   └── spec.json           # Source of truth - OpenAPI 3.0.x spec (down-converted from sandbox's 3.1)
 └── scripts/                # Generation scripts
 
 ## Key Concepts
@@ -101,7 +101,7 @@ npm run generate:production   # from production API
 npm run generate:skip-fetch   # regenerate from existing spec.json
 ```
 
-The pipeline (`scripts/generate.js`) handles: spec fetch → TypeScript codegen → Go codegen → build → test.
+The pipeline (`scripts/generate.js`) handles: spec fetch → OpenAPI 3.1→3.0 down-convert → TypeScript codegen → Go codegen → build → test. Sandbox serves 3.1; the generators target 3.0.x.
 
 **Go codegen** uses `oapi-codegen` v2.5.1. Install: `go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1`
 
@@ -110,6 +110,7 @@ The pipeline (`scripts/generate.js`) handles: spec fetch → TypeScript codegen 
 - `POST /v1/shipper/shipment` - Create shipment
 - `PUT /v1/shipper/shipment/{orderNumber}/confirm` - Confirm
 - `GET /v1/shipper/shipment/{orderNumber}/tracking` - Track
+- Carrier endpoints under `/v1/carrier/*` (offers, shipments, location, exception, coverage/trips) are wrapped by `oway.carrier.*` (TS) and the `*Carrier*` methods (Go).
 
 ## Development Workflow
 

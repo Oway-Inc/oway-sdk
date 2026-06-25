@@ -31,6 +31,9 @@ yarn-debug.log*
 # OS
 .DS_Store
 
+# Local-only planning/design notes (never publish to this public repo)
+docs/superpowers/
+
 # ⚠️ IMPORTANT: Generated code is COMMITTED for SDKs
 # Users should not need to run generators
 # Only ignore if actively developing the generator config

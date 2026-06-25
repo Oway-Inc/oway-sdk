@@ -16,7 +16,9 @@
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@apiture/openapi-down-convert": "^0.14.2"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"

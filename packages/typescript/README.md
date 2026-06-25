@@ -128,11 +128,21 @@ await oway.shipments.cancel('ZKYQ5');
 
 ### Tracking
 
+The live position estimate is included by default.
+
 ```typescript
 const tracking = await oway.shipments.tracking('ZKYQ5');
 console.log(tracking.orderStatus);          // 'IN_TRANSIT', 'DELIVERED', etc.
 console.log(tracking.estimatedDeliveryDate);
 console.log(tracking.actualDeliveryDate);
+
+// Live position estimate (present once the shipment is moving)
+console.log(tracking.location?.center);              // { latitude, longitude }
+console.log(tracking.location?.uncertaintyRadiusKm);
+console.log(tracking.location?.lastEventTimestamp);
+
+// Lightweight status-only polling (skips the position computation)
+const status = await oway.shipments.tracking('ZKYQ5', { includeLocation: false });
 ```
 
 ### Invoices
@@ -150,15 +160,44 @@ const { url } = await oway.shipments.document('ZKYQ5', 'BILL_OF_LADING');
 // Available types: 'BILL_OF_LADING', 'INVOICE', 'SHIPPING_LABEL'
 ```
 
+### Carrier API
+
+For carrier integrations: respond to offers and drive a shipment to delivery.
+
+```typescript
+// Poll for offers
+const offers = await oway.carrier.offers();
+
+// Accept one
+const accepted = await oway.carrier.acceptOffer(offers[0].id!, {
+  carrier_reference: 'YOUR-REF-123',
+});
+
+// Stream GPS positions while in transit
+await oway.carrier.submitLocation(accepted.id!, { latitude: 34.05, longitude: -118.24 });
+
+// Confirm pickup and delivery
+await oway.carrier.confirmPickup(accepted.id!, { coordinates: { latitude: 34.05, longitude: -118.24 } });
+await oway.carrier.confirmDelivery(accepted.id!, { coordinates: { latitude: 40.71, longitude: -74.0 } });
+
+// GPS tracking history for a carrier shipment
+const history = await oway.carrier.tracking(accepted.id!);
+console.log(history.points?.length);
+```
+
+The request bodies above are illustrative; the typed request interfaces exported from the SDK (`AcceptOfferRequest`, `PickupConfirmationRequest`, and so on) are authoritative.
+
 ### Multi-Tenant (Per-Request API Key)
 
 All methods accept an optional `companyApiKey` as the last argument:
 
 ```typescript
 const shipment = await oway.shipments.create(request, 'oway_sk_...');
-const tracking = await oway.shipments.tracking('ZKYQ5', 'oway_sk_...');
+const tracking = await oway.shipments.tracking('ZKYQ5', {}, 'oway_sk_...');
 const invoice  = await oway.shipments.invoice('ZKYQ5', 'oway_sk_...');
 ```
+
+> Note: `shipments.tracking()` takes an options object as its second argument (defaulting to `{ includeLocation: true }`), so the per-request API key moves to the third position.
 
 ## Configuration
 

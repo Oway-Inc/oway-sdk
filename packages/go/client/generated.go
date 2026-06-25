@@ -99,10 +99,11 @@ const (
 
 // Defines values for MergedDiagnosticFields.
 const (
-	NONE          MergedDiagnosticFields = "NONE"
-	ORDER         MergedDiagnosticFields = "ORDER"
-	PLACE         MergedDiagnosticFields = "PLACE"
-	PLACEANDORDER MergedDiagnosticFields = "PLACE_AND_ORDER"
+	ADDRESSFALLBACK MergedDiagnosticFields = "ADDRESS_FALLBACK"
+	NONE            MergedDiagnosticFields = "NONE"
+	ORDER           MergedDiagnosticFields = "ORDER"
+	PLACE           MergedDiagnosticFields = "PLACE"
+	PLACEANDORDER   MergedDiagnosticFields = "PLACE_AND_ORDER"
 )
 
 // Defines values for OfferStatus.
@@ -319,7 +320,7 @@ type Address struct {
 // AppointmentContact A single contact for the appointment. At least one of email or phone must be present.
 type AppointmentContact struct {
 	// Email Email address
-	Email *string `json:"email,omitempty"`
+	Email *openapi_types.Email `json:"email,omitempty"`
 
 	// Name Contact name
 	Name string `json:"name"`
@@ -531,6 +532,9 @@ type CarrierShipment struct {
 	// CreatedAt When this offer was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
+	// Currency ISO 4217 currency code for payout amounts
+	Currency *string `json:"currency,omitempty"`
+
 	// Deadline Offer expiration time — must accept or reject before this time
 	Deadline *time.Time `json:"deadline,omitempty"`
 
@@ -567,7 +571,7 @@ type CarrierShipment struct {
 	// RejectionReasonText Free-text explanation for rejection
 	RejectionReasonText *string `json:"rejection_reason_text,omitempty"`
 
-	// Status Current status of the carrier offer
+	// Status Current offer/shipment status
 	Status *CarrierShipmentStatus `json:"status,omitempty"`
 
 	// Tracking Shipment tracking information
@@ -577,7 +581,7 @@ type CarrierShipment struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// CarrierShipmentStatus Current status of the carrier offer
+// CarrierShipmentStatus Current offer/shipment status
 type CarrierShipmentStatus string
 
 // CarrierTracking Shipment tracking information
@@ -597,11 +601,11 @@ type CarrierTracking struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"order_number,omitempty"`
 
-	// OrderStatus Current shipment status in the order lifecycle
+	// OrderStatus Current status of the order
 	OrderStatus *CarrierTrackingOrderStatus `json:"order_status,omitempty"`
 }
 
-// CarrierTrackingOrderStatus Current shipment status in the order lifecycle
+// CarrierTrackingOrderStatus Current status of the order
 type CarrierTrackingOrderStatus string
 
 // CarrierTripLeg A single leg of a trip
@@ -844,10 +848,31 @@ type ExceptionResponse struct {
 	OrderNumber *string `json:"order_number,omitempty"`
 }
 
+// GpsData GPS location data point for a vehicle
+type GpsData struct {
+	// Heading Heading in degrees (0-359, where 0 is North)
+	Heading int32 `json:"heading"`
+
+	// Latitude Latitude coordinate
+	Latitude float64 `json:"latitude"`
+
+	// Longitude Longitude coordinate
+	Longitude float64 `json:"longitude"`
+
+	// Speed Speed in km/h
+	Speed int32 `json:"speed"`
+
+	// Timestamp Timestamp of the GPS reading (ISO 8601 format). Must not be in the future.
+	Timestamp time.Time `json:"timestamp"`
+
+	// VehicleId Unique identifier for the vehicle
+	VehicleId string `json:"vehicleId"`
+}
+
 // InvoiceCharge A charge on an invoice
 type InvoiceCharge struct {
 	// AmountInCents Amount in cents (USD)
-	AmountInCents *int32 `json:"amountInCents,omitempty"`
+	AmountInCents *int64 `json:"amountInCents,omitempty"`
 
 	// ChargeType Type of charge
 	ChargeType *string `json:"chargeType,omitempty"`
@@ -913,7 +938,7 @@ type InvoiceResponse struct {
 	Shipper *Address `json:"shipper,omitempty"`
 
 	// TotalChargesInCents Total of all charges in cents (USD)
-	TotalChargesInCents *int32 `json:"totalChargesInCents,omitempty"`
+	TotalChargesInCents *int64 `json:"totalChargesInCents,omitempty"`
 
 	// TotalPieces Total number of pieces/pallets
 	TotalPieces *int32 `json:"totalPieces,omitempty"`
@@ -937,7 +962,7 @@ type MergedDiagnostic struct {
 	Fields *map[string]MergedDiagnosticFields `json:"fields,omitempty"`
 }
 
-// MergedDiagnosticFields Map of field name -> source. Field names: channel, portalUrl, contacts, instructions, referenceNumbers, leadTimeHours. Values: PLACE | ORDER | PLACE_AND_ORDER | NONE.
+// MergedDiagnosticFields defines model for MergedDiagnostic.Fields.
 type MergedDiagnosticFields string
 
 // Offer Carrier offer details
@@ -950,6 +975,9 @@ type Offer struct {
 
 	// CreatedAt When this offer was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Currency ISO 4217 currency code for payout amounts
+	Currency *string `json:"currency,omitempty"`
 
 	// Deadline Offer expiration time — must accept or reject before this time
 	Deadline *time.Time `json:"deadline,omitempty"`
@@ -987,7 +1015,7 @@ type Offer struct {
 	// RejectionReasonText Free-text explanation for rejection
 	RejectionReasonText *string `json:"rejection_reason_text,omitempty"`
 
-	// Status Current status of the carrier offer
+	// Status Current offer/shipment status
 	Status *OfferStatus `json:"status,omitempty"`
 
 	// Tracking Shipment tracking information
@@ -997,7 +1025,7 @@ type Offer struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// OfferStatus Current status of the carrier offer
+// OfferStatus Current offer/shipment status
 type OfferStatus string
 
 // OfferLocationUpdate Real-time location update for a shipment in transit
@@ -1032,7 +1060,7 @@ type Order struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"order_number,omitempty"`
 
-	// OrderStatus Current shipment status in the order lifecycle
+	// OrderStatus Current status of the order
 	OrderStatus *OrderOrderStatus `json:"order_status,omitempty"`
 
 	// PoNumber Shipper's purchase order number
@@ -1051,7 +1079,7 @@ type Order struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-// OrderOrderStatus Current shipment status in the order lifecycle
+// OrderOrderStatus Current status of the order
 type OrderOrderStatus string
 
 // OrderComponent A cargo component (pallet group) in a shipment
@@ -1085,7 +1113,7 @@ type OrderComponent struct {
 // Payout Carrier payout information
 type Payout struct {
 	// TotalInCents Total payout amount in cents (USD). Includes base payout plus all additional charges.
-	TotalInCents *int32 `json:"total_in_cents,omitempty"`
+	TotalInCents *int64 `json:"total_in_cents,omitempty"`
 }
 
 // PickupConfirmation Carrier-reported pickup confirmation details
@@ -1184,7 +1212,7 @@ type QuoteResponse struct {
 	QuoteExpirationTime *time.Time `json:"quoteExpirationTime,omitempty"`
 
 	// QuotedPriceInCents Total quoted price in cents (USD)
-	QuotedPriceInCents *int32 `json:"quotedPriceInCents,omitempty"`
+	QuotedPriceInCents *int64 `json:"quotedPriceInCents,omitempty"`
 
 	// TransitDays Number of business days to deliver the shipment after pickup. Pickup day is excluded; weekends are not counted. May be null when the ETA cannot be computed.
 	TransitDays *int32 `json:"transitDays"`
@@ -1216,11 +1244,11 @@ type Shipment struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current shipment status in the order lifecycle
+	// OrderStatus Current status of the order
 	OrderStatus *ShipmentOrderStatus `json:"orderStatus,omitempty"`
 
 	// TotalPriceInCents Total price of the order in cents (USD)
-	TotalPriceInCents *int32 `json:"totalPriceInCents,omitempty"`
+	TotalPriceInCents *int64 `json:"totalPriceInCents,omitempty"`
 
 	// UpdatedAt Time when the order was last updated (ISO 8601 format)
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
@@ -1229,13 +1257,34 @@ type Shipment struct {
 	UserId *string `json:"userId,omitempty"`
 }
 
-// ShipmentOrderStatus Current shipment status in the order lifecycle
+// ShipmentOrderStatus Current status of the order
 type ShipmentOrderStatus string
+
+// ShipmentLocation Current estimated shipment position with an uncertainty radius
+type ShipmentLocation struct {
+	// Center GPS location data point for a vehicle
+	Center *GpsData `json:"center,omitempty"`
+
+	// DelayMessage Human-readable message to display when significantly delayed
+	DelayMessage *string `json:"delayMessage,omitempty"`
+
+	// IsSignificantlyDelayed True when delivery is significantly past the expected window; the location estimate should not be shown
+	IsSignificantlyDelayed *bool `json:"isSignificantlyDelayed,omitempty"`
+
+	// LastEventTimestamp Timestamp of the last event that updated the location (ISO 8601 format)
+	LastEventTimestamp *time.Time `json:"lastEventTimestamp,omitempty"`
+
+	// StatusDescription Human-readable status sentence combining phase, approximate location, and ETA, e.g. 'IN TRANSIT DIRECT TO RECEIVER - Currently in Flagstaff, AZ - 2 Days 4 Hrs Until Destination'. Present only when a meaningful line can be produced; omitted otherwise.
+	StatusDescription *string `json:"statusDescription"`
+
+	// UncertaintyRadiusKm Uncertainty radius around the center point, in kilometers
+	UncertaintyRadiusKm *float64 `json:"uncertaintyRadiusKm,omitempty"`
+}
 
 // ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
 type ShipperDispatch struct {
 	// Email Dispatch email
-	Email *string `json:"email,omitempty"`
+	Email *openapi_types.Email `json:"email,omitempty"`
 
 	// Name Dispatch contact name
 	Name string `json:"name"`
@@ -1294,14 +1343,17 @@ type Tracking struct {
 	// Id Unique identifier for the order
 	Id *string `json:"id,omitempty"`
 
+	// Location Current estimated shipment position with an uncertainty radius
+	Location *ShipmentLocation `json:"location,omitempty"`
+
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current shipment status in the order lifecycle
+	// OrderStatus Current status of the order
 	OrderStatus *TrackingOrderStatus `json:"orderStatus,omitempty"`
 }
 
-// TrackingOrderStatus Current shipment status in the order lifecycle
+// TrackingOrderStatus Current status of the order
 type TrackingOrderStatus string
 
 // TrackingPoint A single GPS tracking data point
@@ -1369,6 +1421,9 @@ type UploadUrlResponse struct {
 
 // Violation A single field-level validation failure.
 type Violation struct {
+	// Entity Entity the failing field belongs to (e.g. pickupAddress, deliveryAddress, appointment). Lets clients disambiguate otherwise-identical field paths across stops. Nullable for violations that have no entity context.
+	Entity *string `json:"entity,omitempty"`
+
 	// Field Field path that failed validation
 	Field *string `json:"field,omitempty"`
 
@@ -1409,6 +1464,15 @@ type CreateShipmentParams struct {
 // GetAppointmentParamsStop defines parameters for GetAppointment.
 type GetAppointmentParamsStop string
 
+// UpsertAppointmentParams defines parameters for UpsertAppointment.
+type UpsertAppointmentParams struct {
+	// ConfirmChangeAfterAcceptance Set to true to override the post-acceptance mutability lock. Required together with the X-Oway-Change-Reason header.
+	ConfirmChangeAfterAcceptance *bool `form:"confirmChangeAfterAcceptance,omitempty" json:"confirmChangeAfterAcceptance,omitempty"`
+
+	// XOwayChangeReason Required when confirmChangeAfterAcceptance=true. Surfaces verbatim in the carrier-change notification email.
+	XOwayChangeReason *string `json:"X-Oway-Change-Reason,omitempty"`
+}
+
 // UpsertAppointmentParamsStop defines parameters for UpsertAppointment.
 type UpsertAppointmentParamsStop string
 
@@ -1434,6 +1498,12 @@ type GetAppointmentPdfParamsStop string
 
 // GetDocumentParamsDocumentType defines parameters for GetDocument.
 type GetDocumentParamsDocumentType string
+
+// TrackShipmentParams defines parameters for TrackShipment.
+type TrackShipmentParams struct {
+	// Include Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius). Omitted by default so status polling does not pay the position-computation cost.
+	Include *string `form:"include,omitempty" json:"include,omitempty"`
+}
 
 // GetTokenJSONRequestBody defines body for GetToken for application/json ContentType.
 type GetTokenJSONRequestBody = TokenRequest
@@ -1647,9 +1717,9 @@ type ClientInterface interface {
 	GetAppointment(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpsertAppointmentWithBody request with any body
-	UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteDocument request
 	DeleteDocument(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1673,7 +1743,7 @@ type ClientInterface interface {
 	GetInvoice(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TrackShipment request
-	TrackShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	TrackShipment(ctx context.Context, orderNumber string, params *TrackShipmentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2108,8 +2178,8 @@ func (c *Client) GetAppointment(ctx context.Context, orderNumber string, stop Ge
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpsertAppointmentRequestWithBody(c.Server, orderNumber, stop, contentType, body)
+func (c *Client) UpsertAppointmentWithBody(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAppointmentRequestWithBody(c.Server, orderNumber, stop, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2120,8 +2190,8 @@ func (c *Client) UpsertAppointmentWithBody(ctx context.Context, orderNumber stri
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpsertAppointmentRequest(c.Server, orderNumber, stop, body)
+func (c *Client) UpsertAppointment(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAppointmentRequest(c.Server, orderNumber, stop, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2216,8 +2286,8 @@ func (c *Client) GetInvoice(ctx context.Context, orderNumber string, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) TrackShipment(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewTrackShipmentRequest(c.Server, orderNumber)
+func (c *Client) TrackShipment(ctx context.Context, orderNumber string, params *TrackShipmentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTrackShipmentRequest(c.Server, orderNumber, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3257,18 +3327,18 @@ func NewGetAppointmentRequest(server string, orderNumber string, stop GetAppoint
 }
 
 // NewUpsertAppointmentRequest calls the generic UpsertAppointment builder with application/json body
-func NewUpsertAppointmentRequest(server string, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody) (*http.Request, error) {
+func NewUpsertAppointmentRequest(server string, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, body UpsertAppointmentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpsertAppointmentRequestWithBody(server, orderNumber, stop, "application/json", bodyReader)
+	return NewUpsertAppointmentRequestWithBody(server, orderNumber, stop, params, "application/json", bodyReader)
 }
 
 // NewUpsertAppointmentRequestWithBody generates requests for UpsertAppointment with any type of body
-func NewUpsertAppointmentRequestWithBody(server string, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpsertAppointmentRequestWithBody(server string, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3300,12 +3370,49 @@ func NewUpsertAppointmentRequestWithBody(server string, orderNumber string, stop
 		return nil, err
 	}
 
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ConfirmChangeAfterAcceptance != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "confirmChangeAfterAcceptance", runtime.ParamLocationQuery, *params.ConfirmChangeAfterAcceptance); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.XOwayChangeReason != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Oway-Change-Reason", runtime.ParamLocationHeader, *params.XOwayChangeReason)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Oway-Change-Reason", headerParam0)
+		}
+
+	}
 
 	return req, nil
 }
@@ -3593,7 +3700,7 @@ func NewGetInvoiceRequest(server string, orderNumber string) (*http.Request, err
 }
 
 // NewTrackShipmentRequest generates requests for TrackShipment
-func NewTrackShipmentRequest(server string, orderNumber string) (*http.Request, error) {
+func NewTrackShipmentRequest(server string, orderNumber string, params *TrackShipmentParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3616,6 +3723,28 @@ func NewTrackShipmentRequest(server string, orderNumber string) (*http.Request, 
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Include != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include", runtime.ParamLocationQuery, *params.Include); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -3766,9 +3895,9 @@ type ClientWithResponsesInterface interface {
 	GetAppointmentWithResponse(ctx context.Context, orderNumber string, stop GetAppointmentParamsStop, reqEditors ...RequestEditorFn) (*GetAppointmentResponse, error)
 
 	// UpsertAppointmentWithBodyWithResponse request with any body
-	UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
+	UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
 
-	UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
+	UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error)
 
 	// DeleteDocumentWithResponse request
 	DeleteDocumentWithResponse(ctx context.Context, orderNumber string, stop DeleteDocumentParamsStop, documentType DeleteDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*DeleteDocumentResponse, error)
@@ -3792,7 +3921,7 @@ type ClientWithResponsesInterface interface {
 	GetInvoiceWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*GetInvoiceResponse, error)
 
 	// TrackShipmentWithResponse request
-	TrackShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error)
+	TrackShipmentWithResponse(ctx context.Context, orderNumber string, params *TrackShipmentParams, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error)
 }
 
 type GetTokenResponse struct {
@@ -4507,7 +4636,6 @@ func (r UploadDocumentResponse) StatusCode() int {
 type GetAppointmentPdfResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON404      *ProblemDetail
 }
 
 // Status returns HTTPResponse.Status
@@ -4972,16 +5100,16 @@ func (c *ClientWithResponses) GetAppointmentWithResponse(ctx context.Context, or
 }
 
 // UpsertAppointmentWithBodyWithResponse request with arbitrary body returning *UpsertAppointmentResponse
-func (c *ClientWithResponses) UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
-	rsp, err := c.UpsertAppointmentWithBody(ctx, orderNumber, stop, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpsertAppointmentWithBodyWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
+	rsp, err := c.UpsertAppointmentWithBody(ctx, orderNumber, stop, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpsertAppointmentResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
-	rsp, err := c.UpsertAppointment(ctx, orderNumber, stop, body, reqEditors...)
+func (c *ClientWithResponses) UpsertAppointmentWithResponse(ctx context.Context, orderNumber string, stop UpsertAppointmentParamsStop, params *UpsertAppointmentParams, body UpsertAppointmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAppointmentResponse, error) {
+	rsp, err := c.UpsertAppointment(ctx, orderNumber, stop, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5052,8 +5180,8 @@ func (c *ClientWithResponses) GetInvoiceWithResponse(ctx context.Context, orderN
 }
 
 // TrackShipmentWithResponse request returning *TrackShipmentResponse
-func (c *ClientWithResponses) TrackShipmentWithResponse(ctx context.Context, orderNumber string, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error) {
-	rsp, err := c.TrackShipment(ctx, orderNumber, reqEditors...)
+func (c *ClientWithResponses) TrackShipmentWithResponse(ctx context.Context, orderNumber string, params *TrackShipmentParams, reqEditors ...RequestEditorFn) (*TrackShipmentResponse, error) {
+	rsp, err := c.TrackShipment(ctx, orderNumber, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6575,19 +6703,6 @@ func ParseGetAppointmentPdfResponse(rsp *http.Response) (*GetAppointmentPdfRespo
 	response := &GetAppointmentPdfResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ProblemDetail
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case rsp.StatusCode == 404:
-		// Content-type (application/pdf) unsupported
-
 	}
 
 	return response, nil

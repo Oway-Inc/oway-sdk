@@ -476,7 +476,7 @@ export interface paths {
         };
         /**
          * Track a shipment by order number
-         * @description Retrieves tracking information for a shipment by its order number (PRO number). Returns status and estimated/actual pickup and delivery dates.
+         * @description Retrieves tracking information for a shipment by its order number (PRO number). Returns status and estimated/actual pickup and delivery dates. Pass `include=location` to embed the live position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius) in the response. It is omitted by default so status polling does not pay the position-computation cost.
          */
         get: operations["trackShipment"];
         put?: never;
@@ -539,8 +539,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Read generated appointment PDF (Phase 2)
-         * @description Returns the generated appointment PDF snapshot for one stop. Phase 1: always returns 404. The PDF doesn't exist until Phase 2 wires up generation at carrier acceptance. The endpoint is defined now to lock the URL contract.
+         * Read generated appointment PDF
+         * @description Returns the generated appointment PDF snapshot for one stop. The PDF is built at carrier acceptance (cover sheet + merged supporting documents) and re-generated on subsequent shipper-driven updates. Returns 404 before generation has occurred.
          */
         get: operations["getAppointmentPdf"];
         put?: never;
@@ -740,6 +740,53 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Shipment/Order details */
+        Shipment: {
+            /**
+             * @description Unique identifier for the order
+             * @example 67b6c5fcfbf1be6b24127646
+             */
+            id?: string;
+            /**
+             * @description Company ID that owns this order
+             * @example 67c0dfa95bff090747660465
+             */
+            companyId?: string;
+            /**
+             * @description User ID who created this order
+             * @example 679410f5b074882a64b9ea7f
+             */
+            userId?: string;
+            /**
+             * @description Human-readable PRO number for the shipment (5-character alphanumeric)
+             * @example ZKYQ5
+             */
+            orderNumber?: string;
+            /**
+             * @description Current status of the order
+             * @example CONFIRMED
+             * @enum {string}
+             */
+            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            /**
+             * Format: int64
+             * @description Total price of the order in cents (USD)
+             * @example 125000
+             */
+            totalPriceInCents?: number;
+            /**
+             * Format: date-time
+             * @description Time when the order was created (ISO 8601 format)
+             * @example 2025-02-20T17:31:10.430Z
+             */
+            createdAt?: string;
+            /**
+             * Format: date-time
+             * @description Time when the order was last updated (ISO 8601 format)
+             * @example 2025-02-27T22:51:49.865Z
+             */
+            updatedAt?: string;
+        };
         /** @description RFC 9457 Problem Details error response */
         ProblemDetail: {
             /**
@@ -779,57 +826,15 @@ export interface components {
              */
             field?: string;
             /**
+             * @description Entity the failing field belongs to (e.g. pickupAddress, deliveryAddress, appointment). Lets clients disambiguate otherwise-identical field paths across stops. Nullable for violations that have no entity context.
+             * @example deliveryAddress
+             */
+            entity?: string;
+            /**
              * @description Human-readable reason the field is invalid
              * @example Component dimensions of 77x71x86 are invalid (pallets must be less than 95x95x96, and either length or width may exceed 60 but not both)
              */
             reason?: string;
-        };
-        /** @description Shipment/Order details */
-        Shipment: {
-            /**
-             * @description Unique identifier for the order
-             * @example 67b6c5fcfbf1be6b24127646
-             */
-            id?: string;
-            /**
-             * @description Company ID that owns this order
-             * @example 67c0dfa95bff090747660465
-             */
-            companyId?: string;
-            /**
-             * @description User ID who created this order
-             * @example 679410f5b074882a64b9ea7f
-             */
-            userId?: string;
-            /**
-             * @description Human-readable PRO number for the shipment (5-character alphanumeric)
-             * @example ZKYQ5
-             */
-            orderNumber?: string;
-            /**
-             * @description Current shipment status in the order lifecycle
-             * @example CONFIRMED
-             * @enum {string}
-             */
-            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
-            /**
-             * Format: int32
-             * @description Total price of the order in cents (USD)
-             * @example 125000
-             */
-            totalPriceInCents?: number;
-            /**
-             * Format: date-time
-             * @description Time when the order was created (ISO 8601 format)
-             * @example 2025-02-20T17:31:10.43Z
-             */
-            createdAt?: string;
-            /**
-             * Format: date-time
-             * @description Time when the order was last updated (ISO 8601 format)
-             * @example 2025-02-27T22:51:49.865Z
-             */
-            updatedAt?: string;
         };
         /** @description A single contact for the appointment. At least one of email or phone must be present. */
         AppointmentContact: {
@@ -839,6 +844,7 @@ export interface components {
              */
             name: string;
             /**
+             * Format: email
              * @description Email address
              * @example maria@aqua.com
              */
@@ -911,13 +917,14 @@ export interface components {
             leadTimeHours?: number;
             /** @description Whether the merged effective appointmentRequired is true (OR of place-level and order-level booleans). */
             appointmentRequired?: boolean;
+            /** @description Per-field provenance. Tells the caller whether each field came from the place-level default, the order-level override, both, or neither. */
             _merged?: components["schemas"]["MergedDiagnostic"];
         };
         /** @description Per-field provenance for the merged appointment requirement. Tells the caller whether each field came from the place-level default, the order-level override, both, or neither. */
         MergedDiagnostic: {
             /** @description Map of field name -> source. Field names: channel, portalUrl, contacts, instructions, referenceNumbers, leadTimeHours. Values: PLACE | ORDER | PLACE_AND_ORDER | NONE. */
             fields?: {
-                [key: string]: "PLACE" | "ORDER" | "PLACE_AND_ORDER" | "NONE";
+                [key: string]: "PLACE" | "ORDER" | "PLACE_AND_ORDER" | "NONE" | "ADDRESS_FALLBACK";
             };
         };
         /** @description GPS coordinates for a shipment event */
@@ -975,7 +982,9 @@ export interface components {
              * @description Time the shipment was picked up
              */
             pickup_time: string;
+            /** @description Location where the pickup occurred */
             location?: components["schemas"]["EventLocation"];
+            /** @description GPS coordinates of the pickup location */
             coordinates?: components["schemas"]["EventCoordinates"];
             /** @description Name of the driver who performed the pickup */
             driver_name?: string;
@@ -1094,7 +1103,7 @@ export interface components {
              */
             id?: string;
             /**
-             * @description Current status of the carrier offer
+             * @description Current offer/shipment status
              * @enum {string}
              */
             status?: "PENDING" | "ACCEPTED" | "PICKED_UP" | "DELIVERED" | "REJECTED" | "EXPIRED" | "CANCELLED";
@@ -1107,13 +1116,26 @@ export interface components {
             rejection_reason?: string;
             /** @description Free-text explanation for rejection */
             rejection_reason_text?: string;
+            /** @description Order details */
             order?: components["schemas"]["Order"];
+            /** @description Pickup location address and contact */
             pickup?: components["schemas"]["CarrierAddress"];
+            /** @description Delivery location address and contact */
             delivery?: components["schemas"]["CarrierAddress"];
+            /** @description Estimated and actual pickup/delivery dates (populated after acceptance) */
             tracking?: components["schemas"]["CarrierTracking"];
+            /** @description Carrier payout information */
             payout?: components["schemas"]["Payout"];
+            /**
+             * @description ISO 4217 currency code for payout amounts
+             * @example USD
+             */
+            currency?: string;
+            /** @description Assigned driver and vehicle information */
             assigned_driver?: components["schemas"]["Driver"];
+            /** @description Pickup confirmation details (populated after pickup) */
             pickup_confirmation?: components["schemas"]["PickupConfirmation"];
+            /** @description Delivery confirmation details (populated after delivery) */
             delivery_confirmation?: components["schemas"]["DeliveryConfirmation"];
             /**
              * @description PIN code for pickup verification
@@ -1152,7 +1174,7 @@ export interface components {
              */
             order_number?: string;
             /**
-             * @description Current shipment status in the order lifecycle
+             * @description Current status of the order
              * @example PICKED_UP
              * @enum {string}
              */
@@ -1260,7 +1282,7 @@ export interface components {
              */
             order_number?: string;
             /**
-             * @description Current shipment status in the order lifecycle
+             * @description Current status of the order
              * @example CONFIRMED
              * @enum {string}
              */
@@ -1310,7 +1332,7 @@ export interface components {
         /** @description Carrier payout information */
         Payout: {
             /**
-             * Format: int32
+             * Format: int64
              * @description Total payout amount in cents (USD). Includes base payout plus all additional charges.
              * @example 125000
              */
@@ -1370,7 +1392,9 @@ export interface components {
              * @description Time the shipment was delivered
              */
             delivery_time: string;
+            /** @description Location where the delivery occurred */
             location?: components["schemas"]["EventLocation"];
+            /** @description GPS coordinates of the delivery location */
             coordinates?: components["schemas"]["EventCoordinates"];
             /** @description Name of the person who signed for the delivery */
             signed_by?: string;
@@ -1399,7 +1423,7 @@ export interface components {
              */
             id?: string;
             /**
-             * @description Current status of the carrier offer
+             * @description Current offer/shipment status
              * @enum {string}
              */
             status?: "PENDING" | "ACCEPTED" | "PICKED_UP" | "DELIVERED" | "REJECTED" | "EXPIRED" | "CANCELLED";
@@ -1412,13 +1436,26 @@ export interface components {
             rejection_reason?: string;
             /** @description Free-text explanation for rejection */
             rejection_reason_text?: string;
+            /** @description Order details */
             order?: components["schemas"]["Order"];
+            /** @description Pickup location address and contact */
             pickup?: components["schemas"]["CarrierAddress"];
+            /** @description Delivery location address and contact */
             delivery?: components["schemas"]["CarrierAddress"];
+            /** @description Estimated and actual pickup/delivery dates (populated after acceptance) */
             tracking?: components["schemas"]["CarrierTracking"];
+            /** @description Carrier payout information */
             payout?: components["schemas"]["Payout"];
+            /**
+             * @description ISO 4217 currency code for payout amounts
+             * @example USD
+             */
+            currency?: string;
+            /** @description Assigned driver and vehicle information */
             assigned_driver?: components["schemas"]["Driver"];
+            /** @description Pickup confirmation details (populated after pickup) */
             pickup_confirmation?: components["schemas"]["PickupConfirmation"];
+            /** @description Delivery confirmation details (populated after delivery) */
             delivery_confirmation?: components["schemas"]["DeliveryConfirmation"];
             /**
              * @description PIN code for pickup verification
@@ -1615,7 +1652,9 @@ export interface components {
         };
         /** @description Optional inline-on-create block on POST /v1/shipper/shipment. Each entry is the AppointmentRequirementRequest for the corresponding stop, applied only if that address has appointmentRequired=true. */
         AppointmentsBlock: {
+            /** @description Appointment requirement for the pickup stop */
             pickup?: components["schemas"]["AppointmentRequirementRequest"];
+            /** @description Appointment requirement for the delivery stop */
             delivery?: components["schemas"]["AppointmentRequirementRequest"];
         };
         /** @description Request to create a new shipment */
@@ -1625,7 +1664,9 @@ export interface components {
              * @example 507f1f77bcf86cd799439013
              */
             quoteId?: string;
+            /** @description Pickup location address */
             pickupAddress: components["schemas"]["Address"];
+            /** @description Delivery location address */
             deliveryAddress: components["schemas"]["Address"];
             /** @description List of cargo components in the shipment */
             orderComponents: components["schemas"]["OrderComponent"][];
@@ -1656,7 +1697,9 @@ export interface components {
              * @example 2024-12-26T17:00:00Z
              */
             requiredDeliveryBy?: string;
+            /** @description Optional inline appointment metadata per stop. May only be set for stops whose address has appointmentRequired=true. Each entry has the same shape as PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop}. */
             appointments?: components["schemas"]["AppointmentsBlock"];
+            /** @description Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder. */
             shipperDispatch?: components["schemas"]["ShipperDispatch"];
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
@@ -1704,6 +1747,7 @@ export interface components {
              *     ]
              */
             palletDimensions?: number[];
+            /** @description Pallet dimensions in inches. Optional: if both 'palletDimensions' and 'dimensions' are omitted, the API defaults to length=40, width=48, height=60. */
             dimensions?: components["schemas"]["Dimensions"];
             /**
              * @description Per-component freight description (e.g. NMFC item name)
@@ -1726,6 +1770,30 @@ export interface components {
              * @example 0
              */
             pieceCount?: number;
+        };
+        /** @description The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present. */
+        ShipperDispatch: {
+            /**
+             * @description Dispatch contact name
+             * @example Acme Logistics
+             */
+            name: string;
+            /**
+             * Format: email
+             * @description Dispatch email
+             * @example dispatch@example.com
+             */
+            email?: string;
+            /**
+             * @description Dispatch phone in E.164 format
+             * @example +15555550100
+             */
+            phone?: string;
+            /**
+             * @description Standard Carrier Alpha Code (SCAC), if applicable
+             * @example ACME
+             */
+            scac?: string;
         };
         /** @description Metadata for an uploaded appointment supporting document. */
         AppointmentDocumentResponse: {
@@ -1772,7 +1840,9 @@ export interface components {
         };
         /** @description Request to generate a shipping quote. Quotes are valid for 2 days from creation. */
         QuoteRequest: {
+            /** @description Pickup location. Only zipCode is required for quotes. */
             pickupAddress: components["schemas"]["Address"];
+            /** @description Delivery location. Only zipCode is required for quotes. */
             deliveryAddress: components["schemas"]["Address"];
             /** @description List of pallets or freight pieces. */
             orderComponents: components["schemas"]["OrderComponent"][];
@@ -1791,7 +1861,7 @@ export interface components {
              */
             id?: string;
             /**
-             * Format: int32
+             * Format: int64
              * @description Total quoted price in cents (USD)
              * @example 125000
              */
@@ -1923,6 +1993,7 @@ export interface components {
              * @description Revised estimated delivery time following the exception
              */
             estimated_delivery_time?: string;
+            /** @description Location where the exception occurred */
             location?: components["schemas"]["EventLocation"];
         };
         /** @description Response after reporting a shipment exception */
@@ -2075,6 +2146,70 @@ export interface components {
              */
             errorDescription?: string;
         };
+        /** @description GPS location data point for a vehicle */
+        GpsData: {
+            /**
+             * @description Unique identifier for the vehicle
+             * @example TRUCK-001
+             */
+            vehicleId: string;
+            /**
+             * Format: date-time
+             * @description Timestamp of the GPS reading (ISO 8601 format). Must not be in the future.
+             * @example 2025-02-20T17:33:15Z
+             */
+            timestamp: string;
+            /**
+             * Format: double
+             * @description Latitude coordinate
+             * @example 33.787363
+             */
+            latitude: number;
+            /**
+             * Format: double
+             * @description Longitude coordinate
+             * @example -118.163715
+             */
+            longitude: number;
+            /**
+             * Format: int32
+             * @description Heading in degrees (0-359, where 0 is North)
+             * @example 270
+             */
+            heading: number;
+            /**
+             * Format: int32
+             * @description Speed in km/h
+             * @example 65
+             */
+            speed: number;
+        };
+        /** @description Current estimated shipment position with an uncertainty radius */
+        ShipmentLocation: {
+            /** @description Estimated center point of the shipment's current position (route-interpolated, refined by recent vehicle positions when available) */
+            center?: components["schemas"]["GpsData"];
+            /**
+             * Format: double
+             * @description Uncertainty radius around the center point, in kilometers
+             * @example 4.2
+             */
+            uncertaintyRadiusKm?: number;
+            /**
+             * Format: date-time
+             * @description Timestamp of the last event that updated the location (ISO 8601 format)
+             * @example 2025-02-20T17:33:15Z
+             */
+            lastEventTimestamp?: string;
+            /**
+             * @description True when delivery is significantly past the expected window; the location estimate should not be shown
+             * @example false
+             */
+            isSignificantlyDelayed?: boolean;
+            /** @description Human-readable message to display when significantly delayed */
+            delayMessage?: string;
+            /** @description Human-readable status sentence combining phase, approximate location, and ETA, e.g. 'IN TRANSIT DIRECT TO RECEIVER - Currently in Flagstaff, AZ - 2 Days 4 Hrs Until Destination'. Present only when a meaningful line can be produced; omitted otherwise. */
+            statusDescription?: string | null;
+        };
         /** @description Shipment tracking information */
         Tracking: {
             /**
@@ -2088,7 +2223,7 @@ export interface components {
              */
             orderNumber?: string;
             /**
-             * @description Current shipment status in the order lifecycle
+             * @description Current status of the order
              * @example PICKED_UP
              * @enum {string}
              */
@@ -2117,6 +2252,8 @@ export interface components {
              * @example 2024-12-25T12:00:00Z
              */
             estimatedDeliveryDate?: string;
+            /** @description Live position estimate; present only when include=location is requested */
+            location?: components["schemas"]["ShipmentLocation"];
         };
         /** @description A charge on an invoice */
         InvoiceCharge: {
@@ -2131,7 +2268,7 @@ export interface components {
              */
             description?: string;
             /**
-             * Format: int32
+             * Format: int64
              * @description Amount in cents (USD)
              * @example 100000
              */
@@ -2212,7 +2349,7 @@ export interface components {
             /** @description Itemized charges and fees */
             charges?: components["schemas"]["InvoiceCharge"][];
             /**
-             * Format: int32
+             * Format: int64
              * @description Total of all charges in cents (USD)
              * @example 125000
              */
@@ -2229,8 +2366,11 @@ export interface components {
              * @example 4
              */
             totalPieces?: number;
+            /** @description Shipper (pickup) address and contact information */
             shipper?: components["schemas"]["Address"];
+            /** @description Consignee (delivery) address and contact information */
             consignee?: components["schemas"]["Address"];
+            /** @description Bill-to address for the invoice (same as shipper for prepaid shipments) */
             billTo?: components["schemas"]["Address"];
         };
         /** @description Response containing a document download link */
@@ -2317,29 +2457,6 @@ export interface components {
              * @example https://s3.amazonaws.com/...
              */
             download_link?: string;
-        };
-        /** @description The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present. */
-        ShipperDispatch: {
-            /**
-             * @description Dispatch contact name
-             * @example Acme Logistics
-             */
-            name: string;
-            /**
-             * @description Dispatch email
-             * @example dispatch@example.com
-             */
-            email?: string;
-            /**
-             * @description Dispatch phone in E.164 format
-             * @example +15555550100
-             */
-            phone?: string;
-            /**
-             * @description Standard Carrier Alpha Code (SCAC), if applicable
-             * @example ACME
-             */
-            scac?: string;
         };
     };
     responses: never;
@@ -2531,8 +2648,14 @@ export interface operations {
     };
     upsertAppointment: {
         parameters: {
-            query?: never;
-            header?: never;
+            query?: {
+                /** @description Set to true to override the post-acceptance mutability lock. Required together with the X-Oway-Change-Reason header. */
+                confirmChangeAfterAcceptance?: boolean;
+            };
+            header?: {
+                /** @description Required when confirmChangeAfterAcceptance=true. Surfaces verbatim in the carrier-change notification email. */
+                "X-Oway-Change-Reason"?: string;
+            };
             path: {
                 /**
                  * @description Order number (PRO)
@@ -3128,6 +3251,7 @@ export interface operations {
              *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
              *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
              *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.
              */
             422: {
                 headers: {
@@ -3325,6 +3449,7 @@ export interface operations {
              *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
              *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
              *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.
              */
             422: {
                 headers: {
@@ -3763,7 +3888,13 @@ export interface operations {
     };
     trackShipment: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius). Omitted by default so status polling does not pay the position-computation cost.
+                 * @example location
+                 */
+                include?: string;
+            };
             header?: never;
             path: {
                 /**
@@ -3970,14 +4101,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description PDF not generated. Phase 1 always returns this; Phase 2 will return the PDF when available. */
+            /** @description Returns the application/pdf bytes for this stop. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description PDF has not been generated for this order/stop yet (reason `appointment_pdf_not_generated`), or the order does not exist (reason `order_not_found`). */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/pdf": components["schemas"]["ProblemDetail"];
-                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };

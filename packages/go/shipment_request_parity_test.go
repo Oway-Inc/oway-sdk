@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Oway-Inc/oway-sdk/packages/go/client"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // deprecatedShipmentRequestFields lists json tags on client.CreateShipmentRequest
@@ -113,7 +114,7 @@ func fullyPopulatedShipmentRequest() ShipmentRequest {
 	ref := "REF-PARITY"
 	pickupAt := time.Date(2026, 6, 1, 8, 0, 0, 0, time.UTC)
 	deliverBy := time.Date(2026, 6, 3, 17, 0, 0, 0, time.UTC)
-	dispatchEmail := "dispatch@example.com"
+	dispatchEmail := openapi_types.Email("dispatch@example.com")
 	dispatchPhone := "+15555550100"
 	scac := "ACME"
 	return ShipmentRequest{
