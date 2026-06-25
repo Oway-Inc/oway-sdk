@@ -29,7 +29,9 @@ export type LocationAcknowledgment = components['schemas']['LocationAcknowledgme
 export type ExceptionReportRequest = components['schemas']['ExceptionReportRequest'];
 export type ExceptionResponse = components['schemas']['ExceptionResponse'];
 export type CarrierTripRequest = components['schemas']['CarrierTripRequest'];
-export type CarrierTracking = components['schemas']['CarrierTracking'];
+// The carrier tracking endpoint returns the GPS tracking history
+// (order number, last-updated time, and an ordered list of GPS points).
+export type CarrierTracking = components['schemas']['TrackingResponse'];
 
 // Re-export for advanced usage
 export type { paths, components } from './generated/schema';

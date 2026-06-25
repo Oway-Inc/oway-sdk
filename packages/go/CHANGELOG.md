@@ -2,6 +2,19 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.2.5]
+
+### Added
+
+- `Client.GetCarrierTracking(ctx, identifier)` convenience wrapper returning the GPS tracking history (`CarrierTracking`: order number, last-updated time, and an ordered list of GPS points) for a carrier shipment.
+- `Client.TrackShipmentStatusOnly(ctx, orderNumber)` for lightweight status-only polling that omits the live position estimate.
+
+### Changed
+
+- `Client.TrackShipment` now includes the live position estimate (GPS center, uncertainty radius, last-event time, delay flags) by default, via the new `include=location` query the server accepts. Callers who want status-only polling should use `TrackShipmentStatusOnly`.
+- `CarrierTracking` is now an alias of the generated `TrackingResponse` (the GPS tracking-history shape the carrier tracking endpoint actually returns).
+- Regenerated from the latest sandbox spec. Email fields (for example `ShipperDispatch.Email` and address email fields) are now typed as `openapi_types.Email` (an alias of `string`) to reflect the `email` format in the spec. Callers passing a plain `string` literal will need to wrap it, for example `openapi_types.Email("dispatch@example.com")`.
+
 ## [0.2.4]
 
 ### Added

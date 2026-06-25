@@ -80,3 +80,34 @@ func TestGetCarrierShipment_UsesCarrierEndpoint(t *testing.T) {
 		t.Errorf("hit path = %q, want /v1/carrier/shipments/ship-1", hitPath)
 	}
 }
+
+func TestGetCarrierTracking(t *testing.T) {
+	c, srv := newTestServer(t, okToken,
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/v1/carrier/shipments/off-1/tracking" {
+				t.Errorf("unexpected path %q", r.URL.Path)
+			}
+			writeJSON(w, http.StatusOK, `{"order_number":"ZKYQ5"}`)
+		})
+	defer srv.Close()
+
+	trk, err := c.GetCarrierTracking(context.Background(), "off-1")
+	if err != nil {
+		t.Fatalf("GetCarrierTracking: %v", err)
+	}
+	if trk == nil || trk.OrderNumber == nil || *trk.OrderNumber != "ZKYQ5" {
+		t.Errorf("unexpected tracking %+v", trk)
+	}
+}
+
+func TestGetCarrierTracking_RequiresIdentifier(t *testing.T) {
+	c, srv := newTestServer(t, okToken,
+		func(http.ResponseWriter, *http.Request) {
+			t.Fatal("API should not be called when identifier missing")
+		})
+	defer srv.Close()
+
+	if _, err := c.GetCarrierTracking(context.Background(), ""); err == nil {
+		t.Fatal("expected error for empty identifier, got nil")
+	}
+}
