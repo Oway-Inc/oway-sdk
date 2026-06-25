@@ -18,6 +18,27 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
+const { Converter } = require('@apiture/openapi-down-convert');
+
+/**
+ * Strip `type: "null"` siblings left on `$ref` nodes. OpenAPI 3.1's
+ * nullable-ref idiom (`{ "$ref": ..., "type": "null" }`) is not valid 3.0,
+ * and the down-converter leaves it in place on some nodes. In 3.0 a `$ref`
+ * with siblings is ignored by spec, so dropping the stray `type` keeps the
+ * `$ref` authoritative and the document strictly valid.
+ */
+function stripNullTypeOnRefs(node) {
+  if (Array.isArray(node)) {
+    node.forEach(stripNullTypeOnRefs);
+    return;
+  }
+  if (node && typeof node === 'object') {
+    if (typeof node.$ref === 'string' && node.type === 'null') {
+      delete node.type;
+    }
+    Object.values(node).forEach(stripNullTypeOnRefs);
+  }
+}
 
 const ROOT = path.resolve(__dirname, '..');
 const SPEC_PATH = path.join(ROOT, 'openapi', 'spec.json');
@@ -81,11 +102,22 @@ async function main() {
   if (!opts.skipFetch) {
     console.log(`\n→ Fetching OpenAPI spec from ${opts.url}`);
     try {
-      const spec = await fetch(opts.url);
-      // Validate it's valid JSON
-      JSON.parse(spec);
-      fs.writeFileSync(SPEC_PATH, spec);
-      console.log(`  ✓ Saved to openapi/spec.json (${spec.length} bytes)`);
+      const raw = await fetch(opts.url);
+      const parsed = JSON.parse(raw);
+      const version = String(parsed.openapi || '');
+      let doc = parsed;
+      if (version.startsWith('3.1')) {
+        console.log('  → Down-converting OpenAPI 3.1 → 3.0');
+        doc = new Converter(parsed, { convertSchemaComments: true }).convert();
+        stripNullTypeOnRefs(doc);
+      }
+      const outVersion = String(doc.openapi || '');
+      if (!/^3\.0\.\d+$/.test(outVersion)) {
+        throw new Error(`expected OpenAPI 3.0.x after conversion, got "${outVersion}"`);
+      }
+      const out = JSON.stringify(doc, null, 2) + '\n';
+      fs.writeFileSync(SPEC_PATH, out);
+      console.log(`  ✓ Saved to openapi/spec.json (openapi ${outVersion}, ${out.length} bytes)`);
     } catch (err) {
       console.error(`  ✗ Failed to fetch spec: ${err.message}`);
       if (opts.url === URLS.local) {

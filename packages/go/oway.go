@@ -384,11 +384,29 @@ func (c *Client) ConfirmShipment(ctx context.Context, orderNumber string) (*Ship
 	return out, err
 }
 
-// TrackShipment returns tracking information for a shipment.
+// TrackShipment returns tracking information for a shipment. The live
+// position estimate (GPS center, uncertainty radius, last-event time,
+// delay flags) is included by default. Use TrackShipmentStatusOnly for
+// lightweight status-only polling that omits the position computation.
 func (c *Client) TrackShipment(ctx context.Context, orderNumber string) (*Tracking, error) {
+	return c.trackShipment(ctx, orderNumber, true)
+}
+
+// TrackShipmentStatusOnly returns tracking information without the live
+// position estimate, for lightweight status polling.
+func (c *Client) TrackShipmentStatusOnly(ctx context.Context, orderNumber string) (*Tracking, error) {
+	return c.trackShipment(ctx, orderNumber, false)
+}
+
+func (c *Client) trackShipment(ctx context.Context, orderNumber string, includeLocation bool) (*Tracking, error) {
+	var params *client.TrackShipmentParams
+	if includeLocation {
+		location := "location"
+		params = &client.TrackShipmentParams{Include: &location}
+	}
 	var out *Tracking
 	err := c.retry(ctx, func() error {
-		r, err := c.api.TrackShipmentWithResponse(ctx, orderNumber)
+		r, err := c.api.TrackShipmentWithResponse(ctx, orderNumber, params)
 		if err != nil {
 			return err
 		}
