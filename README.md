@@ -234,6 +234,19 @@ See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for full authentication details.
 | Track a shipment | `oway.shipments.tracking(orderNumber)` |
 | Get documents (BOL, label) | `oway.shipments.document(orderNumber, type)` |
 | Get invoice | `oway.shipments.invoice(orderNumber)` |
+| **Carrier:** list offers | `oway.carrier.offers()` |
+| Retrieve an offer | `oway.carrier.offer(id)` |
+| Accept an offer | `oway.carrier.acceptOffer(id, req)` |
+| Reject an offer | `oway.carrier.rejectOffer(id, req)` |
+| Retrieve a carrier shipment | `oway.carrier.shipment(id)` |
+| Confirm pickup | `oway.carrier.confirmPickup(id, req)` |
+| Confirm delivery | `oway.carrier.confirmDelivery(id, req)` |
+| Submit a GPS location | `oway.carrier.submitLocation(id, loc)` |
+| Report an exception | `oway.carrier.reportException(id, req)` |
+| Submit completed trips | `oway.carrier.submitTrips(trips)` |
+| Track a carrier shipment | `oway.carrier.tracking(id)` |
+
+> Shipment tracking includes the live position estimate (GPS center, uncertainty radius, last-event time) by default. For lightweight status-only polling, call `oway.shipments.tracking(orderNumber, { includeLocation: false })`.
 
 ## Documentation
 
