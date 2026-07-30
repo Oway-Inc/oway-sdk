@@ -2,6 +2,23 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.3.1]
+
+### Added
+
+- `InvoiceLineItem.NmfcCode` — the NMFC commodity code for an invoice line, when
+  the shipment supplied one. Nil when it did not; it never falls back to the
+  freight class, which is a different thing. Lets consumers that bill or rate off
+  the invoice read the NMFC the platform already stores per order component.
+- Carrier milestone reporting, regenerated from the spec rather than added by
+  hand: `POST /v1/carrier/shipments/{identifier}/milestones` with
+  `MilestoneReportRequest` (`ARRIVED_AT_PICKUP`, `LOADED`, `DEPARTED_PICKUP`,
+  `ARRIVED_AT_DELIVERY`, `UNLOADED`) and `ShipmentMilestoneDTO`.
+- `QuoteRequestShipmentMode` (`ftl`, `ltl`).
+
+Purely additive: every new field is a pointer and every new type is new, so
+0.3.0 callers compile unchanged.
+
 ## [0.3.0]
 
 ### Added
