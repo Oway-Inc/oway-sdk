@@ -352,6 +352,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/carrier/shipments/{identifier}/milestones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a shipment milestone
+         * @description Records a physical shipment observation without changing the shipment's commercial order state.
+         */
+        post: operations["reportMilestone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/carrier/shipments/{identifier}/location": {
         parameters: {
             query?: never;
@@ -1852,6 +1872,11 @@ export interface components {
              * @example 2026-04-01T08:00:00Z
              */
             requiredPickupDate?: string;
+            /**
+             * @description Shipment mode (LTL or FTL).
+             * @enum {string}
+             */
+            shipmentMode?: "ltl" | "ftl";
         };
         /** @description Response containing a shipping quote */
         QuoteResponse: {
@@ -1929,6 +1954,33 @@ export interface components {
              */
             expires_at?: string;
         };
+        /** @description A carrier-observed physical shipment milestone */
+        MilestoneReportRequest: {
+            /** @enum {string} */
+            type: "ARRIVED_AT_PICKUP" | "LOADED" | "DEPARTED_PICKUP" | "ARRIVED_AT_DELIVERY" | "UNLOADED";
+            /**
+             * Format: date-time
+             * @description Time the physical event occurred
+             */
+            occurred_at: string;
+            /** @description GPS coordinates observed with the milestone */
+            coordinates?: components["schemas"]["EventCoordinates"];
+            /** @description Additional notes about the milestone */
+            notes?: string;
+        };
+        ShipmentMilestoneDTO: {
+            /** @enum {string} */
+            type?: "ARRIVED_AT_PICKUP" | "LOADED" | "DEPARTED_PICKUP" | "ARRIVED_AT_DELIVERY" | "UNLOADED";
+            /** @enum {string} */
+            source?: "DRIVER_APP" | "ADMIN_APP" | "CARRIER_API" | "ELD_AUTO" | "INFERRED";
+            /** Format: date-time */
+            occurredAt?: string;
+            /** Format: double */
+            lat?: number;
+            /** Format: double */
+            lng?: number;
+            notes?: string;
+        };
         /** @description Real-time location update for a shipment in transit */
         OfferLocationUpdate: {
             /**
@@ -1960,6 +2012,11 @@ export interface components {
              * @description Timestamp of this location reading
              */
             timestamp: string;
+            /**
+             * @description Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. The position trail itself is keyed internally per shipment, so changing or omitting this never affects tracking history.
+             * @example TRUCK-42
+             */
+            vehicle_id?: string;
         };
         /** @description Acknowledgment of a location update */
         LocationAcknowledgment: {
@@ -2286,6 +2343,11 @@ export interface components {
              * @example 85
              */
             freightClass?: string;
+            /**
+             * @description NMFC commodity code for this line, when the shipment supplied one. Null when no NMFC was provided; it never falls back to the freight class, which is a different thing.
+             * @example 90500-04
+             */
+            nmfcCode?: string;
             /**
              * Format: int32
              * @description Weight in pounds
@@ -3535,6 +3597,90 @@ export interface operations {
                 };
             };
             /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    reportMilestone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Shipment identifier (offerId, orderNumber, or carrierReference)
+                 * @example Y73Q0
+                 */
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MilestoneReportRequest"];
+            };
+        };
+        responses: {
+            /** @description Milestone recorded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentMilestoneDTO"];
+                };
+            };
+            /** @description Invalid milestone request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Carrier is not authorized for this shipment */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment not found for this carrier */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment is not in a reportable state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Milestone could not be recorded */
             500: {
                 headers: {
                     [name: string]: unknown;

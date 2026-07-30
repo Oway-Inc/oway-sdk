@@ -106,6 +106,15 @@ const (
 	PLACEANDORDER   MergedDiagnosticFields = "PLACE_AND_ORDER"
 )
 
+// Defines values for MilestoneReportRequestType.
+const (
+	MilestoneReportRequestTypeARRIVEDATDELIVERY MilestoneReportRequestType = "ARRIVED_AT_DELIVERY"
+	MilestoneReportRequestTypeARRIVEDATPICKUP   MilestoneReportRequestType = "ARRIVED_AT_PICKUP"
+	MilestoneReportRequestTypeDEPARTEDPICKUP    MilestoneReportRequestType = "DEPARTED_PICKUP"
+	MilestoneReportRequestTypeLOADED            MilestoneReportRequestType = "LOADED"
+	MilestoneReportRequestTypeUNLOADED          MilestoneReportRequestType = "UNLOADED"
+)
+
 // Defines values for OfferStatus.
 const (
 	OfferStatusACCEPTED  OfferStatus = "ACCEPTED"
@@ -129,6 +138,12 @@ const (
 	OrderOrderStatusPICKEDUP    OrderOrderStatus = "PICKED_UP"
 )
 
+// Defines values for QuoteRequestShipmentMode.
+const (
+	Ftl QuoteRequestShipmentMode = "ftl"
+	Ltl QuoteRequestShipmentMode = "ltl"
+)
+
 // Defines values for RejectOfferRequestReason.
 const (
 	RejectOfferRequestReasonCapacityUnavailable RejectOfferRequestReason = "capacity_unavailable"
@@ -148,6 +163,24 @@ const (
 	ShipmentOrderStatusINITIALIZED ShipmentOrderStatus = "INITIALIZED"
 	ShipmentOrderStatusINTRANSIT   ShipmentOrderStatus = "IN_TRANSIT"
 	ShipmentOrderStatusPICKEDUP    ShipmentOrderStatus = "PICKED_UP"
+)
+
+// Defines values for ShipmentMilestoneDTOSource.
+const (
+	ADMINAPP   ShipmentMilestoneDTOSource = "ADMIN_APP"
+	CARRIERAPI ShipmentMilestoneDTOSource = "CARRIER_API"
+	DRIVERAPP  ShipmentMilestoneDTOSource = "DRIVER_APP"
+	ELDAUTO    ShipmentMilestoneDTOSource = "ELD_AUTO"
+	INFERRED   ShipmentMilestoneDTOSource = "INFERRED"
+)
+
+// Defines values for ShipmentMilestoneDTOType.
+const (
+	ShipmentMilestoneDTOTypeARRIVEDATDELIVERY ShipmentMilestoneDTOType = "ARRIVED_AT_DELIVERY"
+	ShipmentMilestoneDTOTypeARRIVEDATPICKUP   ShipmentMilestoneDTOType = "ARRIVED_AT_PICKUP"
+	ShipmentMilestoneDTOTypeDEPARTEDPICKUP    ShipmentMilestoneDTOType = "DEPARTED_PICKUP"
+	ShipmentMilestoneDTOTypeLOADED            ShipmentMilestoneDTOType = "LOADED"
+	ShipmentMilestoneDTOTypeUNLOADED          ShipmentMilestoneDTOType = "UNLOADED"
 )
 
 // Defines values for TrackingOrderStatus.
@@ -889,6 +922,9 @@ type InvoiceLineItem struct {
 	// FreightClass Freight class
 	FreightClass *string `json:"freightClass,omitempty"`
 
+	// NmfcCode NMFC commodity code for this line, when the shipment supplied one. Null when no NMFC was provided; it never falls back to the freight class, which is a different thing.
+	NmfcCode *string `json:"nmfcCode,omitempty"`
+
 	// PackageType Package type
 	PackageType *string `json:"packageType,omitempty"`
 
@@ -964,6 +1000,22 @@ type MergedDiagnostic struct {
 
 // MergedDiagnosticFields defines model for MergedDiagnostic.Fields.
 type MergedDiagnosticFields string
+
+// MilestoneReportRequest A carrier-observed physical shipment milestone
+type MilestoneReportRequest struct {
+	// Coordinates GPS coordinates for a shipment event
+	Coordinates *EventCoordinates `json:"coordinates,omitempty"`
+
+	// Notes Additional notes about the milestone
+	Notes *string `json:"notes,omitempty"`
+
+	// OccurredAt Time the physical event occurred
+	OccurredAt time.Time                  `json:"occurred_at"`
+	Type       MilestoneReportRequestType `json:"type"`
+}
+
+// MilestoneReportRequestType defines model for MilestoneReportRequest.Type.
+type MilestoneReportRequestType string
 
 // Offer Carrier offer details
 type Offer struct {
@@ -1044,6 +1096,9 @@ type OfferLocationUpdate struct {
 
 	// Timestamp Timestamp of this location reading
 	Timestamp time.Time `json:"timestamp"`
+
+	// VehicleId Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. The position trail itself is keyed internally per shipment, so changing or omitting this never affects tracking history.
+	VehicleId *string `json:"vehicle_id,omitempty"`
 }
 
 // Order Order details visible to the carrier
@@ -1198,7 +1253,13 @@ type QuoteRequest struct {
 
 	// RequiredPickupDate Required pickup date (ISO 8601).
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
+
+	// ShipmentMode Shipment mode (LTL or FTL).
+	ShipmentMode *QuoteRequestShipmentMode `json:"shipmentMode,omitempty"`
 }
+
+// QuoteRequestShipmentMode Shipment mode (LTL or FTL).
+type QuoteRequestShipmentMode string
 
 // QuoteResponse Response containing a shipping quote
 type QuoteResponse struct {
@@ -1280,6 +1341,22 @@ type ShipmentLocation struct {
 	// UncertaintyRadiusKm Uncertainty radius around the center point, in kilometers
 	UncertaintyRadiusKm *float64 `json:"uncertaintyRadiusKm,omitempty"`
 }
+
+// ShipmentMilestoneDTO defines model for ShipmentMilestoneDTO.
+type ShipmentMilestoneDTO struct {
+	Lat        *float64                    `json:"lat,omitempty"`
+	Lng        *float64                    `json:"lng,omitempty"`
+	Notes      *string                     `json:"notes,omitempty"`
+	OccurredAt *time.Time                  `json:"occurredAt,omitempty"`
+	Source     *ShipmentMilestoneDTOSource `json:"source,omitempty"`
+	Type       *ShipmentMilestoneDTOType   `json:"type,omitempty"`
+}
+
+// ShipmentMilestoneDTOSource defines model for ShipmentMilestoneDTO.Source.
+type ShipmentMilestoneDTOSource string
+
+// ShipmentMilestoneDTOType defines model for ShipmentMilestoneDTO.Type.
+type ShipmentMilestoneDTOType string
 
 // ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
 type ShipperDispatch struct {
@@ -1529,6 +1606,9 @@ type ReportExceptionJSONRequestBody = ExceptionReportRequest
 // SubmitLocationJSONRequestBody defines body for SubmitLocation for application/json ContentType.
 type SubmitLocationJSONRequestBody = OfferLocationUpdate
 
+// ReportMilestoneJSONRequestBody defines body for ReportMilestone for application/json ContentType.
+type ReportMilestoneJSONRequestBody = MilestoneReportRequest
+
 // ConfirmPickupJSONRequestBody defines body for ConfirmPickup for application/json ContentType.
 type ConfirmPickupJSONRequestBody = PickupConfirmationRequest
 
@@ -1683,6 +1763,11 @@ type ClientInterface interface {
 	SubmitLocationWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	SubmitLocation(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReportMilestoneWithBody request with any body
+	ReportMilestoneWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ReportMilestone(ctx context.Context, identifier string, body ReportMilestoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ConfirmPickupWithBody request with any body
 	ConfirmPickupWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2024,6 +2109,30 @@ func (c *Client) SubmitLocationWithBody(ctx context.Context, identifier string, 
 
 func (c *Client) SubmitLocation(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSubmitLocationRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReportMilestoneWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReportMilestoneRequestWithBody(c.Server, identifier, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReportMilestone(ctx context.Context, identifier string, body ReportMilestoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReportMilestoneRequest(c.Server, identifier, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2994,6 +3103,53 @@ func NewSubmitLocationRequestWithBody(server string, identifier string, contentT
 	return req, nil
 }
 
+// NewReportMilestoneRequest calls the generic ReportMilestone builder with application/json body
+func NewReportMilestoneRequest(server string, identifier string, body ReportMilestoneJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewReportMilestoneRequestWithBody(server, identifier, "application/json", bodyReader)
+}
+
+// NewReportMilestoneRequestWithBody generates requests for ReportMilestone with any type of body
+func NewReportMilestoneRequestWithBody(server string, identifier string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/milestones", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewConfirmPickupRequest calls the generic ConfirmPickup builder with application/json body
 func NewConfirmPickupRequest(server string, identifier string, body ConfirmPickupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3862,6 +4018,11 @@ type ClientWithResponsesInterface interface {
 
 	SubmitLocationWithResponse(ctx context.Context, identifier string, body SubmitLocationJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitLocationResponse, error)
 
+	// ReportMilestoneWithBodyWithResponse request with any body
+	ReportMilestoneWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportMilestoneResponse, error)
+
+	ReportMilestoneWithResponse(ctx context.Context, identifier string, body ReportMilestoneJSONRequestBody, reqEditors ...RequestEditorFn) (*ReportMilestoneResponse, error)
+
 	// ConfirmPickupWithBodyWithResponse request with any body
 	ConfirmPickupWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmPickupResponse, error)
 
@@ -4344,6 +4505,34 @@ func (r SubmitLocationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SubmitLocationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ReportMilestoneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ShipmentMilestoneDTO
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ReportMilestoneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReportMilestoneResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4993,6 +5182,23 @@ func (c *ClientWithResponses) SubmitLocationWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseSubmitLocationResponse(rsp)
+}
+
+// ReportMilestoneWithBodyWithResponse request with arbitrary body returning *ReportMilestoneResponse
+func (c *ClientWithResponses) ReportMilestoneWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportMilestoneResponse, error) {
+	rsp, err := c.ReportMilestoneWithBody(ctx, identifier, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReportMilestoneResponse(rsp)
+}
+
+func (c *ClientWithResponses) ReportMilestoneWithResponse(ctx context.Context, identifier string, body ReportMilestoneJSONRequestBody, reqEditors ...RequestEditorFn) (*ReportMilestoneResponse, error) {
+	rsp, err := c.ReportMilestone(ctx, identifier, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReportMilestoneResponse(rsp)
 }
 
 // ConfirmPickupWithBodyWithResponse request with arbitrary body returning *ConfirmPickupResponse
@@ -6070,6 +6276,74 @@ func ParseSubmitLocationResponse(rsp *http.Response) (*SubmitLocationResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest LocationAcknowledgment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReportMilestoneResponse parses an HTTP response from a ReportMilestoneWithResponse call
+func ParseReportMilestoneResponse(rsp *http.Response) (*ReportMilestoneResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReportMilestoneResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ShipmentMilestoneDTO
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
