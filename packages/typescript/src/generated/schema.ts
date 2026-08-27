@@ -37,16 +37,18 @@ export interface paths {
          *
          *     *Order Fields:*
          *     - `description` - Must not be empty
-         *     - `totalPalletCount` - Must be between 1 and 51
-         *     - `totalPoundsWeight` - Must be between 1 and 2,500 lbs per pallet
+         *     - `totalPalletCount` - At least 1, up to the current per-order maximum
+         *     - `totalPoundsWeight` - At least 1, within the current per-pallet weight cap
          *
          *     *Order Component Fields (per component):*
          *     - `palletCount` - Must be at least 1
-         *     - `poundsWeight` - Must be between 1 and 2,500 lbs per pallet
-         *     - `palletDimensions` - Must be valid dimensions within limits (subject to change, these are configurable):
-         *       - Standard: max 60x52x94 inches (LxWxH) - pallets exceeding these are charged as oversized
-         *       - Oversized maximum: 95x95x96 inches - no pallet can exceed this
-         *       - With liftgate: max 62x62x94 inches
+         *     - `poundsWeight` - At least 1, within the current per-pallet weight cap
+         *     - `palletDimensions` - Length, width and height in inches, each at least 1 and
+         *       within the current maximums. These limits are configurable and change over
+         *       time, so they are not restated here: a pallet that exceeds them is rejected
+         *       with a 422 whose violation message states the maximum that applied. A pallet
+         *       larger than the standard footprint is still accepted and priced as oversized,
+         *       and a stop that requires a liftgate applies a tighter maximum.
          *
          *     *Component Totals:*
          *     - Sum of component `palletCount` must equal order `totalPalletCount`
@@ -851,8 +853,8 @@ export interface components {
              */
             entity?: string;
             /**
-             * @description Human-readable reason the field is invalid
-             * @example Component dimensions of 77x71x86 are invalid (pallets must be less than 95x95x96, and either length or width may exceed 60 but not both)
+             * @description Human-readable reason the field is invalid. Any dimension or weight ceiling quoted in the message is configuration-driven, so treat the figures in the example as indicative rather than as a fixed part of the contract. The example is one rejection rather than every one: it shows a shipment that requested no liftgate. A shipment whose pickup or delivery requires a liftgate is measured against a different, generally tighter, set of dimension ceilings, and its message quotes whichever figures applied.
+             * @example Component dimensions of 110x48x40 are invalid (pallets must be less than 96x96x108, and greater than 1x1x1)
              */
             reason?: string;
         };
@@ -1085,6 +1087,16 @@ export interface components {
              * @example true
              */
             appointment_required?: boolean;
+            /**
+             * @description Third-party labor handles loading/unloading at this stop; the driver does not handle freight.
+             * @example false
+             */
+            lumper_required?: boolean;
+            /**
+             * @description Freight must be brought inside the facility rather than left at the dock.
+             * @example false
+             */
+            inside_required?: boolean;
         };
         /** @description Individual pallet/component details */
         CarrierComponent: {
@@ -1635,6 +1647,17 @@ export interface components {
              */
             contactPerson: string;
             /**
+             * @description Phone extension, dialled after the main number
+             * @example 204
+             */
+            phoneExtension?: string;
+            /**
+             * Format: email
+             * @description Contact email for this location
+             * @example dock@example.com
+             */
+            email?: string;
+            /**
              * @description Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
              * @example 10:00
              */
@@ -1669,6 +1692,16 @@ export interface components {
              * @example true
              */
             callAheadRequired?: boolean;
+            /**
+             * @description Whether third-party lumper labor loads/unloads at this location (common at large distribution centers where drivers may not handle freight). Informational for quoting: the lumper fee is not priced into the quote and is billed after delivery as a separate charge with proof of payment.
+             * @example false
+             */
+            lumperRequired?: boolean;
+            /**
+             * @description Whether the driver must bring freight inside the facility rather than to the dock or curb. Adds a flat inside-service fee to the quote.
+             * @example false
+             */
+            insideRequired?: boolean;
         };
         /** @description Optional inline-on-create block on POST /v1/shipper/shipment. Each entry is the AppointmentRequirementRequest for the corresponding stop, applied only if that address has appointmentRequired=true. */
         AppointmentsBlock: {
@@ -1705,6 +1738,19 @@ export interface components {
              * @example BOL-2026-04129
              */
             refNumber?: string;
+            /**
+             * @description Free-text instructions to render on the shipment's documents. Matches the instructions field on appointment requirements.
+             * @example Call receiving before arrival; dock 4 only.
+             */
+            instructions?: string;
+            /**
+             * @description Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber.
+             * @example [
+             *       "SO-45821",
+             *       "CUST-REF-7781"
+             *     ]
+             */
+            referenceNumbers?: string[];
             /**
              * Format: date-time
              * @description Required pickup date (ISO 8601 format)
@@ -1779,6 +1825,11 @@ export interface components {
              * @example 90500-04
              */
             nmfcCode?: string;
+            /**
+             * @description LTL freight class declared by the shipper. When supplied it is authoritative; Oway derives a class from density only when this is absent.
+             * @example 100
+             */
+            freightClass?: string;
             /**
              * @description Packaging type for this component (e.g. Pallets, Boxes, Crates)
              * @example Pallets

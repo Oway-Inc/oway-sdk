@@ -325,11 +325,20 @@ type Address struct {
 	// ContactPerson Name of the contact person at this location
 	ContactPerson string `json:"contactPerson"`
 
+	// Email Contact email for this location
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// InsideRequired Whether the driver must bring freight inside the facility rather than to the dock or curb. Adds a flat inside-service fee to the quote.
+	InsideRequired *bool `json:"insideRequired,omitempty"`
+
 	// LiftgateRequired Whether a liftgate is required at this location
 	LiftgateRequired *bool `json:"liftgateRequired,omitempty"`
 
 	// LimitedAccess Whether this is a limited access location (residential, construction site, etc.)
 	LimitedAccess *bool `json:"limitedAccess,omitempty"`
+
+	// LumperRequired Whether third-party lumper labor loads/unloads at this location (common at large distribution centers where drivers may not handle freight). Informational for quoting: the lumper fee is not priced into the quote and is billed after delivery as a separate charge with proof of payment.
+	LumperRequired *bool `json:"lumperRequired,omitempty"`
 
 	// Name Name of the location or business
 	Name string `json:"name"`
@@ -339,6 +348,9 @@ type Address struct {
 
 	// OpenTime Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
 	OpenTime *string `json:"openTime,omitempty"`
+
+	// PhoneExtension Phone extension, dialled after the main number
+	PhoneExtension *string `json:"phoneExtension,omitempty"`
 
 	// PhoneNumber Contact phone number in E.164 format
 	PhoneNumber string `json:"phoneNumber"`
@@ -502,11 +514,17 @@ type CarrierAddress struct {
 	// ContactPerson Name of the contact person at this location
 	ContactPerson string `json:"contact_person"`
 
+	// InsideRequired Freight must be brought inside the facility rather than left at the dock.
+	InsideRequired *bool `json:"inside_required,omitempty"`
+
 	// LiftgateRequired Whether a liftgate is required at this location
 	LiftgateRequired *bool `json:"liftgate_required,omitempty"`
 
 	// LimitedAccess Whether this is a limited access location (residential, construction site, etc.)
 	LimitedAccess *bool `json:"limited_access,omitempty"`
+
+	// LumperRequired Third-party labor handles loading/unloading at this stop; the driver does not handle freight.
+	LumperRequired *bool `json:"lumper_required,omitempty"`
 
 	// Name Name of the location or business
 	Name string `json:"name"`
@@ -703,6 +721,9 @@ type CreateShipmentRequest struct {
 	// Description Description of the shipment contents
 	Description string `json:"description"`
 
+	// Instructions Free-text instructions to render on the shipment's documents. Matches the instructions field on appointment requirements.
+	Instructions *string `json:"instructions,omitempty"`
+
 	// OrderComponents List of cargo components in the shipment
 	OrderComponents []OrderComponent `json:"orderComponents"`
 
@@ -717,6 +738,9 @@ type CreateShipmentRequest struct {
 
 	// RefNumber Your reference number for this shipment (typically your Bill of Lading number). Prints on partner-branded BOLs alongside the Oway order number.
 	RefNumber *string `json:"refNumber,omitempty"`
+
+	// ReferenceNumbers Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber.
+	ReferenceNumbers *[]string `json:"referenceNumbers,omitempty"`
 
 	// RequiredDeliveryBy Required delivery by date (ISO 8601 format)
 	RequiredDeliveryBy *time.Time `json:"requiredDeliveryBy,omitempty"`
@@ -1145,6 +1169,9 @@ type OrderComponent struct {
 	// Dimensions Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied.
 	Dimensions *Dimensions `json:"dimensions,omitempty"`
 
+	// FreightClass LTL freight class declared by the shipper. When supplied it is authoritative; Oway derives a class from density only when this is absent.
+	FreightClass *string `json:"freightClass,omitempty"`
+
 	// NmfcCode NMFC commodity code for this component
 	NmfcCode *string `json:"nmfcCode,omitempty"`
 
@@ -1504,7 +1531,7 @@ type Violation struct {
 	// Field Field path that failed validation
 	Field *string `json:"field,omitempty"`
 
-	// Reason Human-readable reason the field is invalid
+	// Reason Human-readable reason the field is invalid. Any dimension or weight ceiling quoted in the message is configuration-driven, so treat the figures in the example as indicative rather than as a fixed part of the contract. The example is one rejection rather than every one: it shows a shipment that requested no liftgate. A shipment whose pickup or delivery requires a liftgate is measured against a different, generally tighter, set of dimension ceilings, and its message quotes whichever figures applied.
 	Reason *string `json:"reason,omitempty"`
 }
 

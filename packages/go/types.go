@@ -87,6 +87,7 @@ type OrderComponent struct {
 	Dimensions    *Dimensions `json:"dimensions,omitempty"`
 	Description   *string     `json:"description,omitempty"`
 	NmfcCode      *string     `json:"nmfcCode,omitempty"`
+	FreightClass  *string     `json:"freightClass,omitempty"`
 	PackagingType *string     `json:"packagingType,omitempty"`
 	PieceCount    *int32      `json:"pieceCount,omitempty"`
 }
@@ -110,6 +111,8 @@ type ShipmentRequest struct {
 	QuoteID            *string          `json:"quoteId,omitempty"`
 	PoNumber           *string          `json:"poNumber,omitempty"`
 	RefNumber          *string          `json:"refNumber,omitempty"`
+	Instructions       *string          `json:"instructions,omitempty"`
+	ReferenceNumbers   *[]string        `json:"referenceNumbers,omitempty"`
 	RequiredPickupDate *time.Time       `json:"requiredPickupDate,omitempty"`
 	RequiredDeliveryBy *time.Time       `json:"requiredDeliveryBy,omitempty"`
 	Appointments       *Appointments    `json:"appointments,omitempty"`
@@ -133,6 +136,7 @@ func toClientOrderComponents(in []OrderComponent) []client.OrderComponent {
 			Dimensions:    c.Dimensions,
 			Description:   c.Description,
 			NmfcCode:      c.NmfcCode,
+			FreightClass:  c.FreightClass,
 			PackagingType: c.PackagingType,
 			PieceCount:    c.PieceCount,
 		}
@@ -158,6 +162,8 @@ func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
 		QuoteId:            s.QuoteID,
 		PoNumber:           s.PoNumber,
 		RefNumber:          s.RefNumber,
+		Instructions:       s.Instructions,
+		ReferenceNumbers:   s.ReferenceNumbers,
 		RequiredPickupDate: s.RequiredPickupDate,
 		RequiredDeliveryBy: s.RequiredDeliveryBy,
 		Appointments:       s.Appointments,

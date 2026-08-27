@@ -117,6 +117,8 @@ func fullyPopulatedShipmentRequest() ShipmentRequest {
 	dispatchEmail := openapi_types.Email("dispatch@example.com")
 	dispatchPhone := "+15555550100"
 	scac := "ACME"
+	instructions := "Call receiving before arrival; dock 4 only."
+	referenceNumbers := []string{"SO-45821", "CUST-REF-7781"}
 	return ShipmentRequest{
 		PickupAddress:      client.Address{Address1: "1 Pickup St", City: "Shafter", State: "CA", ZipCode: "93263"},
 		DeliveryAddress:    client.Address{Address1: "2 Delivery Ave", City: "Lake Havasu City", State: "AZ", ZipCode: "86404"},
@@ -125,6 +127,8 @@ func fullyPopulatedShipmentRequest() ShipmentRequest {
 		QuoteID:            &quoteID,
 		PoNumber:           &po,
 		RefNumber:          &ref,
+		Instructions:       &instructions,
+		ReferenceNumbers:   &referenceNumbers,
 		RequiredPickupDate: &pickupAt,
 		RequiredDeliveryBy: &deliverBy,
 		Appointments: &Appointments{

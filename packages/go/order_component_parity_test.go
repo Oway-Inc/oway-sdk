@@ -144,12 +144,14 @@ func fullyPopulatedSDKComponent() OrderComponent {
 	nmfc := "90500-04"
 	pkg := "Pallets"
 	pieces := int32(7)
+	freightClass := "100"
 	return OrderComponent{
 		PalletCount:   2,
 		PoundsWeight:  3000,
 		Dimensions:    PalletDims(48, 48, 48),
 		Description:   &desc,
 		NmfcCode:      &nmfc,
+		FreightClass:  &freightClass,
 		PackagingType: &pkg,
 		PieceCount:    &pieces,
 	}
