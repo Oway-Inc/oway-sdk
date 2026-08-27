@@ -7,7 +7,7 @@
       "name": "Oway Support",
       "email": "support@oway.io"
     },
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "externalDocs": {
     "description": "Oway API Developer Portal",
@@ -52,7 +52,7 @@
           "Shipper API"
         ],
         "summary": "Confirm a shipment by order number",
-        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - Must be between 1 and 51\n- `totalPoundsWeight` - Must be between 1 and 2,500 lbs per pallet\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - Must be between 1 and 2,500 lbs per pallet\n- `palletDimensions` - Must be valid dimensions within limits (subject to change, these are configurable):\n  - Standard: max 60x52x94 inches (LxWxH) - pallets exceeding these are charged as oversized\n  - Oversized maximum: 95x95x96 inches - no pallet can exceed this\n  - With liftgate: max 62x62x94 inches\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
+        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - At least 1, up to the current per-order maximum\n- `totalPoundsWeight` - At least 1, within the current per-pallet weight cap\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - At least 1, within the current per-pallet weight cap\n- `palletDimensions` - Length, width and height in inches, each at least 1 and\n  within the current maximums. These limits are configurable and change over\n  time, so they are not restated here: a pallet that exceeds them is rejected\n  with a 422 whose violation message states the maximum that applied. A pallet\n  larger than the standard footprint is still accepted and priced as oversized,\n  and a stop that requires a liftgate applies a tighter maximum.\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
         "operationId": "confirmShipment",
         "parameters": [
           {
@@ -3074,8 +3074,8 @@
           },
           "reason": {
             "type": "string",
-            "description": "Human-readable reason the field is invalid",
-            "example": "Component dimensions of 77x71x86 are invalid (pallets must be less than 95x95x96, and either length or width may exceed 60 but not both)"
+            "description": "Human-readable reason the field is invalid. Any dimension or weight ceiling quoted in the message is configuration-driven, so treat the figures in the example as indicative rather than as a fixed part of the contract. The example is one rejection rather than every one: it shows a shipment that requested no liftgate. A shipment whose pickup or delivery requires a liftgate is measured against a different, generally tighter, set of dimension ceilings, and its message quotes whichever figures applied.",
+            "example": "Component dimensions of 110x48x40 are invalid (pallets must be less than 96x96x108, and greater than 1x1x1)"
           }
         }
       },
@@ -3428,6 +3428,16 @@
             "type": "boolean",
             "description": "Whether an appointment is required for pickup/delivery",
             "example": true
+          },
+          "lumper_required": {
+            "type": "boolean",
+            "description": "Third-party labor handles loading/unloading at this stop; the driver does not handle freight.",
+            "example": false
+          },
+          "inside_required": {
+            "type": "boolean",
+            "description": "Freight must be brought inside the facility rather than left at the dock.",
+            "example": false
           }
         },
         "required": [
@@ -4213,6 +4223,20 @@
             "description": "Name of the contact person at this location",
             "example": "Mike Johnson"
           },
+          "phoneExtension": {
+            "type": "string",
+            "description": "Phone extension, dialled after the main number",
+            "example": "204",
+            "pattern": "^\\d{1,10}$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Contact email for this location",
+            "example": "dock@example.com",
+            "maxLength": 320,
+            "minLength": 0
+          },
           "openTime": {
             "type": "string",
             "description": "Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.",
@@ -4249,6 +4273,16 @@
             "type": "boolean",
             "description": "Whether a call-ahead notification is required before pickup/delivery. When true, the carrier will call the contact person before arriving at the location.",
             "example": true
+          },
+          "lumperRequired": {
+            "type": "boolean",
+            "description": "Whether third-party lumper labor loads/unloads at this location (common at large distribution centers where drivers may not handle freight). Informational for quoting: the lumper fee is not priced into the quote and is billed after delivery as a separate charge with proof of payment.",
+            "example": false
+          },
+          "insideRequired": {
+            "type": "boolean",
+            "description": "Whether the driver must bring freight inside the facility rather than to the dock or curb. Adds a flat inside-service fee to the quote.",
+            "example": false
           }
         },
         "required": [
@@ -4313,6 +4347,28 @@
             "type": "string",
             "description": "Your reference number for this shipment (typically your Bill of Lading number). Prints on partner-branded BOLs alongside the Oway order number.",
             "example": "BOL-2026-04129"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Free-text instructions to render on the shipment's documents. Matches the instructions field on appointment requirements.",
+            "example": "Call receiving before arrival; dock 4 only.",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "referenceNumbers": {
+            "type": "array",
+            "description": "Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber.",
+            "example": [
+              "SO-45821",
+              "CUST-REF-7781"
+            ],
+            "items": {
+              "type": "string",
+              "maxLength": 128,
+              "minLength": 0
+            },
+            "maxItems": 10,
+            "minItems": 0
           },
           "requiredPickupDate": {
             "type": "string",
@@ -4410,6 +4466,12 @@
             "type": "string",
             "description": "NMFC commodity code for this component",
             "example": "90500-04"
+          },
+          "freightClass": {
+            "type": "string",
+            "description": "LTL freight class declared by the shipper. When supplied it is authoritative; Oway derives a class from density only when this is absent.",
+            "example": "100",
+            "pattern": "^(50|55|60|65|70|77\\.5|85|92\\.5|100|110|125|150|175|200|250|300|400|500)$"
           },
           "packagingType": {
             "type": "string",
