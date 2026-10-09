@@ -739,7 +739,7 @@ type CreateShipmentRequest struct {
 	// RefNumber Your reference number for this shipment (typically your Bill of Lading number). Prints on partner-branded BOLs alongside the Oway order number.
 	RefNumber *string `json:"refNumber,omitempty"`
 
-	// ReferenceNumbers Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber.
+	// ReferenceNumbers Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber. Up to 100 entries, each at most 128 characters; supplied order and repeated values are preserved.
 	ReferenceNumbers *[]string `json:"referenceNumbers,omitempty"`
 
 	// RequiredDeliveryBy Required delivery by date (ISO 8601 format)

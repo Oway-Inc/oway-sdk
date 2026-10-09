@@ -1744,7 +1744,7 @@ export interface components {
              */
             instructions?: string;
             /**
-             * @description Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber.
+             * @description Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber. Up to 100 entries, each at most 128 characters; supplied order and repeated values are preserved.
              * @example [
              *       "SO-45821",
              *       "CUST-REF-7781"
