@@ -2,6 +2,15 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [0.4.1] - 2026-10-09
+
+### Changed
+
+- Shipment `referenceNumbers` documentation now allows up to 100 entries, each
+  at most 128 characters. Supplied order and repeated values are preserved.
+  Wire types and runtime behavior are unchanged. Confirm API support before
+  submitting more than ten references.
+
 ## [0.3.1]
 
 ### Added
