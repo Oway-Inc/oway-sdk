@@ -5,6 +5,23 @@ All notable changes to the Oway TypeScript SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-09
+
+### Added
+
+- Optional per-component `freightClass` and shipment-level `instructions` and
+  `referenceNumbers` fields.
+- Optional invoice line-item `nmfcCode` and carrier milestone reporting types.
+- Quote `shipmentMode` values for full and less-than-truckload shipments.
+- Optional address email, phone extension, inside-service and lumper-service fields.
+
+### Changed
+
+- Shipment `referenceNumbers` documentation now allows up to 100 entries, each
+  at most 128 characters. Supplied order and repeated values are preserved.
+  Confirm API support before submitting more than ten references.
+- Generated types remain compatible with callers that omit the new optional fields.
+
 ## [0.2.2]
 
 ### Added
