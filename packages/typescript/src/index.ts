@@ -24,6 +24,10 @@ export class Oway {
 // Export clean types
 export type {
   QuoteRequest,
+  HazmatPaper,
+  HazmatEntry,
+  HazmatCertification,
+  HazmatFinding,
   ShipmentRequest,
   Quote,
   Shipment,

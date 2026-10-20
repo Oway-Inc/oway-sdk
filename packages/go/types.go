@@ -21,6 +21,19 @@ type Invoice = client.InvoiceResponse
 // Address is a pickup or delivery address.
 type Address = client.Address
 
+// HazmatPaper captures the materials declared for a quote or shipment.
+type HazmatPaper = client.HazmatPaperRequest
+
+// HazmatEntry describes one material, preserving unknown shipment facts.
+type HazmatEntry = client.HazmatPaperEntryRequest
+
+// HazmatCertification records explicit consent for the current declaration.
+type HazmatCertification = client.HazmatCertificationRequest
+
+type HazmatPackingGroup = client.HazmatPaperEntryRequestPackingGroup
+type HazmatCertificationStatement = client.HazmatCertificationRequestStatement
+type HazmatFinding = client.HazmatFindingResponse
+
 // Dimensions describes pallet dimensions in inches.
 type Dimensions = client.Dimensions
 
@@ -95,6 +108,8 @@ type OrderComponent struct {
 // QuoteRequest mirrors the generated client.QuoteRequest but uses the
 // SDK-local OrderComponent (no deprecated fields).
 type QuoteRequest struct {
+	Hazmat             *bool            `json:"hazmat,omitempty"`
+	HazmatPaper        *HazmatPaper     `json:"hazmatPaper,omitempty"`
 	PickupAddress      Address          `json:"pickupAddress"`
 	DeliveryAddress    Address          `json:"deliveryAddress"`
 	OrderComponents    []OrderComponent `json:"orderComponents"`
@@ -104,6 +119,8 @@ type QuoteRequest struct {
 // ShipmentRequest mirrors the generated client.CreateShipmentRequest but
 // uses the SDK-local OrderComponent (no deprecated fields).
 type ShipmentRequest struct {
+	Hazmat             *bool            `json:"hazmat,omitempty"`
+	HazmatPaper        *HazmatPaper     `json:"hazmatPaper,omitempty"`
 	PickupAddress      Address          `json:"pickupAddress"`
 	DeliveryAddress    Address          `json:"deliveryAddress"`
 	Description        string           `json:"description"`
@@ -146,6 +163,7 @@ func toClientOrderComponents(in []OrderComponent) []client.OrderComponent {
 
 func (q *QuoteRequest) toClient() client.QuoteRequest {
 	return client.QuoteRequest{
+		Hazmat: q.Hazmat, HazmatPaper: q.HazmatPaper,
 		PickupAddress:      q.PickupAddress,
 		DeliveryAddress:    q.DeliveryAddress,
 		OrderComponents:    toClientOrderComponents(q.OrderComponents),
@@ -155,6 +173,7 @@ func (q *QuoteRequest) toClient() client.QuoteRequest {
 
 func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
 	return client.CreateShipmentRequest{
+		Hazmat: s.Hazmat, HazmatPaper: s.HazmatPaper,
 		PickupAddress:      s.PickupAddress,
 		DeliveryAddress:    s.DeliveryAddress,
 		Description:        s.Description,

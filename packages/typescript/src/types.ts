@@ -35,3 +35,9 @@ export type CarrierTracking = components['schemas']['TrackingResponse'];
 
 // Re-export for advanced usage
 export type { paths, components } from './generated/schema';
+
+/** Nullable material facts captured for quote or shipment intake. */
+export type HazmatPaper = components['schemas']['HazmatPaperRequest'];
+export type HazmatEntry = components['schemas']['HazmatPaperEntryRequest'];
+export type HazmatCertification = components['schemas']['HazmatCertificationRequest'];
+export type HazmatFinding = components['schemas']['HazmatFindingResponse'];
