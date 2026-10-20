@@ -808,6 +808,16 @@ export interface components {
              * @example 2025-02-27T22:51:49.865Z
              */
             updatedAt?: string;
+            /** @description Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation. */
+            hazmat?: boolean;
+            /** Format: date-time */
+            hazmatCertifiedAt?: string;
+            hazmatFindings?: components["schemas"]["HazmatFindingResponse"][];
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            /** @description Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval. */
+            hazmatReadiness?: string;
+            /** Format: int64 */
+            hazmatRevision?: number;
         };
         /** @description RFC 9457 Problem Details error response */
         ProblemDetail: {
@@ -1767,6 +1777,8 @@ export interface components {
             appointments?: components["schemas"]["AppointmentsBlock"];
             /** @description Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder. */
             shipperDispatch?: components["schemas"]["ShipperDispatch"];
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
         Dimensions: {
@@ -1928,6 +1940,8 @@ export interface components {
              * @enum {string}
              */
             shipmentMode?: "ltl" | "ftl";
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
         };
         /** @description Response containing a shipping quote */
         QuoteResponse: {
@@ -1960,6 +1974,8 @@ export interface components {
              * @example 2024-12-22T15:30:00Z
              */
             estimatedDeliveryDate?: string | null;
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
         };
         /** @description Request a pre-signed URL to upload a file (signature image or proof of delivery) */
         UploadUrlRequest: {
@@ -2570,6 +2586,67 @@ export interface components {
              * @example https://s3.amazonaws.com/...
              */
             download_link?: string;
+        };
+        HazmatPaperRequest: {
+            certification?: components["schemas"]["HazmatCertificationRequest"];
+            emergencyContactCoversAll?: boolean;
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            entries?: components["schemas"]["HazmatPaperEntryRequest"][];
+            /** Format: int64 */
+            expectedRevision?: number;
+        };
+        HazmatCertificationRequest: {
+            confirmed?: boolean;
+            signerName?: string;
+            /** @enum {string} */
+            statement?: "DOT_172_204_A1" | "DOT_172_204_A2";
+        };
+        HazmatPaperEntryRequest: {
+            emergencyContactConfirmed?: boolean;
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            entryId?: string;
+            /** Format: double */
+            flashPointC?: number;
+            hazardClass?: string;
+            hazardousSubstance?: boolean;
+            identificationNumber?: string;
+            /** Format: double */
+            innerPackagingNetCapacityL?: number;
+            limitedQuantity?: boolean;
+            lqMarked?: boolean;
+            marinePollutant?: boolean;
+            marinePollutantComponent?: string;
+            /** Format: double */
+            outerPackageGrossKg?: number;
+            /** Format: int32 */
+            packageCount?: number;
+            packageType?: string;
+            /** @enum {string} */
+            packingGroup?: "I" | "II" | "III";
+            productId?: string;
+            properShippingName?: string;
+            psnQualifier?: string;
+            quantityUnit?: string;
+            reportableQuantity?: boolean;
+            responseInformationDocumentIds?: string[];
+            sourceItemReference?: string;
+            subsidiaryHazards?: string[];
+            technicalNames?: string[];
+            /** Format: double */
+            totalQuantity?: number;
+            unitizedPer173_156b2?: boolean;
+        };
+        HazmatFindingResponse: {
+            citation?: string;
+            /** Format: int32 */
+            entryIndex?: number;
+            message?: string;
+            rule?: string;
+            severity?: string;
         };
     };
     responses: never;

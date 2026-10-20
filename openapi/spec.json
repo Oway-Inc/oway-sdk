@@ -3016,6 +3016,31 @@
             "format": "date-time",
             "description": "Time when the order was last updated (ISO 8601 format)",
             "example": "2025-02-27T22:51:49.865Z"
+          },
+          "hazmat": {
+            "type": "boolean",
+            "description": "Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation."
+          },
+          "hazmatCertifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hazmatFindings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HazmatFindingResponse"
+            }
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "hazmatReadiness": {
+            "type": "string",
+            "description": "Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval."
+          },
+          "hazmatRevision": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -4389,6 +4414,12 @@
           "shipperDispatch": {
             "$ref": "#/components/schemas/ShipperDispatch",
             "description": "Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder."
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
           }
         },
         "required": [
@@ -4617,6 +4648,12 @@
               "ltl",
               "ftl"
             ]
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
           }
         },
         "required": [
@@ -4659,6 +4696,12 @@
             "description": "Estimated delivery date and time (ISO 8601 format, UTC). May be null when the ETA cannot be computed.",
             "example": "2024-12-22T15:30:00Z",
             "nullable": true
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
           }
         }
       },
@@ -5511,6 +5554,186 @@
             "type": "string",
             "description": "Pre-signed download URL (valid for limited time)",
             "example": "https://s3.amazonaws.com/..."
+          }
+        }
+      },
+      "HazmatPaperRequest": {
+        "type": "object",
+        "properties": {
+          "certification": {
+            "$ref": "#/components/schemas/HazmatCertificationRequest"
+          },
+          "emergencyContactCoversAll": {
+            "type": "boolean"
+          },
+          "emergencyPhone": {
+            "type": "string"
+          },
+          "emergencyProvider": {
+            "type": "string"
+          },
+          "emergencyRegistrantIdentifier": {
+            "type": "string"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HazmatPaperEntryRequest"
+            }
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "HazmatCertificationRequest": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean"
+          },
+          "signerName": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string",
+            "enum": [
+              "DOT_172_204_A1",
+              "DOT_172_204_A2"
+            ]
+          }
+        }
+      },
+      "HazmatPaperEntryRequest": {
+        "type": "object",
+        "properties": {
+          "emergencyContactConfirmed": {
+            "type": "boolean"
+          },
+          "emergencyPhone": {
+            "type": "string"
+          },
+          "emergencyProvider": {
+            "type": "string"
+          },
+          "emergencyRegistrantIdentifier": {
+            "type": "string"
+          },
+          "entryId": {
+            "type": "string"
+          },
+          "flashPointC": {
+            "type": "number",
+            "format": "double"
+          },
+          "hazardClass": {
+            "type": "string"
+          },
+          "hazardousSubstance": {
+            "type": "boolean"
+          },
+          "identificationNumber": {
+            "type": "string"
+          },
+          "innerPackagingNetCapacityL": {
+            "type": "number",
+            "format": "double"
+          },
+          "limitedQuantity": {
+            "type": "boolean"
+          },
+          "lqMarked": {
+            "type": "boolean"
+          },
+          "marinePollutant": {
+            "type": "boolean"
+          },
+          "marinePollutantComponent": {
+            "type": "string"
+          },
+          "outerPackageGrossKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "packageCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "packageType": {
+            "type": "string"
+          },
+          "packingGroup": {
+            "type": "string",
+            "enum": [
+              "I",
+              "II",
+              "III"
+            ]
+          },
+          "productId": {
+            "type": "string"
+          },
+          "properShippingName": {
+            "type": "string"
+          },
+          "psnQualifier": {
+            "type": "string"
+          },
+          "quantityUnit": {
+            "type": "string"
+          },
+          "reportableQuantity": {
+            "type": "boolean"
+          },
+          "responseInformationDocumentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceItemReference": {
+            "type": "string"
+          },
+          "subsidiaryHazards": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technicalNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "unitizedPer173_156b2": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HazmatFindingResponse": {
+        "type": "object",
+        "properties": {
+          "citation": {
+            "type": "string"
+          },
+          "entryIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
           }
         }
       }
