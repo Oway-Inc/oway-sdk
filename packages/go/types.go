@@ -30,8 +30,13 @@ type HazmatEntry = client.HazmatPaperEntryRequest
 // HazmatCertification records explicit consent for the current declaration.
 type HazmatCertification = client.HazmatCertificationRequest
 
+// HazmatPackingGroup is a material's packing group: I, II or III.
 type HazmatPackingGroup = client.HazmatPaperEntryRequestPackingGroup
+
+// HazmatCertificationStatement names the certification wording the shipper accepted.
 type HazmatCertificationStatement = client.HazmatCertificationRequestStatement
+
+// HazmatFinding is one missing or invalid fact the server found in a declaration.
 type HazmatFinding = client.HazmatFindingResponse
 
 // Dimensions describes pallet dimensions in inches.
