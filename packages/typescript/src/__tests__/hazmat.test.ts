@@ -2,7 +2,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { Quotes } from '../resources/quotes';
 import { Shipments } from '../resources/shipments';
 import type { HttpClient } from '../client';
-import type { HazmatPaper, QuoteRequest, ShipmentRequest } from '../types';
+import type { Address, HazmatPaper, QuoteRequest, ShipmentRequest } from '../types';
+
+const pickupAddress: Address = {
+  name: 'Example Shipper', address1: '100 Example Street', city: 'New York', state: 'NY',
+  zipCode: '10001', phoneNumber: '2125550100', contactPerson: 'Example Contact',
+};
+const deliveryAddress: Address = {
+  name: 'Example Receiver', address1: '200 Sample Avenue', city: 'Los Angeles', state: 'CA',
+  zipCode: '90001', phoneNumber: '2135550100', contactPerson: 'Example Contact',
+};
 
 describe('hazmat capture', () => {
   it('preserves partial rows, explicit false and units in quote and shipment requests', async () => {
@@ -13,7 +22,7 @@ describe('hazmat capture', () => {
       ],
     };
     const quote: QuoteRequest = {
-      pickupAddress: { zipCode: '10001' }, deliveryAddress: { zipCode: '90001' },
+      pickupAddress, deliveryAddress,
       orderComponents: [{ palletCount: 1, poundsWeight: 400 }],
       hazmat: true, hazmatPaper: paper,
     };
@@ -31,7 +40,7 @@ describe('hazmat capture', () => {
 
   it('still accepts legacy request shapes without hazmat fields', async () => {
     const legacy: QuoteRequest = {
-      pickupAddress: { zipCode: '10001' }, deliveryAddress: { zipCode: '90001' },
+      pickupAddress, deliveryAddress,
       orderComponents: [{ palletCount: 1, poundsWeight: 400 }],
     };
     const post = vi.fn().mockResolvedValue({});
