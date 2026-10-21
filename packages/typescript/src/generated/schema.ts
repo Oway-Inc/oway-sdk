@@ -813,7 +813,7 @@ export interface components {
             /** Format: date-time */
             hazmatCertifiedAt?: string;
             hazmatFindings?: components["schemas"]["HazmatFindingResponse"][];
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"] | null;
             /** @description Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval. */
             hazmatReadiness?: string;
             /** Format: int64 */
@@ -1778,7 +1778,7 @@ export interface components {
             /** @description Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder. */
             shipperDispatch?: components["schemas"]["ShipperDispatch"];
             hazmat?: boolean;
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"] | null;
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
         Dimensions: {
@@ -1975,7 +1975,7 @@ export interface components {
              */
             estimatedDeliveryDate?: string | null;
             hazmat?: boolean;
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"] | null;
         };
         /** @description Request a pre-signed URL to upload a file (signature image or proof of delivery) */
         UploadUrlRequest: {
@@ -2612,26 +2612,26 @@ export interface components {
             /** Format: double */
             flashPointC?: number;
             hazardClass?: string;
-            hazardousSubstance?: boolean;
+            hazardousSubstance?: boolean | null;
             identificationNumber?: string;
             /** Format: double */
             innerPackagingNetCapacityL?: number;
-            limitedQuantity?: boolean;
+            limitedQuantity?: boolean | null;
             lqMarked?: boolean;
-            marinePollutant?: boolean;
+            marinePollutant?: boolean | null;
             marinePollutantComponent?: string;
             /** Format: double */
             outerPackageGrossKg?: number;
             /** Format: int32 */
             packageCount?: number;
             packageType?: string;
-            /** @enum {string} */
-            packingGroup?: "I" | "II" | "III";
+            /** @enum {string|null} */
+            packingGroup?: "I" | "II" | "III" | null;
             productId?: string;
             properShippingName?: string;
             psnQualifier?: string;
             quantityUnit?: string;
-            reportableQuantity?: boolean;
+            reportableQuantity?: boolean | null;
             responseInformationDocumentIds?: string[];
             sourceItemReference?: string;
             subsidiaryHazards?: string[];

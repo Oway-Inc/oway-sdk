@@ -3032,7 +3032,13 @@
             }
           },
           "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HazmatPaperRequest"
+              }
+            ],
+            "nullable": true,
+            "x-omitempty": true
           },
           "hazmatReadiness": {
             "type": "string",
@@ -4419,7 +4425,13 @@
             "type": "boolean"
           },
           "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HazmatPaperRequest"
+              }
+            ],
+            "nullable": true,
+            "x-omitempty": true
           }
         },
         "required": [
@@ -4701,7 +4713,13 @@
             "type": "boolean"
           },
           "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HazmatPaperRequest"
+              }
+            ],
+            "nullable": true,
+            "x-omitempty": true
           }
         }
       },
@@ -5631,7 +5649,9 @@
             "type": "string"
           },
           "hazardousSubstance": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true,
+            "x-omitempty": true
           },
           "identificationNumber": {
             "type": "string"
@@ -5641,13 +5661,17 @@
             "format": "double"
           },
           "limitedQuantity": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true,
+            "x-omitempty": true
           },
           "lqMarked": {
             "type": "boolean"
           },
           "marinePollutant": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true,
+            "x-omitempty": true
           },
           "marinePollutantComponent": {
             "type": "string"
@@ -5665,11 +5689,13 @@
           },
           "packingGroup": {
             "type": "string",
+            "nullable": true,
             "enum": [
               "I",
               "II",
               "III"
-            ]
+            ],
+            "x-omitempty": true
           },
           "productId": {
             "type": "string"
@@ -5684,7 +5710,9 @@
             "type": "string"
           },
           "reportableQuantity": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true,
+            "x-omitempty": true
           },
           "responseInformationDocumentIds": {
             "type": "array",
