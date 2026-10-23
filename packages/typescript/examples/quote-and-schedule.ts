@@ -18,28 +18,28 @@ async function main() {
 
   // Step 1: Get a quote
   console.log('📋 Step 1: Requesting quote...');
-  const quote = await oway.quotes.create({
-    origin: {
-      addressLine1: '123 Warehouse Rd',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90210',
-      country: 'US',
-    },
-    destination: {
-      addressLine1: '456 Distribution Center',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'US',
-    },
-    items: [{
-      description: 'Pallets of goods',
-      weight: 500,
-      weightUnit: 'LBS',
-      quantity: 2,
-    }],
-  });
+  const pickupAddress = {
+    name: 'Example Warehouse',
+    address1: '123 Warehouse Rd',
+    city: 'Los Angeles',
+    state: 'CA',
+    zipCode: '90001',
+    phoneNumber: '+12135550123',
+    contactPerson: 'Example Shipper',
+  };
+  const deliveryAddress = {
+    name: 'Example Distribution Center',
+    address1: '456 Distribution Ave',
+    city: 'New York',
+    state: 'NY',
+    zipCode: '10001',
+    phoneNumber: '+12125550456',
+    contactPerson: 'Example Receiver',
+  };
+  const orderComponents = [
+    { palletCount: 2, poundsWeight: 1000, dimensions: { length: 48, width: 40, height: 48 } },
+  ];
+  const quote = await oway.quotes.create({ pickupAddress, deliveryAddress, orderComponents });
 
   console.log(`✅ Quote received!`);
   console.log(`   Quote ID: ${quote.id}`);
@@ -48,17 +48,11 @@ async function main() {
   // Step 2: Schedule the shipment
   console.log('📦 Step 2: Scheduling shipment...');
   const shipment = await oway.shipments.create({
-    quoteId: quote.id!,
-    pickup: {
-      contactName: 'John Doe',
-      contactPhone: '555-0123',
-      contactEmail: 'john@example.com',
-    },
-    delivery: {
-      contactName: 'Jane Smith',
-      contactPhone: '555-0456',
-      contactEmail: 'jane@example.com',
-    },
+    quoteId: quote.id,
+    pickupAddress,
+    deliveryAddress,
+    orderComponents,
+    description: 'Palletized freight',
   });
 
   console.log(`✅ Shipment created: ${shipment.orderNumber}\n`);
