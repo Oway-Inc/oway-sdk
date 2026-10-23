@@ -40,43 +40,6 @@ function stripNullTypeOnRefs(node) {
   }
 }
 
-/**
- * Turn the 3.1 nullable reference (`anyOf: [{ $ref }, { type: "null" }]`), which the
- * down-converter leaves as invalid 3.0, into `allOf: [{ $ref }]` with `nullable: true`.
- */
-function nullableRefs(node) {
-  if (Array.isArray(node)) {
-    node.forEach(nullableRefs);
-    return;
-  }
-  if (!node || typeof node !== 'object') return;
-  const branches = node.anyOf || node.oneOf;
-  if (Array.isArray(branches) && branches.length === 2) {
-    const ref = branches.find((b) => b && typeof b.$ref === 'string');
-    const nul = branches.find((b) => b && b.type === 'null' && Object.keys(b).length === 1);
-    if (ref && nul) {
-      delete node.anyOf;
-      delete node.oneOf;
-      node.allOf = [{ $ref: ref.$ref }];
-      node.nullable = true;
-    }
-  }
-  Object.values(node).forEach(nullableRefs);
-}
-
-/**
- * Mark every nullable property `x-omitempty`. The API reads an absent field and null alike,
- * and oapi-codegen drops `omitempty` on nullable fields, so without this a Go request would
- * send `null` for every field the caller left unset.
- */
-function omitUnsetNullables(doc) {
-  for (const schema of Object.values(doc.components?.schemas || {})) {
-    for (const prop of Object.values(schema.properties || {})) {
-      if (prop && prop.nullable === true) prop['x-omitempty'] = true;
-    }
-  }
-}
-
 const ROOT = path.resolve(__dirname, '..');
 const SPEC_PATH = path.join(ROOT, 'openapi', 'spec.json');
 
@@ -147,9 +110,7 @@ async function main() {
         console.log('  → Down-converting OpenAPI 3.1 → 3.0');
         doc = new Converter(parsed, { convertSchemaComments: true }).convert();
         stripNullTypeOnRefs(doc);
-        nullableRefs(doc);
       }
-      omitUnsetNullables(doc);
       const outVersion = String(doc.openapi || '');
       if (!/^3\.0\.\d+$/.test(outVersion)) {
         throw new Error(`expected OpenAPI 3.0.x after conversion, got "${outVersion}"`);
@@ -160,7 +121,7 @@ async function main() {
     } catch (err) {
       console.error(`  ✗ Failed to fetch spec: ${err.message}`);
       if (opts.url === URLS.local) {
-        console.error('  Hint: is oway-platform-rest running locally on port 8181?');
+        console.error('  Hint: is the Oway API running locally on port 8181?');
       }
       process.exit(1);
     }

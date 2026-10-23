@@ -2,7 +2,10 @@ package oway
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
+
+	"github.com/Oway-Inc/oway-sdk/packages/go/client"
 )
 
 func TestHazmatCapturePreservesPartialMaterialsAndExplicitFalse(t *testing.T) {
@@ -14,7 +17,8 @@ func TestHazmatCapturePreservesPartialMaterialsAndExplicitFalse(t *testing.T) {
 		{TotalQuantity: &quantity, QuantityUnit: &unit},
 	}
 	yes := true
-	paper := &HazmatPaper{Entries: &entries}
+	classification := HazmatClassification(client.LIMITEDQUANTITY)
+	paper := &HazmatPaper{Classification: &classification, Entries: &entries}
 	quote := (&QuoteRequest{Hazmat: &yes, HazmatPaper: paper}).toClient()
 	shipment := (&ShipmentRequest{Hazmat: &yes, HazmatPaper: paper}).toClient()
 	for _, request := range []any{quote, shipment} {
@@ -22,11 +26,17 @@ func TestHazmatCapturePreservesPartialMaterialsAndExplicitFalse(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		if strings.Contains(string(raw), "null") {
+			t.Fatalf("unknown facts must be omitted, not sent as null: %s", raw)
+		}
 		var roundTrip struct {
 			HazmatPaper HazmatPaper `json:"hazmatPaper"`
 		}
 		if err := json.Unmarshal(raw, &roundTrip); err != nil {
 			t.Fatal(err)
+		}
+		if c := roundTrip.HazmatPaper.Classification; c == nil || *c != client.LIMITEDQUANTITY {
+			t.Fatalf("classification lost: %s", raw)
 		}
 		got := *roundTrip.HazmatPaper.Entries
 		if len(got) != 2 || got[0].LimitedQuantity == nil || *got[0].LimitedQuantity {

@@ -110,6 +110,12 @@ const (
 	III HazmatPaperEntryRequestPackingGroup = "III"
 )
 
+// Defines values for HazmatPaperRequestClassification.
+const (
+	FULL            HazmatPaperRequestClassification = "FULL"
+	LIMITEDQUANTITY HazmatPaperRequestClassification = "LIMITED_QUANTITY"
+)
+
 // Defines values for MergedDiagnosticFields.
 const (
 	ADDRESSFALLBACK MergedDiagnosticFields = "ADDRESS_FALLBACK"
@@ -998,14 +1004,18 @@ type HazmatPaperEntryRequestPackingGroup string
 
 // HazmatPaperRequest defines model for HazmatPaperRequest.
 type HazmatPaperRequest struct {
-	Certification                 *HazmatCertificationRequest `json:"certification,omitempty"`
-	EmergencyContactCoversAll     *bool                       `json:"emergencyContactCoversAll,omitempty"`
-	EmergencyPhone                *string                     `json:"emergencyPhone,omitempty"`
-	EmergencyProvider             *string                     `json:"emergencyProvider,omitempty"`
-	EmergencyRegistrantIdentifier *string                     `json:"emergencyRegistrantIdentifier,omitempty"`
-	Entries                       *[]HazmatPaperEntryRequest  `json:"entries,omitempty"`
-	ExpectedRevision              *int64                      `json:"expectedRevision,omitempty"`
+	Certification                 *HazmatCertificationRequest       `json:"certification,omitempty"`
+	Classification                *HazmatPaperRequestClassification `json:"classification,omitempty"`
+	EmergencyContactCoversAll     *bool                             `json:"emergencyContactCoversAll,omitempty"`
+	EmergencyPhone                *string                           `json:"emergencyPhone,omitempty"`
+	EmergencyProvider             *string                           `json:"emergencyProvider,omitempty"`
+	EmergencyRegistrantIdentifier *string                           `json:"emergencyRegistrantIdentifier,omitempty"`
+	Entries                       *[]HazmatPaperEntryRequest        `json:"entries,omitempty"`
+	ExpectedRevision              *int64                            `json:"expectedRevision,omitempty"`
 }
+
+// HazmatPaperRequestClassification defines model for HazmatPaperRequest.Classification.
+type HazmatPaperRequestClassification string
 
 // InvoiceCharge A charge on an invoice
 type InvoiceCharge struct {
@@ -4802,6 +4812,7 @@ type CreateShipmentResponse struct {
 	JSON400      *ProblemDetail
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
+	JSON409      *ProblemDetail
 	JSON422      *ProblemDetail
 	JSON500      *ProblemDetail
 }
@@ -6857,6 +6868,13 @@ func ParseCreateShipmentResponse(rsp *http.Response) (*CreateShipmentResponse, e
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest ProblemDetail
