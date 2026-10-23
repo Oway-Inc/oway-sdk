@@ -29,6 +29,9 @@ func TestHazmatCapturePreservesPartialMaterialsAndExplicitFalse(t *testing.T) {
 		if strings.Contains(string(raw), "null") {
 			t.Fatalf("unknown facts must be omitted, not sent as null: %s", raw)
 		}
+		if !strings.Contains(string(raw), `"classification":"LIMITED_QUANTITY"`) {
+			t.Fatalf("classification missing from the wire: %s", raw)
+		}
 		var roundTrip struct {
 			HazmatPaper HazmatPaper `json:"hazmatPaper"`
 		}

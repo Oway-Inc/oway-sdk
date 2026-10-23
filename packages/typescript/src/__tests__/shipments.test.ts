@@ -58,6 +58,14 @@ describe('Shipments.create', () => {
     expect(keys[1]).not.toBe(keys[0]);
   });
 
+  it('treats an empty key as none', async () => {
+    const post = vi.fn().mockResolvedValue({});
+    await new Shipments({ post } as unknown as HttpClient).create(request, undefined, {
+      idempotencyKey: '',
+    });
+    expect(post.mock.calls[0][3]['Idempotency-Key']).toMatch(/^[0-9a-f-]{32,36}$/);
+  });
+
   it("sends the caller's key and company API key", async () => {
     const post = vi.fn().mockResolvedValue({});
     await new Shipments({ post } as unknown as HttpClient).create(request, 'oway_sk_company_xyz', {

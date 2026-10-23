@@ -117,15 +117,21 @@ export function parseHttpError(
   });
 }
 
-/** A random 128-bit id, used for request ids and default idempotency keys. */
+/**
+ * A random 128-bit id from Web Crypto, used for request ids and default idempotency keys. Every
+ * supported runtime (Node 18 and later, current browsers) provides it.
+ */
 export function randomId(): string {
-  if (typeof globalThis !== 'undefined' && globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
+  const webCrypto = globalThis.crypto;
+  if (webCrypto?.randomUUID) return webCrypto.randomUUID();
+  if (webCrypto?.getRandomValues) {
+    const buf = webCrypto.getRandomValues(new Uint8Array(16));
+    return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
   }
-  // Fallback for older runtimes: 128 random bits as hex.
-  const buf = new Uint8Array(16);
-  for (let i = 0; i < 16; i++) buf[i] = Math.floor(Math.random() * 256);
-  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+  throw new OwayError({
+    message: 'Web Crypto is unavailable in this runtime; the SDK needs it for request ids',
+    code: 'RUNTIME_UNSUPPORTED',
+  });
 }
 
 /** Full-jitter exponential backoff capped at 30s. */
