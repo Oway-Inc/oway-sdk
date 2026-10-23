@@ -5,6 +5,19 @@ All notable changes to the Oway TypeScript SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Hazardous material declarations: `hazmat` and `hazmatPaper` on quote and shipment requests and responses, with the `HazmatPaper`, `HazmatEntry`, `HazmatCertification`, `HazmatClassification` and `HazmatFinding` types. See `docs/hazmat-capture.md`.
+- `shipments.create(params, companyApiKey, { idempotencyKey })` sets the `Idempotency-Key` the create sends. `CreateShipmentOptions` is exported.
+
+### Fixed
+
+- `shipments.create` retried a 5xx, 408 or 429 without an idempotency key, so a create that succeeded behind a lost response could make a second shipment. Every attempt of a call now sends one key: the caller's, or one generated per call.
+- `OwayError.isRetryable()` is true for 409 `idempotency_key_in_progress`, which the API asks callers to retry.
+- The examples use the current request shapes and are type-checked by `npm run lint`.
+
 ## [0.2.2]
 
 ### Added

@@ -51,6 +51,7 @@ export type {
 
 // Export errors and config
 export { OwayError, type OwayConfig } from './client';
+export type { CreateShipmentOptions } from './resources/shipments';
 
 // Export generated types for advanced usage
 export type { paths, components } from './generated/schema';

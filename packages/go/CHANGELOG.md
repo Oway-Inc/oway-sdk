@@ -2,6 +2,29 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Hazardous material declarations: `Hazmat` and `HazmatPaper` on `QuoteRequest`
+  and `ShipmentRequest`, with the `HazmatPaper`, `HazmatEntry`,
+  `HazmatCertification`, `HazmatClassification`, `HazmatPackingGroup`,
+  `HazmatCertificationStatement` and `HazmatFinding` aliases. Unknown facts are
+  omitted from requests, never sent as null. See `docs/hazmat-capture.md`.
+- `WithIdempotencyKey(ctx, key)` sets the `Idempotency-Key` that
+  `CreateShipment` sends.
+
+### Fixed
+
+- `CreateShipment` retried a 5xx, 408 or 429 without an idempotency key, so a
+  create that succeeded behind a lost response could make a second shipment.
+  Every attempt of a call now sends one key: the caller's, or one generated per
+  call.
+- `Error.IsRetryable` is true for 409 `idempotency_key_in_progress`, which the
+  API asks callers to retry.
+
+Purely additive for existing callers.
+
 ## [0.3.1]
 
 ### Added
