@@ -1,11 +1,36 @@
-import type { HttpClient } from '../client';
+import { randomId, type HttpClient } from '../client';
 import type { ShipmentRequest, Shipment, Tracking, Invoice } from '../types';
+
+export interface CreateShipmentOptions {
+  /**
+   * Sent as the Idempotency-Key header. Sending the same request with the same key within 24
+   * hours returns the original shipment instead of creating another; reusing the key with a
+   * different request is refused with 409 `idempotency_key_conflict`. Derive it from your own
+   * stable identity for the shipment so a retry after a lost response is recognized. Defaults to
+   * a new key per call.
+   */
+  idempotencyKey?: string;
+}
 
 export class Shipments {
   constructor(private client: HttpClient) {}
 
-  async create(params: ShipmentRequest, companyApiKey?: string): Promise<Shipment> {
-    return this.client.post<Shipment>('/v1/shipper/shipment', params, companyApiKey);
+  /**
+   * Create a shipment. Every attempt, the SDK's own retries included, sends one Idempotency-Key,
+   * so a retry never creates a second shipment.
+   *
+   * @example
+   * const shipment = await oway.shipments.create(request, undefined, { idempotencyKey: 'order-4711' });
+   */
+  async create(
+    params: ShipmentRequest,
+    companyApiKey?: string,
+    options: CreateShipmentOptions = {}
+  ): Promise<Shipment> {
+    const idempotencyKey = options.idempotencyKey ?? randomId();
+    return this.client.post<Shipment>('/v1/shipper/shipment', params, companyApiKey, {
+      'Idempotency-Key': idempotencyKey,
+    });
   }
 
   async retrieve(orderNumber: string, companyApiKey?: string): Promise<Shipment> {

@@ -70,9 +70,13 @@ export class OwayError extends Error {
     this.rawBody = opts.rawBody;
   }
 
-  /** True for well-known transient HTTP status codes (408/429/500/502/503/504). */
+  /**
+   * True for well-known transient HTTP status codes (408/429/500/502/503/504), and for another
+   * request with the same Idempotency-Key still in progress.
+   */
   isRetryable(): boolean {
     if (!this.statusCode) return false;
+    if (this.statusCode === 409) return this.code === 'idempotency_key_in_progress';
     return [408, 429, 500, 502, 503, 504].includes(this.statusCode);
   }
 
@@ -113,7 +117,8 @@ export function parseHttpError(
   });
 }
 
-function randomRequestId(): string {
+/** A random 128-bit id, used for request ids and default idempotency keys. */
+export function randomId(): string {
   if (typeof globalThis !== 'undefined' && globalThis.crypto?.randomUUID) {
     return globalThis.crypto.randomUUID();
   }
@@ -262,7 +267,7 @@ export class HttpClient {
     if (options.query) {
       for (const [k, v] of Object.entries(options.query)) url.searchParams.append(k, String(v));
     }
-    const requestId = options.requestId || randomRequestId();
+    const requestId = options.requestId || randomId();
     const apiKey = options.companyApiKey ?? this.config.apiKey;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -336,8 +341,13 @@ export class HttpClient {
     return this.request<T>('GET', path, { query, companyApiKey });
   }
 
-  post<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
-    return this.request<T>('POST', path, { body, companyApiKey });
+  post<T>(
+    path: string,
+    body?: unknown,
+    companyApiKey?: string,
+    headers?: Record<string, string>
+  ): Promise<T> {
+    return this.request<T>('POST', path, { body, companyApiKey, headers });
   }
 
   put<T>(path: string, body?: unknown, companyApiKey?: string): Promise<T> {
