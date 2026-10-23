@@ -237,19 +237,9 @@ describe('HttpClient', () => {
 });
 
 describe('randomId', () => {
-  it('uses Web Crypto and never weaker randomness', () => {
-    expect(randomId()).toMatch(/^[0-9a-f-]{32,36}$/);
-    const original = globalThis.crypto;
-    try {
-      Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true });
-      expect(() => randomId()).toThrow(OwayError);
-      Object.defineProperty(globalThis, 'crypto', {
-        value: { getRandomValues: (a: Uint8Array) => a.fill(171) },
-        configurable: true,
-      });
-      expect(randomId()).toBe('ab'.repeat(16));
-    } finally {
-      Object.defineProperty(globalThis, 'crypto', { value: original, configurable: true });
-    }
+  it('returns a new cryptographic UUID each call', () => {
+    const ids = new Set(Array.from({ length: 100 }, () => randomId()));
+    expect(ids.size).toBe(100);
+    for (const id of ids) expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   });
 });

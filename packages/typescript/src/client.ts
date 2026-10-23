@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { components } from './generated/schema';
 
 /** Token response from the /v1/auth/token endpoint (generated from OpenAPI spec) */
@@ -117,21 +118,9 @@ export function parseHttpError(
   });
 }
 
-/**
- * A random 128-bit id from Web Crypto, used for request ids and default idempotency keys. Every
- * supported runtime (Node 18 and later, current browsers) provides it.
- */
+/** A random UUID, used for request ids and default idempotency keys. */
 export function randomId(): string {
-  const webCrypto = globalThis.crypto;
-  if (webCrypto?.randomUUID) return webCrypto.randomUUID();
-  if (webCrypto?.getRandomValues) {
-    const buf = webCrypto.getRandomValues(new Uint8Array(16));
-    return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
-  }
-  throw new OwayError({
-    message: 'Web Crypto is unavailable in this runtime; the SDK needs it for request ids',
-    code: 'RUNTIME_UNSUPPORTED',
-  });
+  return randomUUID();
 }
 
 /** Full-jitter exponential backoff capped at 30s. */
