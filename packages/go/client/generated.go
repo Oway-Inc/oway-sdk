@@ -97,6 +97,25 @@ const (
 	ExceptionReportRequestExceptionTypeWrongEquipment       ExceptionReportRequestExceptionType = "wrong_equipment"
 )
 
+// Defines values for HazmatCertificationRequestStatement.
+const (
+	DOT172204A1 HazmatCertificationRequestStatement = "DOT_172_204_A1"
+	DOT172204A2 HazmatCertificationRequestStatement = "DOT_172_204_A2"
+)
+
+// Defines values for HazmatPaperEntryRequestPackingGroup.
+const (
+	I   HazmatPaperEntryRequestPackingGroup = "I"
+	II  HazmatPaperEntryRequestPackingGroup = "II"
+	III HazmatPaperEntryRequestPackingGroup = "III"
+)
+
+// Defines values for HazmatPaperRequestClassification.
+const (
+	FULL            HazmatPaperRequestClassification = "FULL"
+	LIMITEDQUANTITY HazmatPaperRequestClassification = "LIMITED_QUANTITY"
+)
+
 // Defines values for MergedDiagnosticFields.
 const (
 	ADDRESSFALLBACK MergedDiagnosticFields = "ADDRESS_FALLBACK"
@@ -719,7 +738,9 @@ type CreateShipmentRequest struct {
 	DeliveryAddress Address `json:"deliveryAddress"`
 
 	// Description Description of the shipment contents
-	Description string `json:"description"`
+	Description string              `json:"description"`
+	Hazmat      *bool               `json:"hazmat,omitempty"`
+	HazmatPaper *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// Instructions Free-text instructions to render on the shipment's documents. Matches the instructions field on appointment requirements.
 	Instructions *string `json:"instructions,omitempty"`
@@ -925,6 +946,76 @@ type GpsData struct {
 	// VehicleId Unique identifier for the vehicle
 	VehicleId string `json:"vehicleId"`
 }
+
+// HazmatCertificationRequest defines model for HazmatCertificationRequest.
+type HazmatCertificationRequest struct {
+	Confirmed  *bool                                `json:"confirmed,omitempty"`
+	SignerName *string                              `json:"signerName,omitempty"`
+	Statement  *HazmatCertificationRequestStatement `json:"statement,omitempty"`
+}
+
+// HazmatCertificationRequestStatement defines model for HazmatCertificationRequest.Statement.
+type HazmatCertificationRequestStatement string
+
+// HazmatFindingResponse defines model for HazmatFindingResponse.
+type HazmatFindingResponse struct {
+	Citation   *string `json:"citation,omitempty"`
+	EntryIndex *int32  `json:"entryIndex,omitempty"`
+	Message    *string `json:"message,omitempty"`
+	Rule       *string `json:"rule,omitempty"`
+	Severity   *string `json:"severity,omitempty"`
+}
+
+// HazmatPaperEntryRequest defines model for HazmatPaperEntryRequest.
+type HazmatPaperEntryRequest struct {
+	EmergencyContactConfirmed      *bool                                `json:"emergencyContactConfirmed,omitempty"`
+	EmergencyPhone                 *string                              `json:"emergencyPhone,omitempty"`
+	EmergencyProvider              *string                              `json:"emergencyProvider,omitempty"`
+	EmergencyRegistrantIdentifier  *string                              `json:"emergencyRegistrantIdentifier,omitempty"`
+	EntryId                        *string                              `json:"entryId,omitempty"`
+	FlashPointC                    *float64                             `json:"flashPointC,omitempty"`
+	HazardClass                    *string                              `json:"hazardClass,omitempty"`
+	HazardousSubstance             *bool                                `json:"hazardousSubstance,omitempty"`
+	IdentificationNumber           *string                              `json:"identificationNumber,omitempty"`
+	InnerPackagingNetCapacityL     *float64                             `json:"innerPackagingNetCapacityL,omitempty"`
+	LimitedQuantity                *bool                                `json:"limitedQuantity,omitempty"`
+	LqMarked                       *bool                                `json:"lqMarked,omitempty"`
+	MarinePollutant                *bool                                `json:"marinePollutant,omitempty"`
+	MarinePollutantComponent       *string                              `json:"marinePollutantComponent,omitempty"`
+	OuterPackageGrossKg            *float64                             `json:"outerPackageGrossKg,omitempty"`
+	PackageCount                   *int32                               `json:"packageCount,omitempty"`
+	PackageType                    *string                              `json:"packageType,omitempty"`
+	PackingGroup                   *HazmatPaperEntryRequestPackingGroup `json:"packingGroup,omitempty"`
+	ProductId                      *string                              `json:"productId,omitempty"`
+	ProperShippingName             *string                              `json:"properShippingName,omitempty"`
+	PsnQualifier                   *string                              `json:"psnQualifier,omitempty"`
+	QuantityUnit                   *string                              `json:"quantityUnit,omitempty"`
+	ReportableQuantity             *bool                                `json:"reportableQuantity,omitempty"`
+	ResponseInformationDocumentIds *[]string                            `json:"responseInformationDocumentIds,omitempty"`
+	SourceItemReference            *string                              `json:"sourceItemReference,omitempty"`
+	SubsidiaryHazards              *[]string                            `json:"subsidiaryHazards,omitempty"`
+	TechnicalNames                 *[]string                            `json:"technicalNames,omitempty"`
+	TotalQuantity                  *float64                             `json:"totalQuantity,omitempty"`
+	UnitizedPer173156b2            *bool                                `json:"unitizedPer173_156b2,omitempty"`
+}
+
+// HazmatPaperEntryRequestPackingGroup defines model for HazmatPaperEntryRequest.PackingGroup.
+type HazmatPaperEntryRequestPackingGroup string
+
+// HazmatPaperRequest defines model for HazmatPaperRequest.
+type HazmatPaperRequest struct {
+	Certification                 *HazmatCertificationRequest       `json:"certification,omitempty"`
+	Classification                *HazmatPaperRequestClassification `json:"classification,omitempty"`
+	EmergencyContactCoversAll     *bool                             `json:"emergencyContactCoversAll,omitempty"`
+	EmergencyPhone                *string                           `json:"emergencyPhone,omitempty"`
+	EmergencyProvider             *string                           `json:"emergencyProvider,omitempty"`
+	EmergencyRegistrantIdentifier *string                           `json:"emergencyRegistrantIdentifier,omitempty"`
+	Entries                       *[]HazmatPaperEntryRequest        `json:"entries,omitempty"`
+	ExpectedRevision              *int64                            `json:"expectedRevision,omitempty"`
+}
+
+// HazmatPaperRequestClassification defines model for HazmatPaperRequest.Classification.
+type HazmatPaperRequestClassification string
 
 // InvoiceCharge A charge on an invoice
 type InvoiceCharge struct {
@@ -1270,7 +1361,9 @@ type ProblemDetail struct {
 // QuoteRequest Request to generate a shipping quote. Quotes are valid for 2 days from creation.
 type QuoteRequest struct {
 	// DeliveryAddress Address information for pickup or delivery locations
-	DeliveryAddress Address `json:"deliveryAddress"`
+	DeliveryAddress Address             `json:"deliveryAddress"`
+	Hazmat          *bool               `json:"hazmat,omitempty"`
+	HazmatPaper     *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// OrderComponents List of pallets or freight pieces.
 	OrderComponents []OrderComponent `json:"orderComponents"`
@@ -1291,7 +1384,9 @@ type QuoteRequestShipmentMode string
 // QuoteResponse Response containing a shipping quote
 type QuoteResponse struct {
 	// EstimatedDeliveryDate Estimated delivery date and time (ISO 8601 format, UTC). May be null when the ETA cannot be computed.
-	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate"`
+	EstimatedDeliveryDate *time.Time          `json:"estimatedDeliveryDate"`
+	Hazmat                *bool               `json:"hazmat,omitempty"`
+	HazmatPaper           *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// Id Unique quote identifier
 	Id *string `json:"id,omitempty"`
@@ -1325,6 +1420,16 @@ type Shipment struct {
 
 	// CreatedAt Time when the order was created (ISO 8601 format)
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Hazmat Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation.
+	Hazmat            *bool                    `json:"hazmat,omitempty"`
+	HazmatCertifiedAt *time.Time               `json:"hazmatCertifiedAt,omitempty"`
+	HazmatFindings    *[]HazmatFindingResponse `json:"hazmatFindings,omitempty"`
+	HazmatPaper       *HazmatPaperRequest      `json:"hazmatPaper,omitempty"`
+
+	// HazmatReadiness Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval.
+	HazmatReadiness *string `json:"hazmatReadiness,omitempty"`
+	HazmatRevision  *int64  `json:"hazmatRevision,omitempty"`
 
 	// Id Unique identifier for the order
 	Id *string `json:"id,omitempty"`
@@ -4707,6 +4812,7 @@ type CreateShipmentResponse struct {
 	JSON400      *ProblemDetail
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
+	JSON409      *ProblemDetail
 	JSON422      *ProblemDetail
 	JSON500      *ProblemDetail
 }
@@ -6762,6 +6868,13 @@ func ParseCreateShipmentResponse(rsp *http.Response) (*CreateShipmentResponse, e
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest ProblemDetail

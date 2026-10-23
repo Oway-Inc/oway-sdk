@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HttpClient, OwayError, parseHttpError } from '../client';
+import { HttpClient, OwayError, parseHttpError, randomId } from '../client';
 
 global.fetch = vi.fn();
 
@@ -35,9 +35,15 @@ describe('OwayError', () => {
   });
 
   it('classifies non-retryable status codes', () => {
-    for (const s of [400, 401, 403, 404, 422, 501]) {
+    for (const s of [400, 401, 403, 404, 409, 422, 501]) {
       expect(new OwayError({ message: '', statusCode: s }).isRetryable()).toBe(false);
     }
+  });
+
+  it('retries only an in-progress idempotency conflict', () => {
+    const conflict = (code: string) => new OwayError({ message: '', statusCode: 409, code });
+    expect(conflict('idempotency_key_in_progress').isRetryable()).toBe(true);
+    expect(conflict('idempotency_key_conflict').isRetryable()).toBe(false);
   });
 
   it('exposes client/server bucket helpers', () => {
@@ -196,6 +202,20 @@ describe('HttpClient', () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it('resends the same headers, idempotency key included, on every retry', async () => {
+    const c = new HttpClient({ clientId: 'a', clientSecret: 'b', apiKey: 'k', maxRetries: 2 });
+    (fetch as any)
+      .mockResolvedValueOnce(okToken())
+      .mockResolvedValueOnce(errJson(409, { reason: 'idempotency_key_in_progress' }))
+      .mockResolvedValueOnce(errJson(503, { reason: 'unavailable' }))
+      .mockResolvedValueOnce(okJson({ orderNumber: 'ABC12' }));
+    await c.post('/v1/shipper/shipment', {}, undefined, { 'Idempotency-Key': 'order-4711' });
+    const keys = (fetch as any).mock.calls
+      .filter((call: any[]) => !call[0].includes('/v1/auth/token'))
+      .map((call: any[]) => call[1].headers['Idempotency-Key']);
+    expect(keys).toEqual(['order-4711', 'order-4711', 'order-4711']);
+  });
+
   it('uses companyApiKey when provided', async () => {
     (fetch as any)
       .mockResolvedValueOnce(okToken())
@@ -213,5 +233,13 @@ describe('HttpClient', () => {
       .filter((c: any[]) => !c[0].includes('/v1/auth/token'))
       .map((c: any[]) => c[1].headers['x-request-id']);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('randomId', () => {
+  it('returns a new cryptographic UUID each call', () => {
+    const ids = new Set(Array.from({ length: 100 }, () => randomId()));
+    expect(ids.size).toBe(100);
+    for (const id of ids) expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   });
 });

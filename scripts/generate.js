@@ -121,7 +121,7 @@ async function main() {
     } catch (err) {
       console.error(`  ✗ Failed to fetch spec: ${err.message}`);
       if (opts.url === URLS.local) {
-        console.error('  Hint: is oway-platform-rest running locally on port 8181?');
+        console.error('  Hint: is the Oway API running locally on port 8181?');
       }
       process.exit(1);
     }

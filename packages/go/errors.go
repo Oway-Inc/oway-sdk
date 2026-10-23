@@ -44,8 +44,9 @@ func (e *Error) Error() string {
 }
 
 // IsRetryable reports whether the error represents a transient failure that
-// is worth retrying. Only well-known transient HTTP status codes return
-// true; all other 4xx and unknown errors return false.
+// is worth retrying: a well-known transient HTTP status, or another request
+// with the same Idempotency-Key still in progress. All other 4xx and unknown
+// errors return false.
 func (e *Error) IsRetryable() bool {
 	if e == nil {
 		return false
@@ -58,6 +59,8 @@ func (e *Error) IsRetryable() bool {
 		http.StatusServiceUnavailable,  // 503
 		http.StatusGatewayTimeout:      // 504
 		return true
+	case http.StatusConflict:
+		return e.Code == "idempotency_key_in_progress"
 	}
 	return false
 }
