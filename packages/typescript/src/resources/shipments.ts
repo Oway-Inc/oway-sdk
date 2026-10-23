@@ -7,7 +7,7 @@ export interface CreateShipmentOptions {
    * hours returns the original shipment instead of creating another; reusing the key with a
    * different request is refused with 409 `idempotency_key_conflict`. Derive it from your own
    * stable identity for the shipment so a retry after a lost response is recognized. Defaults to
-   * a new key per call.
+   * a new key per call, as does an empty string.
    */
   idempotencyKey?: string;
 }
@@ -27,7 +27,7 @@ export class Shipments {
     companyApiKey?: string,
     options: CreateShipmentOptions = {}
   ): Promise<Shipment> {
-    const idempotencyKey = options.idempotencyKey ?? randomId();
+    const idempotencyKey = options.idempotencyKey || randomId();
     return this.client.post<Shipment>('/v1/shipper/shipment', params, companyApiKey, {
       'Idempotency-Key': idempotencyKey,
     });

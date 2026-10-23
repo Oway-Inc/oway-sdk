@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HttpClient, OwayError, parseHttpError } from '../client';
+import { HttpClient, OwayError, parseHttpError, randomId } from '../client';
 
 global.fetch = vi.fn();
 
@@ -233,5 +233,23 @@ describe('HttpClient', () => {
       .filter((c: any[]) => !c[0].includes('/v1/auth/token'))
       .map((c: any[]) => c[1].headers['x-request-id']);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('randomId', () => {
+  it('uses Web Crypto and never weaker randomness', () => {
+    expect(randomId()).toMatch(/^[0-9a-f-]{32,36}$/);
+    const original = globalThis.crypto;
+    try {
+      Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true });
+      expect(() => randomId()).toThrow(OwayError);
+      Object.defineProperty(globalThis, 'crypto', {
+        value: { getRandomValues: (a: Uint8Array) => a.fill(171) },
+        configurable: true,
+      });
+      expect(randomId()).toBe('ab'.repeat(16));
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', { value: original, configurable: true });
+    }
   });
 });
