@@ -14,8 +14,9 @@ const deliveryAddress: Address = {
 };
 
 describe('hazmat capture', () => {
-  it('preserves partial rows, explicit false and units in quote and shipment requests', async () => {
+  it('preserves the classification, partial rows, explicit false and units in quote and shipment requests', async () => {
     const paper: HazmatPaper = {
+      classification: 'LIMITED_QUANTITY',
       entries: [
         { entryId: 'material-one', sourceItemReference: 'item-1', limitedQuantity: false },
         { entryId: 'material-two', totalQuantity: 12.5, quantityUnit: 'kg' },
@@ -33,6 +34,7 @@ describe('hazmat capture', () => {
     await new Shipments(client).create(shipment);
     for (const [, body] of post.mock.calls) {
       expect(body.hazmatPaper).toEqual(paper);
+      expect(body.hazmatPaper.classification).toBe('LIMITED_QUANTITY');
       expect(body.hazmatPaper.certification).toBeUndefined();
       expect(body.hazmatPaper.entries[0].packageCount).toBeUndefined();
     }

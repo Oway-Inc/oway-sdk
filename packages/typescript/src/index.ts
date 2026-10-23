@@ -25,6 +25,7 @@ export class Oway {
 export type {
   QuoteRequest,
   HazmatPaper,
+  HazmatClassification,
   HazmatEntry,
   HazmatCertification,
   HazmatFinding,

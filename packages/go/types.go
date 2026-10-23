@@ -30,6 +30,9 @@ type HazmatEntry = client.HazmatPaperEntryRequest
 // HazmatCertification records explicit consent for the current declaration.
 type HazmatCertification = client.HazmatCertificationRequest
 
+// HazmatClassification states how a hazmat load ships: LIMITED_QUANTITY or FULL.
+type HazmatClassification = client.HazmatPaperRequestClassification
+
 // HazmatPackingGroup is a material's packing group: I, II or III.
 type HazmatPackingGroup = client.HazmatPaperEntryRequestPackingGroup
 
