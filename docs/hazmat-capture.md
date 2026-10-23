@@ -88,7 +88,9 @@ applicable, hazard class/division, subsidiary hazards and assigned packing group
 Omit the packing group for materials without an assigned group.
 
 Package count and type describe the actual load. `totalQuantity` and
-`quantityUnit` stay together; supported units are `L`, `kg`, `lb`, and `gal`.
+`quantityUnit` stay together. Use `kg`, `g`, `lb`, `L`, `mL` or `gal`; units
+are read case-insensitively, and a unit the API cannot use is reported as a
+finding rather than refused.
 `innerPackagingNetCapacityL`, `outerPackageGrossKg`, and `flashPointC` use the units
 in their names. Do not substitute a catalog limit for an actual measurement.
 Limited quantity, hazardous substance, reportable quantity and marine pollutant
