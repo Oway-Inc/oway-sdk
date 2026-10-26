@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node"],
+    "paths": { "@oway/sdk": ["./src/index.ts"] }
+  },
+  "include": ["examples/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

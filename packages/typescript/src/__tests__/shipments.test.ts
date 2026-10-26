@@ -42,3 +42,38 @@ describe('Shipments.tracking', () => {
     );
   });
 });
+
+describe('Shipments.create', () => {
+  const request = {} as Parameters<Shipments['create']>[0];
+
+  it('sends a new idempotency key per call', async () => {
+    const post = vi.fn().mockResolvedValue({});
+    const shipments = new Shipments({ post } as unknown as HttpClient);
+
+    await shipments.create(request);
+    await shipments.create(request);
+
+    const keys = post.mock.calls.map((call) => call[3]['Idempotency-Key']);
+    expect(keys[0]).toMatch(/^[0-9a-f-]{32,36}$/);
+    expect(keys[1]).not.toBe(keys[0]);
+  });
+
+  it('treats an empty key as none', async () => {
+    const post = vi.fn().mockResolvedValue({});
+    await new Shipments({ post } as unknown as HttpClient).create(request, undefined, {
+      idempotencyKey: '',
+    });
+    expect(post.mock.calls[0][3]['Idempotency-Key']).toMatch(/^[0-9a-f-]{32,36}$/);
+  });
+
+  it("sends the caller's key and company API key", async () => {
+    const post = vi.fn().mockResolvedValue({});
+    await new Shipments({ post } as unknown as HttpClient).create(request, 'oway_sk_company_xyz', {
+      idempotencyKey: 'order-4711',
+    });
+
+    expect(post).toHaveBeenCalledWith('/v1/shipper/shipment', request, 'oway_sk_company_xyz', {
+      'Idempotency-Key': 'order-4711',
+    });
+  });
+});

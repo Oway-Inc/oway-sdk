@@ -802,6 +802,16 @@ export interface components {
              * @example 2025-02-20T17:31:10.430Z
              */
             createdAt?: string;
+            /** @description Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation. */
+            hazmat?: boolean;
+            /** Format: date-time */
+            hazmatCertifiedAt?: string;
+            hazmatFindings?: components["schemas"]["HazmatFindingResponse"][];
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            /** @description Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval. */
+            hazmatReadiness?: string;
+            /** Format: int64 */
+            hazmatRevision?: number;
             /**
              * Format: date-time
              * @description Time when the order was last updated (ISO 8601 format)
@@ -1728,6 +1738,8 @@ export interface components {
              * @example Electronics - fragile
              */
             description: string;
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
             /**
              * @description Purchase order number for reference
              * @example PO-2024-12345
@@ -1915,6 +1927,8 @@ export interface components {
             pickupAddress: components["schemas"]["Address"];
             /** @description Delivery location. Only zipCode is required for quotes. */
             deliveryAddress: components["schemas"]["Address"];
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
             /** @description List of pallets or freight pieces. */
             orderComponents: components["schemas"]["OrderComponent"][];
             /**
@@ -1960,6 +1974,8 @@ export interface components {
              * @example 2024-12-22T15:30:00Z
              */
             estimatedDeliveryDate?: string | null;
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
         };
         /** @description Request a pre-signed URL to upload a file (signature image or proof of delivery) */
         UploadUrlRequest: {
@@ -2291,6 +2307,69 @@ export interface components {
              * @example 65
              */
             speed: number;
+        };
+        HazmatCertificationRequest: {
+            confirmed?: boolean;
+            signerName?: string;
+            /** @enum {string} */
+            statement?: "DOT_172_204_A1" | "DOT_172_204_A2";
+        };
+        HazmatFindingResponse: {
+            citation?: string;
+            /** Format: int32 */
+            entryIndex?: number;
+            message?: string;
+            rule?: string;
+            severity?: string;
+        };
+        HazmatPaperEntryRequest: {
+            emergencyContactConfirmed?: boolean;
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            entryId?: string;
+            /** Format: double */
+            flashPointC?: number;
+            hazardClass?: string;
+            hazardousSubstance?: boolean;
+            identificationNumber?: string;
+            /** Format: double */
+            innerPackagingNetCapacityL?: number;
+            limitedQuantity?: boolean;
+            lqMarked?: boolean;
+            marinePollutant?: boolean;
+            marinePollutantComponent?: string;
+            /** Format: double */
+            outerPackageGrossKg?: number;
+            /** Format: int32 */
+            packageCount?: number;
+            packageType?: string;
+            /** @enum {string} */
+            packingGroup?: "I" | "II" | "III";
+            productId?: string;
+            properShippingName?: string;
+            psnQualifier?: string;
+            quantityUnit?: string;
+            reportableQuantity?: boolean;
+            responseInformationDocumentIds?: string[];
+            sourceItemReference?: string;
+            subsidiaryHazards?: string[];
+            technicalNames?: string[];
+            /** Format: double */
+            totalQuantity?: number;
+            unitizedPer173_156b2?: boolean;
+        };
+        HazmatPaperRequest: {
+            certification?: components["schemas"]["HazmatCertificationRequest"];
+            /** @enum {string} */
+            classification?: "LIMITED_QUANTITY" | "FULL";
+            emergencyContactCoversAll?: boolean;
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            entries?: components["schemas"]["HazmatPaperEntryRequest"][];
+            /** Format: int64 */
+            expectedRevision?: number;
         };
         /** @description Current estimated shipment position with an uncertainty radius */
         ShipmentLocation: {
@@ -3351,6 +3430,22 @@ export interface operations {
             };
             /** @description Forbidden: missing/invalid API key, user not in company, or quote not owned by company */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /**
+             * @description Conflict with an earlier request or shipment. Sending a booked hazmat quote again returns its existing shipment only when the request still describes that shipment. Possible reasons:
+             *
+             *     - **Quote Already Booked** (`reason: quote_already_booked`): the quote already backs a shipment at a different street address. Request a new quote for this shipment.
+             *     - **Hazmat Declaration Changed** (`reason: hazmat_retry_conflict`): the request changes or certifies the existing shipment's hazmat declaration. Edit the existing shipment instead.
+             *     - **Idempotency Key Conflict** (`reason: idempotency_key_conflict`): the Idempotency-Key was used within the last 24 hours with a different request body.
+             *     - **Idempotency Key In Progress** (`reason: idempotency_key_in_progress`): another request with the same Idempotency-Key is still being processed. Retry shortly.
+             */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -3,7 +3,7 @@
  * For EDI providers, 3PLs, TMS platforms serving multiple shippers
  */
 
-import Oway from '@oway/sdk';
+import Oway, { type QuoteRequest } from '@oway/sdk';
 
 // M2M credentials from Sales Engineering (same for all companies)
 const oway = new Oway({
@@ -12,6 +12,24 @@ const oway = new Oway({
   // No default apiKey - provided per-request
   // Defaults to sandbox: https://api.sandbox.oway.io
 });
+
+type Stop = { zipCode: string; city: string; state: string };
+
+// A synthetic lane; a real integration builds this from the customer's tender.
+function lane(pickup: Stop, delivery: Stop, poundsWeight: number): QuoteRequest {
+  const address = (stop: Stop) => ({
+    ...stop,
+    name: 'Example Facility',
+    address1: '100 Example Street',
+    phoneNumber: '+15555550100',
+    contactPerson: 'Example Contact',
+  });
+  return {
+    pickupAddress: address(pickup),
+    deliveryAddress: address(delivery),
+    orderComponents: [{ palletCount: 1, poundsWeight }],
+  };
+}
 
 // Customer API keys from your database
 const customerAPIKeys: Record<string, string> = {
@@ -26,11 +44,11 @@ async function main() {
   // Process shipment for Customer 001
   console.log('📦 Processing for Customer 001...');
   const quote1 = await oway.quotes.create(
-    {
-      origin: { zipCode: '90210', country: 'US' },
-      destination: { zipCode: '10001', country: 'US' },
-      items: [{ weight: 500, weightUnit: 'LBS' }],
-    },
+    lane(
+      { zipCode: '90001', city: 'Los Angeles', state: 'CA' },
+      { zipCode: '10001', city: 'New York', state: 'NY' },
+      500,
+    ),
     customerAPIKeys['customer_001'] // Customer-specific API key
   );
   console.log(`   Quote: ${quote1.id}\n`);
@@ -38,11 +56,11 @@ async function main() {
   // Process shipment for Customer 002
   console.log('📦 Processing for Customer 002...');
   const quote2 = await oway.quotes.create(
-    {
-      origin: { zipCode: '60601', country: 'US' },
-      destination: { zipCode: '94102', country: 'US' },
-      items: [{ weight: 300, weightUnit: 'LBS' }],
-    },
+    lane(
+      { zipCode: '60601', city: 'Chicago', state: 'IL' },
+      { zipCode: '94102', city: 'San Francisco', state: 'CA' },
+      300,
+    ),
     customerAPIKeys['customer_002'] // Different customer key
   );
   console.log(`   Quote: ${quote2.id}\n`);
@@ -50,11 +68,11 @@ async function main() {
   // Process shipment for Customer 003
   console.log('📦 Processing for Customer 003...');
   const quote3 = await oway.quotes.create(
-    {
-      origin: { zipCode: '75201', country: 'US' },
-      destination: { zipCode: '02108', country: 'US' },
-      items: [{ weight: 200, weightUnit: 'LBS' }],
-    },
+    lane(
+      { zipCode: '75201', city: 'Dallas', state: 'TX' },
+      { zipCode: '02108', city: 'Boston', state: 'MA' },
+      200,
+    ),
     customerAPIKeys['customer_003']
   );
   console.log(`   Quote: ${quote3.id}\n`);
