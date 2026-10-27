@@ -230,6 +230,20 @@ resp, err := raw.GetShipmentWithResponse(ctx, orderNumber)
 - **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
 
+### Phone extensions
+
+Keep the base phone in E.164 format, such as `+12125550123`. Store a separate
+optional `PhoneExtension` string on addresses and appointment contacts, such as
+`"0042"`. Leading zeros are significant; extensions contain 1–10 ASCII digits.
+Do not append extension digits or `;ext=` to the base phone field.
+
+On an update, an omitted or null extension preserves the stored extension when
+the base phone is unchanged. A pointer to `""` explicitly clears it. When replacing
+an extension-bearing base phone, send the intended extension or an explicit clear.
+Appointment contacts are replaced as a list; omitted extensions are preserved only
+for a unique matching contact identity (name, email, base phone and role). If one
+identity has multiple extensions, send the extension for each destination.
+
 ## License
 
 MIT

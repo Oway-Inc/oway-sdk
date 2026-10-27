@@ -77,3 +77,17 @@ describe('Shipments.create', () => {
     });
   });
 });
+
+it('forwards extension zeros and explicit clears without changing phone fields', async () => {
+  const post = vi.fn().mockResolvedValue({});
+  const shipments = new Shipments({ post } as unknown as HttpClient);
+  const contact: import('../generated/schema').components['schemas']['AppointmentContact'] = {
+    name: 'Dock desk', phone: '+12125550123', phoneExtension: '0042',
+  };
+  const request = { appointments: { pickup: { contacts: [contact] } } } as Parameters<Shipments['create']>[0];
+  await shipments.create(request);
+  expect(JSON.parse(JSON.stringify(post.mock.calls[0][1])).appointments.pickup.contacts[0]).toEqual(contact);
+  contact.phoneExtension = '';
+  await shipments.create(request);
+  expect(JSON.parse(JSON.stringify(post.mock.calls[1][1])).appointments.pickup.contacts[0].phoneExtension).toBe('');
+});

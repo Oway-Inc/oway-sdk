@@ -891,6 +891,11 @@ export interface components {
              * @example Warehouse Manager
              */
             role?: string;
+            /**
+             * @description Optional phone extension. Omitted/null preserves an existing contact extension; empty clears. Leading zeros are significant.
+             * @example 0042
+             */
+            phoneExtension?: string;
         };
         /** @description Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment. */
         AppointmentRequirementRequest: {
@@ -1657,7 +1662,7 @@ export interface components {
              */
             contactPerson: string;
             /**
-             * @description Phone extension, dialled after the main number
+             * @description Optional 1-10 ASCII digit extension, preserving leading zeros; empty clears on update
              * @example 204
              */
             phoneExtension?: string;

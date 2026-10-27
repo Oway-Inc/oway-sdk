@@ -270,6 +270,20 @@ import type { Quote, Shipment, Tracking, Invoice, QuoteRequest, ShipmentRequest,
 - **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
 
+### Phone extensions
+
+Addresses and appointment contacts accept an optional `phoneExtension` string.
+Keep the base `phoneNumber` (address) or `phone` (appointment contact) in E.164
+format, and pass the extension separately, for example `phoneExtension: '0042'`.
+Leading zeros are significant; extensions contain 1–10 ASCII digits.
+
+Omitting the extension or sending `null` on an update preserves the stored value
+when the base phone is unchanged. Send `phoneExtension: ''` to clear it. Replacing
+an extension-bearing base phone requires an explicit extension or clear.
+Appointment contact lists retain their replacement semantics. Omitted extensions
+are preserved only for a unique matching name, email, base phone and role; supply
+each extension explicitly when a contact has multiple destinations.
+
 ## License
 
 MIT

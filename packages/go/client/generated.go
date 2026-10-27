@@ -368,7 +368,7 @@ type Address struct {
 	// OpenTime Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
 	OpenTime *string `json:"openTime,omitempty"`
 
-	// PhoneExtension Phone extension, dialled after the main number
+	// PhoneExtension Optional 1-10 ASCII digit extension, preserving leading zeros; empty clears on update
 	PhoneExtension *string `json:"phoneExtension,omitempty"`
 
 	// PhoneNumber Contact phone number in E.164 format
@@ -391,6 +391,9 @@ type AppointmentContact struct {
 
 	// Phone Phone in E.164 format
 	Phone *string `json:"phone,omitempty"`
+
+	// PhoneExtension Optional phone extension. Omitted/null preserves an existing contact extension; empty clears. Leading zeros are significant.
+	PhoneExtension *string `json:"phoneExtension,omitempty"`
 
 	// Role Role of the contact at the facility
 	Role *string `json:"role,omitempty"`

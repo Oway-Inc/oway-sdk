@@ -3146,6 +3146,12 @@
             "example": "Warehouse Manager",
             "maxLength": 100,
             "minLength": 0
+          },
+          "phoneExtension": {
+            "type": "string",
+            "description": "Optional phone extension. Omitted/null preserves an existing contact extension; empty clears. Leading zeros are significant.",
+            "example": "0042",
+            "pattern": "^[0-9]{0,10}$"
           }
         },
         "required": [
@@ -4260,9 +4266,9 @@
           },
           "phoneExtension": {
             "type": "string",
-            "description": "Phone extension, dialled after the main number",
+            "description": "Optional 1-10 ASCII digit extension, preserving leading zeros; empty clears on update",
             "example": "204",
-            "pattern": "^\\d{1,10}$"
+            "pattern": "^[0-9]{0,10}$"
           },
           "email": {
             "type": "string",
