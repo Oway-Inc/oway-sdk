@@ -4,6 +4,15 @@ All notable changes to the Oway Go SDK will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.2]
+
+### Added
+
+- Optional `PhoneExtension` on appointment contacts. It preserves leading zeros;
+  nil omits the field, while a pointer to an empty string explicitly clears it.
+  Base phone numbers remain E.164. Address extensions have the same update semantics.
+
+
 ### Added
 
 - Hazardous material declarations: `Hazmat` and `HazmatPaper` on `QuoteRequest`
