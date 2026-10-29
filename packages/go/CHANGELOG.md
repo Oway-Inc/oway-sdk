@@ -4,6 +4,23 @@ All notable changes to the Oway Go SDK will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `PickupAccessorials` and `DeliveryAccessorials` on `Quote`: the services the
+  quote was priced for at each stop, as the request asked for them, with the
+  `QuoteStopAccessorials` alias. Nil when the quote recorded none.
+- Regenerated from the production API: optional `Country` on `Address`
+  (defaults to US), `CustomerReference` on `QuoteRequest`, `Country` and
+  `PhoneExtension` on carrier addresses, the `REJECTED` order status, and the
+  quote batch and quote-by-reference operations in the generated `client`
+  package.
+
+### Changed
+
+- `Tracking.EstimatedDeliveryDate` and `Tracking.OrderStatus` keep their types;
+  the API now documents both as nullable, so they marshal as JSON `null` when
+  unset instead of being omitted.
+
 ## [0.4.2]
 
 ### Added

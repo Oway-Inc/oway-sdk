@@ -103,6 +103,14 @@ const quote = await oway.quotes.create({
 const quote = await oway.quotes.retrieve('507f1f77bcf86cd799439011');
 ```
 
+A quote states the services it was priced for at each stop, as the request asked for them. `pickupAccessorials` and `deliveryAccessorials` are omitted when the quote recorded none.
+
+```typescript
+if (quote.deliveryAccessorials?.appointmentRequired) {
+  // the delivery was quoted with an appointment
+}
+```
+
 ### Shipments
 
 ```typescript
