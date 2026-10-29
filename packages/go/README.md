@@ -157,6 +157,15 @@ quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{ /* ... */ })
 quote, err := client.GetQuote(ctx, quoteID)
 ```
 
+A quote states the services it was priced for at each stop, as the request asked for them.
+`PickupAccessorials` and `DeliveryAccessorials` are nil when the quote recorded none.
+
+```go
+if a := quote.DeliveryAccessorials; a != nil && a.AppointmentRequired != nil && *a.AppointmentRequired {
+	// the delivery was quoted with an appointment
+}
+```
+
 ### Shipments
 
 ```go

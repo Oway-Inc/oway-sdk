@@ -31,6 +31,7 @@ export type {
   HazmatFinding,
   ShipmentRequest,
   Quote,
+  QuoteStopAccessorials,
   Shipment,
   Tracking,
   Invoice,

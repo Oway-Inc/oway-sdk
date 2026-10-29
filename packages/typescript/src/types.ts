@@ -43,3 +43,5 @@ export type HazmatClassification = NonNullable<HazmatPaper['classification']>;
 export type HazmatEntry = components['schemas']['HazmatPaperEntryRequest'];
 export type HazmatCertification = components['schemas']['HazmatCertificationRequest'];
 export type HazmatFinding = components['schemas']['HazmatFindingResponse'];
+/** The services a quote was priced for at one stop, as the quote request asked for them. */
+export type QuoteStopAccessorials = components['schemas']['QuoteStopAccessorials'];

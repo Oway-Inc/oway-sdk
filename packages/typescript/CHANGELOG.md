@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `pickupAccessorials` and `deliveryAccessorials` on `Quote`: the services the quote was priced for at each stop, as the request asked for them, with the `QuoteStopAccessorials` type. Omitted when the quote recorded none.
+- Regenerated from the production API: optional `country` on addresses (defaults to US), `customerReference` on quote requests, `country` and `phone_extension` on carrier addresses, the `REJECTED` order status, and the quote batch and quote-by-reference operations in the generated `paths` types.
+
 - Hazardous material declarations: `hazmat` and `hazmatPaper` on quote and shipment requests and responses, with the `HazmatPaper`, `HazmatEntry`, `HazmatCertification`, `HazmatClassification` and `HazmatFinding` types. See `docs/hazmat-capture.md`.
 - `shipments.create(params, companyApiKey, { idempotencyKey })` sets the `Idempotency-Key` the create sends. `CreateShipmentOptions` is exported.
 
 ### Fixed
 
+- A request property the API gives a default value (`country` on addresses) was generated as required, so every address without a country stopped type-checking. Properties with defaults stay optional.
 - `shipments.create` retried a 5xx, 408 or 429 without an idempotency key, so a create that succeeded behind a lost response could make a second shipment. Every attempt of a call now sends one key: the caller's, or one generated per call.
 - `OwayError.isRetryable()` is true for 409 `idempotency_key_in_progress`, which the API asks callers to retry.
 - The examples use the current request shapes and are type-checked by `npm run lint`.

@@ -7,7 +7,7 @@
       "name": "Oway Support",
       "email": "support@oway.io"
     },
-    "version": "1.1.0"
+    "version": "1.3.0"
   },
   "externalDocs": {
     "description": "Oway API Developer Portal",
@@ -52,7 +52,7 @@
           "Shipper API"
         ],
         "summary": "Confirm a shipment by order number",
-        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - At least 1, up to the current per-order maximum\n- `totalPoundsWeight` - At least 1, within the current per-pallet weight cap\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - At least 1, within the current per-pallet weight cap\n- `palletDimensions` - Length, width and height in inches, each at least 1 and\n  within the current maximums. These limits are configurable and change over\n  time, so they are not restated here: a pallet that exceeds them is rejected\n  with a 422 whose violation message states the maximum that applied. A pallet\n  larger than the standard footprint is still accepted and priced as oversized,\n  and a stop that requires a liftgate applies a tighter maximum.\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
+        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - At least 1, up to the current per-order maximum\n- `totalPoundsWeight` - At least 1, within the current per-pallet weight cap, and when\n  either stop requires a liftgate, within the liftgate load weight limit\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - At least 1, within the current per-pallet weight cap\n- `palletDimensions` - Length, width and height in inches, each at least 1 and\n  within the current maximums. These limits are configurable and change over\n  time, so they are not restated here: a pallet that exceeds them is rejected\n  with a 422 whose violation message states the maximum that applied. A pallet\n  larger than the standard footprint is still accepted and priced as oversized,\n  and a stop that requires a liftgate applies a tighter maximum.\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
         "operationId": "confirmShipment",
         "parameters": [
           {
@@ -1037,17 +1037,17 @@
             }
           },
           "409": {
+            "description": "Conflict with an earlier request or shipment. Sending a booked hazmat quote again returns its existing shipment only when the request still describes that shipment. Possible reasons:\n\n- **Quote Already Booked** (`reason: quote_already_booked`): the quote already backs a shipment at a different street address. Request a new quote for this shipment.\n- **Hazmat Declaration Changed** (`reason: hazmat_retry_conflict`): the request changes or certifies the existing shipment's hazmat declaration. Edit the existing shipment instead.\n- **Idempotency Key Conflict** (`reason: idempotency_key_conflict`): the Idempotency-Key was used within the last 24 hours with a different request body.\n- **Idempotency Key In Progress** (`reason: idempotency_key_in_progress`): another request with the same Idempotency-Key is still being processed. Retry shortly.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
-            },
-            "description": "Conflict with an earlier request or shipment. Sending a booked hazmat quote again returns its existing shipment only when the request still describes that shipment. Possible reasons:\n\n- **Quote Already Booked** (`reason: quote_already_booked`): the quote already backs a shipment at a different street address. Request a new quote for this shipment.\n- **Hazmat Declaration Changed** (`reason: hazmat_retry_conflict`): the request changes or certifies the existing shipment's hazmat declaration. Edit the existing shipment instead.\n- **Idempotency Key Conflict** (`reason: idempotency_key_conflict`): the Idempotency-Key was used within the last 24 hours with a different request body.\n- **Idempotency Key In Progress** (`reason: idempotency_key_in_progress`): another request with the same Idempotency-Key is still being processed. Retry shortly."
+            }
           },
           "422": {
-            "description": "Unprocessable Entity. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.\n- **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.",
+            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1266,6 +1266,99 @@
         }
       }
     },
+    "/v1/shipper/quotes/batch": {
+      "post": {
+        "tags": [
+          "Shipper API"
+        ],
+        "summary": "Price a batch of shipments",
+        "description": "Accepts up to 1,000 quote requests and prices them after answering. The response is the batch in status `PRICING` with every item `PENDING`; read it at `GET /v1/shipper/quotes/batch/{batchId}` (the `Location` header) after `Retry-After` seconds until its status is `COMPLETED` or `FAILED`.\n\nEach item is exactly a quote request and is priced as its own quote request would be. Results come back in the order you sent the items, so the position is how you match them; an item's `customerReference`, when you give one, is stored on its quote and finds it later. Each result is `QUOTED` with the same `QuoteResponse` a single request answers with, or `NOT_QUOTED` or `UNDER_REVIEW` with the same `ProblemDetail`. A refused or malformed item never fails the batch; only an envelope that cannot be taken does (no items, more than 1,000, or an empty item).\n\nIdempotent twice over. With an `Idempotency-Key`, retrying the same request within 24h returns the original response; the same key with a different body returns 409 `idempotency_key_conflict`. Without one, the same items for your company within 24h return the batch that already ran, however far it has got; quotes stay valid for two days, so a replay never returns an expired price. One batch prices for your account at a time: a second, different batch while one is `PRICING` is refused with 409 `batch_in_progress` and the running batch's id.\n\n`UNDER_REVIEW` items are the ones no automatic price can be trusted for; a person decides, and the item later becomes `QUOTED` or `NOT_QUOTED`. After a batch is `COMPLETED`, items change only that way and nothing else on the batch moves. The `requiredPickupDate` of an item is read as a day in the origin's time zone; send it with an offset, for example `2026-10-14T08:00:00-07:00`.",
+        "operationId": "createBatch",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional idempotency key. Retrying the same request with the same key within 24h returns the original response. Reusing the key with a different body returns 409 idempotency_key_conflict.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Batch accepted and pricing. `Location` is where to read it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteBatch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope (`reason: invalid_batch`): no items, more than 1,000, or an empty item. Per-item problems are never a 400; they are the item's result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: missing or invalid Bearer token (authentication failed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden: missing/invalid API key, or user does not belong to the authorized company",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. `reason: batch_in_progress`: a different batch is already pricing for your account; its id is in `detail`. `reason: idempotency_key_conflict`: the `Idempotency-Key` was used with a different body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/shipper/quote": {
       "post": {
         "tags": [
@@ -1326,7 +1419,7 @@
             }
           },
           "422": {
-            "description": "Unprocessable Entity. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.\n- **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.",
+            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2273,6 +2366,143 @@
         }
       }
     },
+    "/v1/shipper/quotes/by-reference": {
+      "get": {
+        "tags": [
+          "Shipper API"
+        ],
+        "summary": "Get a quote by your own customer reference",
+        "description": "Returns the newest quote your company holds under a customer reference: your own identifier for a load, such as the load number on a daily manifest.\n\nRead this before tendering a load whose tender cannot carry an Oway quote ID. `matchable` is true when the quote will back the booking as it stands: open, inside its 48-hour window, and carrying a price you can be charged.\n\nA load whose quote is missing, expired, or no longer matches the freight is still worth tendering. We re-price it and book at the new price rather than refusing it, and flag the difference for our operations team.\n\n**Note:** The reference is scoped to the company behind your API key. A reference another company uses for a different load is never returned to you.\n",
+        "operationId": "getQuoteByReference",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "query",
+            "description": "Your own identifier for the load, as sent on the quote request",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 2835391
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteByReferenceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: reference is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: missing or invalid Bearer token (authentication failed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden: missing, invalid, or expired API key (authorization failed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Your company holds no quote under that reference",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/shipper/quotes/batch/{batchId}": {
+      "get": {
+        "tags": [
+          "Shipper API"
+        ],
+        "summary": "Read a batch of quotes",
+        "description": "The batch and every item's outcome, as they stand: the same body the create call answered with. While the status is `PRICING`, `Retry-After` says how long to wait before reading again. A batch belonging to another company is not found.",
+        "operationId": "readBatch",
+        "parameters": [
+          {
+            "name": "batchId",
+            "in": "path",
+            "description": "The batch id the create call answered with",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The batch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteBatch"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized: missing or invalid Bearer token (authentication failed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden: missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No batch with this id belongs to your company",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/shipper/quote/{quoteId}": {
       "get": {
         "tags": [
@@ -2960,10 +3190,222 @@
   },
   "components": {
     "schemas": {
+      "HazmatCertificationRequest": {
+        "type": "object",
+        "properties": {
+          "signerName": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string",
+            "enum": [
+              "DOT_172_204_A1",
+              "DOT_172_204_A2"
+            ]
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HazmatFindingResponse": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "citation": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "entryIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "HazmatPaperEntryRequest": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "identificationNumber": {
+            "type": "string"
+          },
+          "properShippingName": {
+            "type": "string"
+          },
+          "psnQualifier": {
+            "type": "string"
+          },
+          "technicalNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hazardClass": {
+            "type": "string"
+          },
+          "subsidiaryHazards": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "packingGroup": {
+            "type": "string",
+            "enum": [
+              "I",
+              "II",
+              "III"
+            ]
+          },
+          "limitedQuantity": {
+            "type": "boolean"
+          },
+          "innerPackagingNetCapacityL": {
+            "type": "number",
+            "format": "double"
+          },
+          "outerPackageGrossKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "lqMarked": {
+            "type": "boolean"
+          },
+          "unitizedPer173_156b2": {
+            "type": "boolean"
+          },
+          "hazardousSubstance": {
+            "type": "boolean"
+          },
+          "reportableQuantity": {
+            "type": "boolean"
+          },
+          "marinePollutant": {
+            "type": "boolean"
+          },
+          "marinePollutantComponent": {
+            "type": "string"
+          },
+          "flashPointC": {
+            "type": "number",
+            "format": "double"
+          },
+          "packageCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "packageType": {
+            "type": "string"
+          },
+          "totalQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantityUnit": {
+            "type": "string"
+          },
+          "entryId": {
+            "type": "string"
+          },
+          "sourceItemReference": {
+            "type": "string"
+          },
+          "responseInformationDocumentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emergencyPhone": {
+            "type": "string"
+          },
+          "emergencyProvider": {
+            "type": "string"
+          },
+          "emergencyRegistrantIdentifier": {
+            "type": "string"
+          },
+          "emergencyContactConfirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HazmatPaperRequest": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HazmatPaperEntryRequest"
+            }
+          },
+          "emergencyPhone": {
+            "type": "string"
+          },
+          "emergencyProvider": {
+            "type": "string"
+          },
+          "emergencyRegistrantIdentifier": {
+            "type": "string"
+          },
+          "certification": {
+            "$ref": "#/components/schemas/HazmatCertificationRequest"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "emergencyContactCoversAll": {
+            "type": "boolean"
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "LIMITED_QUANTITY",
+              "FULL"
+            ]
+          }
+        }
+      },
       "Shipment": {
         "type": "object",
         "description": "Shipment/Order details",
         "properties": {
+          "hazmat": {
+            "type": "boolean",
+            "description": "Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation."
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "hazmatFindings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HazmatFindingResponse"
+            }
+          },
+          "hazmatReadiness": {
+            "type": "string",
+            "description": "Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval."
+          },
+          "hazmatRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hazmatCertifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
           "id": {
             "type": "string",
             "description": "Unique identifier for the order",
@@ -2995,7 +3437,8 @@
               "PICKED_UP",
               "IN_TRANSIT",
               "DELIVERED",
-              "CANCELLED"
+              "CANCELLED",
+              "REJECTED"
             ],
             "example": "CONFIRMED",
             "enumDescriptions": {
@@ -3006,7 +3449,8 @@
               "CONFIRMED": "Shipment confirmed and awaiting carrier assignment",
               "IN_TRANSIT": "Freight in transit (alias for PICKED_UP)",
               "ASSIGNED": "Driver assigned and scheduled for pickup",
-              "PICKED_UP": "Freight picked up and in transit"
+              "PICKED_UP": "Freight picked up and in transit",
+              "REJECTED": "Shipment will not be carried — either declined by the shipper or dropped after no coverage was secured in time"
             }
           },
           "totalPriceInCents": {
@@ -3020,31 +3464,6 @@
             "format": "date-time",
             "description": "Time when the order was created (ISO 8601 format)",
             "example": "2025-02-20T17:31:10.430Z"
-          },
-          "hazmat": {
-            "type": "boolean",
-            "description": "Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation."
-          },
-          "hazmatCertifiedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "hazmatFindings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HazmatFindingResponse"
-            }
-          },
-          "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
-          },
-          "hazmatReadiness": {
-            "type": "string",
-            "description": "Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval."
-          },
-          "hazmatRevision": {
-            "type": "integer",
-            "format": "int64"
           },
           "updatedAt": {
             "type": "string",
@@ -3140,20 +3559,20 @@
             "maxLength": 32,
             "minLength": 0
           },
+          "phoneExtension": {
+            "type": "string",
+            "description": "Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves only a unique existing contact match by name, email, normalized base phone and role; ambiguous matches are rejected. Empty clears.",
+            "example": "0042",
+            "pattern": "^[0-9]{0,10}$",
+            "x-omitempty": true,
+            "nullable": true
+          },
           "role": {
             "type": "string",
             "description": "Role of the contact at the facility",
             "example": "Warehouse Manager",
             "maxLength": 100,
             "minLength": 0
-          },
-          "phoneExtension": {
-            "type": "string",
-            "description": "Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves only a unique existing contact match by name, email, normalized base phone and role; ambiguous matches are rejected. Empty clears.",
-            "example": "0042",
-            "pattern": "^[0-9]{0,10}$",
-            "nullable": true,
-            "x-omitempty": true
           }
         },
         "required": [
@@ -3419,21 +3838,29 @@
           },
           "state": {
             "type": "string",
-            "description": "Two-letter state abbreviation",
+            "description": "Two-letter subdivision code: a US state, territory or DC, or the subdivision of the country the country field names.",
             "example": "CA",
             "pattern": "[A-Z]{2}"
           },
           "zip_code": {
             "type": "string",
-            "description": "5-digit ZIP code",
-            "example": "90804",
-            "pattern": "\\d{5}"
+            "description": "Postal code of the location, in the format of the country the country field names: a 5-digit ZIP code for a US stop.",
+            "example": "90804"
+          },
+          "country": {
+            "type": "string",
+            "description": "Two-letter ISO 3166-1 alpha-2 country code of the stop. Oway serves the US and its territories, so this is one of US, PR, GU, VI, AS or MP.",
+            "example": "US",
+            "pattern": "^[A-Z]{2}$"
           },
           "phone_number": {
             "type": "string",
             "description": "Contact phone number in E.164 format",
             "example": "+18087857650",
             "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "phone_extension": {
+            "type": "string"
           },
           "contact_person": {
             "type": "string",
@@ -3659,7 +4086,8 @@
               "PICKED_UP",
               "IN_TRANSIT",
               "DELIVERED",
-              "CANCELLED"
+              "CANCELLED",
+              "REJECTED"
             ],
             "example": "PICKED_UP",
             "enumDescriptions": {
@@ -3670,7 +4098,8 @@
               "CONFIRMED": "Shipment confirmed and awaiting carrier assignment",
               "IN_TRANSIT": "Freight in transit (alias for PICKED_UP)",
               "ASSIGNED": "Driver assigned and scheduled for pickup",
-              "PICKED_UP": "Freight picked up and in transit"
+              "PICKED_UP": "Freight picked up and in transit",
+              "REJECTED": "Shipment will not be carried — either declined by the shipper or dropped after no coverage was secured in time"
             }
           },
           "actual_pickup_date": {
@@ -3795,7 +4224,8 @@
               "PICKED_UP",
               "IN_TRANSIT",
               "DELIVERED",
-              "CANCELLED"
+              "CANCELLED",
+              "REJECTED"
             ],
             "example": "CONFIRMED",
             "enumDescriptions": {
@@ -3806,7 +4236,8 @@
               "CONFIRMED": "Shipment confirmed and awaiting carrier assignment",
               "IN_TRANSIT": "Freight in transit (alias for PICKED_UP)",
               "ASSIGNED": "Driver assigned and scheduled for pickup",
-              "PICKED_UP": "Freight picked up and in transit"
+              "PICKED_UP": "Freight picked up and in transit",
+              "REJECTED": "Shipment will not be carried — either declined by the shipper or dropped after no coverage was secured in time"
             }
           },
           "description": {
@@ -4245,15 +4676,22 @@
           },
           "state": {
             "type": "string",
-            "description": "Two-letter state abbreviation",
+            "description": "Two-letter subdivision code. A request must name a US state, territory or DC; a response may name the subdivision of another country, which country names.",
             "example": "CA",
             "pattern": "[A-Z]{2}"
           },
           "zipCode": {
             "type": "string",
-            "description": "5-digit ZIP code",
+            "description": "5-digit ZIP code. The placeholders 00000 and 99999 are rejected: neither is an assignable USPS code, and both are what a caller sends when a numeric ZIP field defaults to zero or saturates.",
             "example": "90804",
-            "pattern": "\\d{5}"
+            "pattern": "^\\d{5}$"
+          },
+          "country": {
+            "type": "string",
+            "default": "US",
+            "description": "Two-letter ISO 3166-1 alpha-2 country code, case-insensitive and normalized to upper case. Defaults to US when omitted. Oway currently serves the US and its territories, so US, PR, GU, VI, AS and MP are accepted and any other recognized code is rejected with 400 rather than quoted. A territory may also be addressed the way a carrier would, as country US with the territory in state.",
+            "example": "US",
+            "pattern": "^[A-Za-z]{2}$"
           },
           "phoneNumber": {
             "type": "string",
@@ -4271,8 +4709,8 @@
             "description": "Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves on update only if the normalized base phone is unchanged; changing a base with an existing extension requires an explicit extension or empty string to clear.",
             "example": "204",
             "pattern": "^[0-9]{0,10}$",
-            "nullable": true,
-            "x-omitempty": true
+            "x-omitempty": true,
+            "nullable": true
           },
           "email": {
             "type": "string",
@@ -4296,7 +4734,7 @@
           },
           "notes": {
             "type": "string",
-            "description": "Additional notes or instructions for the driver",
+            "description": "Additional notes or instructions for the driver. On a shipment they print on the bill of lading for this stop.",
             "example": "Dock 3, enter from back of building"
           },
           "liftgateRequired": {
@@ -4358,6 +4796,12 @@
         "type": "object",
         "description": "Request to create a new shipment",
         "properties": {
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
           "quoteId": {
             "type": "string",
             "description": "Optional ID of a previously generated quote.",
@@ -4382,12 +4826,6 @@
             "type": "string",
             "description": "Description of the shipment contents",
             "example": "Electronics - fragile"
-          },
-          "hazmat": {
-            "type": "boolean"
-          },
-          "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
           },
           "poNumber": {
             "type": "string",
@@ -4424,14 +4862,14 @@
           "requiredPickupDate": {
             "type": "string",
             "format": "date-time",
-            "description": "Required pickup date (ISO 8601 format)",
-            "example": "2024-12-24T08:00:00Z"
+            "description": "Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.",
+            "example": "2026-04-01T08:00:00-07:00"
           },
           "requiredDeliveryBy": {
             "type": "string",
             "format": "date-time",
-            "description": "Required delivery by date (ISO 8601 format)",
-            "example": "2024-12-26T17:00:00Z"
+            "description": "Required delivery date (ISO 8601). Read as a calendar day, its UTC date; the deadline is the delivery stop's closing time on that day, in the stop's time zone.",
+            "example": "2024-12-26T12:00:00Z"
           },
           "appointments": {
             "$ref": "#/components/schemas/AppointmentsBlock",
@@ -4636,10 +5074,39 @@
           }
         }
       },
+      "QuoteBatchRequest": {
+        "type": "object",
+        "description": "A set of shipments to price together. The batch is accepted at once and priced afterwards; read it until its status is COMPLETED or FAILED.",
+        "properties": {
+          "customerReference": {
+            "type": "string",
+            "description": "Your own reference for the whole set, such as a plan or file name. Stored on the batch only; each item carries its own `customerReference`, or none.",
+            "example": "plan-2026-10-14",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "items": {
+            "type": "array",
+            "description": "The shipments to price: each one exactly a quote request. 1 to 1,000. Results come back in this order, so the position is how you match them; give an item a `customerReference` to find its quote later by your own identifier.",
+            "items": {
+              "$ref": "#/components/schemas/QuoteRequest"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "QuoteRequest": {
         "type": "object",
         "description": "Request to generate a shipping quote. Quotes are valid for 2 days from creation.",
         "properties": {
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
           "pickupAddress": {
             "$ref": "#/components/schemas/Address",
             "description": "Pickup location. Only zipCode is required for quotes."
@@ -4647,12 +5114,6 @@
           "deliveryAddress": {
             "$ref": "#/components/schemas/Address",
             "description": "Delivery location. Only zipCode is required for quotes."
-          },
-          "hazmat": {
-            "type": "boolean"
-          },
-          "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
           },
           "orderComponents": {
             "type": "array",
@@ -4664,8 +5125,8 @@
           "requiredPickupDate": {
             "type": "string",
             "format": "date-time",
-            "description": "Required pickup date (ISO 8601).",
-            "example": "2026-04-01T08:00:00Z"
+            "description": "Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.",
+            "example": "2026-04-01T08:00:00-07:00"
           },
           "shipmentMode": {
             "type": "string",
@@ -4674,6 +5135,12 @@
               "ltl",
               "ftl"
             ]
+          },
+          "customerReference": {
+            "type": "string",
+            "description": "Your own reference for this load, such as your order or load number, at most 64 characters. Stored on the quote, so a later shipment can name it and `GET /v1/shipper/quotes/by-reference` can find the quote.",
+            "example": "2835391",
+            "maxLength": 64
           }
         },
         "required": [
@@ -4682,10 +5149,135 @@
           "pickupAddress"
         ]
       },
+      "QuoteBatch": {
+        "type": "object",
+        "description": "A batch of quote requests and what became of each. The same body comes back from creating the batch and from reading it, so read it until `status` is COMPLETED or FAILED.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The batch id; read the batch by it",
+            "example": "QB-8F3K29XA"
+          },
+          "status": {
+            "type": "string",
+            "description": "PRICING: accepted, still pricing; read the batch again after `Retry-After` seconds. COMPLETED: every item has an outcome; items can still move from UNDER_REVIEW to QUOTED or NOT_QUOTED, and nothing else on the batch changes. FAILED: the run could not finish; submit the items again.",
+            "enum": [
+              "PRICING",
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "customerReference": {
+            "type": "string",
+            "description": "Your reference for the whole set, as sent",
+            "example": "plan-2026-10-14"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the batch was accepted",
+            "example": "2026-10-14T13:05:00Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When every item had an outcome; absent while PRICING",
+            "example": "2026-10-14T13:06:40Z"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/QuoteBatchCounts",
+            "description": "How many items ended each way"
+          },
+          "items": {
+            "type": "array",
+            "description": "One entry per item, in the order you sent them; match by position",
+            "items": {
+              "$ref": "#/components/schemas/QuoteBatchItemResult"
+            }
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "QuoteBatchCounts": {
+        "type": "object",
+        "description": "How many items ended each way",
+        "properties": {
+          "items": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Items in the batch",
+            "example": 120
+          },
+          "quoted": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Items with a price you can book",
+            "example": 97
+          },
+          "notQuoted": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Items deliberately not priced",
+            "example": 20
+          },
+          "underReview": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Items a person will decide",
+            "example": 3
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Items not priced yet",
+            "example": 0
+          }
+        }
+      },
+      "QuoteBatchItemResult": {
+        "type": "object",
+        "description": "One item's outcome, at the item's position in the request. A QUOTED item carries `quote`; a NOT_QUOTED or UNDER_REVIEW item carries `problem`, the same shape a single quote request answers with; a PENDING item carries neither yet.",
+        "properties": {
+          "customerReference": {
+            "type": "string",
+            "description": "Your own reference for the load, as sent on the item and stored on the quote; absent when the item carried none. Results are in request order, so the position is the match.",
+            "example": "2835391"
+          },
+          "status": {
+            "type": "string",
+            "description": "The outcome",
+            "enum": [
+              "PENDING",
+              "QUOTED",
+              "NOT_QUOTED",
+              "UNDER_REVIEW"
+            ]
+          },
+          "quote": {
+            "$ref": "#/components/schemas/QuoteResponse",
+            "description": "The quote, on a QUOTED item: book with its `id` before it expires"
+          },
+          "problem": {
+            "$ref": "#/components/schemas/ProblemDetail",
+            "description": "Why there is no price, on a NOT_QUOTED or UNDER_REVIEW item. `status` and `reason` are what a single quote request would have answered with: 400 with `violations` for a malformed item, 422 with the coverage reason code for a lane or load we cannot serve. Reason `under_review` means a person will decide."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
       "QuoteResponse": {
         "type": "object",
         "description": "Response containing a shipping quote",
         "properties": {
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "hazmat": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string",
             "description": "Unique quote identifier",
@@ -4717,11 +5309,49 @@
             "example": "2024-12-22T15:30:00Z",
             "nullable": true
           },
-          "hazmat": {
-            "type": "boolean"
+          "pickupAccessorials": {
+            "$ref": "#/components/schemas/QuoteStopAccessorials",
+            "description": "The services this quote was priced for at the pickup stop. Omitted when the quote recorded none."
           },
-          "hazmatPaper": {
-            "$ref": "#/components/schemas/HazmatPaperRequest"
+          "deliveryAccessorials": {
+            "$ref": "#/components/schemas/QuoteStopAccessorials",
+            "description": "The services this quote was priced for at the delivery stop. Omitted when the quote recorded none."
+          }
+        }
+      },
+      "QuoteStopAccessorials": {
+        "type": "object",
+        "description": "The services a quote was priced for at one stop, as the quote request asked for them. The fields mirror the accessorial flags on the request's address.",
+        "properties": {
+          "liftgateRequired": {
+            "type": "boolean",
+            "description": "A liftgate was requested at this stop",
+            "example": false
+          },
+          "limitedAccess": {
+            "type": "boolean",
+            "description": "This stop was quoted as a limited access location",
+            "example": false
+          },
+          "appointmentRequired": {
+            "type": "boolean",
+            "description": "An appointment was requested at this stop",
+            "example": true
+          },
+          "callAheadRequired": {
+            "type": "boolean",
+            "description": "A call-ahead was requested before arriving at this stop",
+            "example": false
+          },
+          "lumperRequired": {
+            "type": "boolean",
+            "description": "Third-party lumper labor was declared at this stop",
+            "example": false
+          },
+          "insideRequired": {
+            "type": "boolean",
+            "description": "Inside service was requested at this stop",
+            "example": false
           }
         }
       },
@@ -5222,193 +5852,6 @@
           "vehicleId"
         ]
       },
-      "HazmatCertificationRequest": {
-        "type": "object",
-        "properties": {
-          "confirmed": {
-            "type": "boolean"
-          },
-          "signerName": {
-            "type": "string"
-          },
-          "statement": {
-            "type": "string",
-            "enum": [
-              "DOT_172_204_A1",
-              "DOT_172_204_A2"
-            ]
-          }
-        }
-      },
-      "HazmatFindingResponse": {
-        "type": "object",
-        "properties": {
-          "citation": {
-            "type": "string"
-          },
-          "entryIndex": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "rule": {
-            "type": "string"
-          },
-          "severity": {
-            "type": "string"
-          }
-        }
-      },
-      "HazmatPaperEntryRequest": {
-        "type": "object",
-        "properties": {
-          "emergencyContactConfirmed": {
-            "type": "boolean"
-          },
-          "emergencyPhone": {
-            "type": "string"
-          },
-          "emergencyProvider": {
-            "type": "string"
-          },
-          "emergencyRegistrantIdentifier": {
-            "type": "string"
-          },
-          "entryId": {
-            "type": "string"
-          },
-          "flashPointC": {
-            "type": "number",
-            "format": "double"
-          },
-          "hazardClass": {
-            "type": "string"
-          },
-          "hazardousSubstance": {
-            "type": "boolean"
-          },
-          "identificationNumber": {
-            "type": "string"
-          },
-          "innerPackagingNetCapacityL": {
-            "type": "number",
-            "format": "double"
-          },
-          "limitedQuantity": {
-            "type": "boolean"
-          },
-          "lqMarked": {
-            "type": "boolean"
-          },
-          "marinePollutant": {
-            "type": "boolean"
-          },
-          "marinePollutantComponent": {
-            "type": "string"
-          },
-          "outerPackageGrossKg": {
-            "type": "number",
-            "format": "double"
-          },
-          "packageCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "packageType": {
-            "type": "string"
-          },
-          "packingGroup": {
-            "type": "string",
-            "enum": [
-              "I",
-              "II",
-              "III"
-            ]
-          },
-          "productId": {
-            "type": "string"
-          },
-          "properShippingName": {
-            "type": "string"
-          },
-          "psnQualifier": {
-            "type": "string"
-          },
-          "quantityUnit": {
-            "type": "string"
-          },
-          "reportableQuantity": {
-            "type": "boolean"
-          },
-          "responseInformationDocumentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "sourceItemReference": {
-            "type": "string"
-          },
-          "subsidiaryHazards": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "technicalNames": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "totalQuantity": {
-            "type": "number",
-            "format": "double"
-          },
-          "unitizedPer173_156b2": {
-            "type": "boolean"
-          }
-        }
-      },
-      "HazmatPaperRequest": {
-        "type": "object",
-        "properties": {
-          "certification": {
-            "$ref": "#/components/schemas/HazmatCertificationRequest"
-          },
-          "classification": {
-            "type": "string",
-            "enum": [
-              "LIMITED_QUANTITY",
-              "FULL"
-            ]
-          },
-          "emergencyContactCoversAll": {
-            "type": "boolean"
-          },
-          "emergencyPhone": {
-            "type": "string"
-          },
-          "emergencyProvider": {
-            "type": "string"
-          },
-          "emergencyRegistrantIdentifier": {
-            "type": "string"
-          },
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HazmatPaperEntryRequest"
-            }
-          },
-          "expectedRevision": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
       "ShipmentLocation": {
         "type": "object",
         "description": "Current estimated shipment position with an uncertainty radius",
@@ -5461,7 +5904,7 @@
           },
           "orderStatus": {
             "type": "string",
-            "description": "Current status of the order",
+            "description": "Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.",
             "enum": [
               "INITIALIZED",
               "CONFIRMED",
@@ -5470,7 +5913,8 @@
               "PICKED_UP",
               "IN_TRANSIT",
               "DELIVERED",
-              "CANCELLED"
+              "CANCELLED",
+              "REJECTED"
             ],
             "example": "PICKED_UP",
             "enumDescriptions": {
@@ -5481,8 +5925,10 @@
               "CONFIRMED": "Shipment confirmed and awaiting carrier assignment",
               "IN_TRANSIT": "Freight in transit (alias for PICKED_UP)",
               "ASSIGNED": "Driver assigned and scheduled for pickup",
-              "PICKED_UP": "Freight picked up and in transit"
-            }
+              "PICKED_UP": "Freight picked up and in transit",
+              "REJECTED": "Shipment will not be carried — either declined by the shipper or dropped after no coverage was secured in time"
+            },
+            "nullable": true
           },
           "actualPickupDate": {
             "type": "string",
@@ -5505,8 +5951,9 @@
           "estimatedDeliveryDate": {
             "type": "string",
             "format": "date-time",
-            "description": "Estimated delivery date/time (ISO 8601 format)",
-            "example": "2024-12-25T12:00:00Z"
+            "description": "Estimated delivery date/time (ISO 8601 format). Null until a delivery window has been predicted or an appointment booked, which for most orders is at dispatch.",
+            "example": "2024-12-25T12:00:00Z",
+            "nullable": true
           },
           "location": {
             "$ref": "#/components/schemas/ShipmentLocation",
@@ -5683,6 +6130,77 @@
           }
         }
       },
+      "QuoteByReferenceResponse": {
+        "type": "object",
+        "description": "The newest quote your company holds under a given customer reference. Use `matchable` to decide whether to tender against it: true means the quote is open, still inside its validity window, and carries a price you can book at.",
+        "properties": {
+          "hazmat": {
+            "type": "boolean"
+          },
+          "hazmatPaper": {
+            "$ref": "#/components/schemas/HazmatPaperRequest"
+          },
+          "quoteId": {
+            "type": "string",
+            "description": "Oway's quote ID.",
+            "example": "QT-8F3K29XA"
+          },
+          "customerReference": {
+            "type": "string",
+            "description": "The reference you asked for, as stored on the quote.",
+            "example": "2835391"
+          },
+          "status": {
+            "type": "string",
+            "description": "Quote status. OPEN is the only status that can back a booking.",
+            "example": "OPEN"
+          },
+          "priceCents": {
+            "type": "integer",
+            "format": "int64",
+            "description": "All-in price in cents. Omitted when the quote carries no price you can book at (for example a lane we could not serve).",
+            "example": 123400
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the quote stops being bookable. 48 hours after it was issued.",
+            "example": "2026-09-25T16:05:00Z"
+          },
+          "originZip": {
+            "type": "string",
+            "description": "Origin ZIP the quote was priced for.",
+            "example": "91730"
+          },
+          "destinationZip": {
+            "type": "string",
+            "description": "Destination ZIP the quote was priced for.",
+            "example": "95206"
+          },
+          "pallets": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Pallet positions the quote was priced for.",
+            "example": 12
+          },
+          "weightLbs": {
+            "type": "number",
+            "format": "float",
+            "description": "Total weight in pounds the quote was priced for.",
+            "example": 18400
+          },
+          "expired": {
+            "type": "boolean",
+            "description": "True once validUntil has passed.",
+            "example": false
+          },
+          "matchable": {
+            "type": "boolean",
+            "description": "True when this quote will back a tender as it stands: open, unexpired, and priced. When false, tender anyway if you want the load moved: we re-price it and book at the new price rather than refusing it.",
+            "example": true
+          }
+        }
+      },
       "TrackingPoint": {
         "type": "object",
         "description": "A single GPS tracking data point",
@@ -5783,23 +6301,23 @@
     }
   },
   "x-readme": {
+    "headers": [
+      {
+        "value": "Bearer your_bearer_token_here",
+        "key": "authorization"
+      },
+      {
+        "value": "oway_sk_your_api_key_here",
+        "key": "x-oway-api-key"
+      }
+    ],
+    "explorer-enabled": true,
     "samples-languages": [
       "go",
       "typescript",
       "java",
       "php",
       "python"
-    ],
-    "headers": [
-      {
-        "key": "authorization",
-        "value": "Bearer your_bearer_token_here"
-      },
-      {
-        "key": "x-oway-api-key",
-        "value": "oway_sk_your_api_key_here"
-      }
-    ],
-    "explorer-enabled": true
+    ]
   }
 }

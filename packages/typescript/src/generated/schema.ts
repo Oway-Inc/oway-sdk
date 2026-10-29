@@ -38,7 +38,8 @@ export interface paths {
          *     *Order Fields:*
          *     - `description` - Must not be empty
          *     - `totalPalletCount` - At least 1, up to the current per-order maximum
-         *     - `totalPoundsWeight` - At least 1, within the current per-pallet weight cap
+         *     - `totalPoundsWeight` - At least 1, within the current per-pallet weight cap, and when
+         *       either stop requires a liftgate, within the liftgate load weight limit
          *
          *     *Order Component Fields (per component):*
          *     - `palletCount` - Must be at least 1
@@ -295,6 +296,32 @@ export interface paths {
          * @description Idempotent delete. Returns 204 whether or not the document existed.
          */
         delete: operations["deleteDocument"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shipper/quotes/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a batch of shipments
+         * @description Accepts up to 1,000 quote requests and prices them after answering. The response is the batch in status `PRICING` with every item `PENDING`; read it at `GET /v1/shipper/quotes/batch/{batchId}` (the `Location` header) after `Retry-After` seconds until its status is `COMPLETED` or `FAILED`.
+         *
+         *     Each item is exactly a quote request and is priced as its own quote request would be. Results come back in the order you sent the items, so the position is how you match them; an item's `customerReference`, when you give one, is stored on its quote and finds it later. Each result is `QUOTED` with the same `QuoteResponse` a single request answers with, or `NOT_QUOTED` or `UNDER_REVIEW` with the same `ProblemDetail`. A refused or malformed item never fails the batch; only an envelope that cannot be taken does (no items, more than 1,000, or an empty item).
+         *
+         *     Idempotent twice over. With an `Idempotency-Key`, retrying the same request within 24h returns the original response; the same key with a different body returns 409 `idempotency_key_conflict`. Without one, the same items for your company within 24h return the batch that already ran, however far it has got; quotes stay valid for two days, so a replay never returns an expired price. One batch prices for your account at a time: a second, different batch while one is `PRICING` is refused with 409 `batch_in_progress` and the running batch's id.
+         *
+         *     `UNDER_REVIEW` items are the ones no automatic price can be trusted for; a person decides, and the item later becomes `QUOTED` or `NOT_QUOTED`. After a batch is `COMPLETED`, items change only that way and nothing else on the batch moves. The `requiredPickupDate` of an item is read as a day in the origin's time zone; send it with an offset, for example `2026-10-14T08:00:00-07:00`.
+         */
+        post: operations["createBatch"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -573,6 +600,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/shipper/quotes/by-reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a quote by your own customer reference
+         * @description Returns the newest quote your company holds under a customer reference: your own identifier for a load, such as the load number on a daily manifest.
+         *
+         *     Read this before tendering a load whose tender cannot carry an Oway quote ID. `matchable` is true when the quote will back the booking as it stands: open, inside its 48-hour window, and carrying a price you can be charged.
+         *
+         *     A load whose quote is missing, expired, or no longer matches the freight is still worth tendering. We re-price it and book at the new price rather than refusing it, and flag the difference for our operations team.
+         *
+         *     **Note:** The reference is scoped to the company behind your API key. A reference another company uses for a different load is never returned to you.
+         */
+        get: operations["getQuoteByReference"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shipper/quotes/batch/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a batch of quotes
+         * @description The batch and every item's outcome, as they stand: the same body the create call answered with. While the status is `PRICING`, `Retry-After` says how long to wait before reading again. A batch belonging to another company is not found.
+         */
+        get: operations["readBatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/shipper/quote/{quoteId}": {
         parameters: {
             query?: never;
@@ -762,8 +835,81 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        HazmatCertificationRequest: {
+            signerName?: string;
+            /** @enum {string} */
+            statement?: "DOT_172_204_A1" | "DOT_172_204_A2";
+            confirmed?: boolean;
+        };
+        HazmatFindingResponse: {
+            rule?: string;
+            citation?: string;
+            message?: string;
+            severity?: string;
+            /** Format: int32 */
+            entryIndex?: number;
+        };
+        HazmatPaperEntryRequest: {
+            productId?: string;
+            identificationNumber?: string;
+            properShippingName?: string;
+            psnQualifier?: string;
+            technicalNames?: string[];
+            hazardClass?: string;
+            subsidiaryHazards?: string[];
+            /** @enum {string} */
+            packingGroup?: "I" | "II" | "III";
+            limitedQuantity?: boolean;
+            /** Format: double */
+            innerPackagingNetCapacityL?: number;
+            /** Format: double */
+            outerPackageGrossKg?: number;
+            lqMarked?: boolean;
+            unitizedPer173_156b2?: boolean;
+            hazardousSubstance?: boolean;
+            reportableQuantity?: boolean;
+            marinePollutant?: boolean;
+            marinePollutantComponent?: string;
+            /** Format: double */
+            flashPointC?: number;
+            /** Format: int32 */
+            packageCount?: number;
+            packageType?: string;
+            /** Format: double */
+            totalQuantity?: number;
+            quantityUnit?: string;
+            entryId?: string;
+            sourceItemReference?: string;
+            responseInformationDocumentIds?: string[];
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            emergencyContactConfirmed?: boolean;
+        };
+        HazmatPaperRequest: {
+            entries?: components["schemas"]["HazmatPaperEntryRequest"][];
+            emergencyPhone?: string;
+            emergencyProvider?: string;
+            emergencyRegistrantIdentifier?: string;
+            certification?: components["schemas"]["HazmatCertificationRequest"];
+            /** Format: int64 */
+            expectedRevision?: number;
+            emergencyContactCoversAll?: boolean;
+            /** @enum {string} */
+            classification?: "LIMITED_QUANTITY" | "FULL";
+        };
         /** @description Shipment/Order details */
         Shipment: {
+            /** @description Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation. */
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmatFindings?: components["schemas"]["HazmatFindingResponse"][];
+            /** @description Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval. */
+            hazmatReadiness?: string;
+            /** Format: int64 */
+            hazmatRevision?: number;
+            /** Format: date-time */
+            hazmatCertifiedAt?: string;
             /**
              * @description Unique identifier for the order
              * @example 67b6c5fcfbf1be6b24127646
@@ -789,7 +935,7 @@ export interface components {
              * @example CONFIRMED
              * @enum {string}
              */
-            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "REJECTED";
             /**
              * Format: int64
              * @description Total price of the order in cents (USD)
@@ -802,16 +948,6 @@ export interface components {
              * @example 2025-02-20T17:31:10.430Z
              */
             createdAt?: string;
-            /** @description Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation. */
-            hazmat?: boolean;
-            /** Format: date-time */
-            hazmatCertifiedAt?: string;
-            hazmatFindings?: components["schemas"]["HazmatFindingResponse"][];
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
-            /** @description Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval. */
-            hazmatReadiness?: string;
-            /** Format: int64 */
-            hazmatRevision?: number;
             /**
              * Format: date-time
              * @description Time when the order was last updated (ISO 8601 format)
@@ -887,15 +1023,15 @@ export interface components {
              */
             phone?: string;
             /**
-             * @description Role of the contact at the facility
-             * @example Warehouse Manager
-             */
-            role?: string;
-            /**
              * @description Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves only a unique existing contact match by name, email, normalized base phone and role; ambiguous matches are rejected. Empty clears.
              * @example 0042
              */
             phoneExtension?: string | null;
+            /**
+             * @description Role of the contact at the facility
+             * @example Warehouse Manager
+             */
+            role?: string;
         };
         /** @description Structured appointment metadata for a single stop on an order. Sent on PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop} or via the appointments block on POST /v1/shipper/shipment. */
         AppointmentRequirementRequest: {
@@ -1053,20 +1189,26 @@ export interface components {
              */
             city: string;
             /**
-             * @description Two-letter state abbreviation
+             * @description Two-letter subdivision code: a US state, territory or DC, or the subdivision of the country the country field names.
              * @example CA
              */
             state: string;
             /**
-             * @description 5-digit ZIP code
+             * @description Postal code of the location, in the format of the country the country field names: a 5-digit ZIP code for a US stop.
              * @example 90804
              */
             zip_code: string;
+            /**
+             * @description Two-letter ISO 3166-1 alpha-2 country code of the stop. Oway serves the US and its territories, so this is one of US, PR, GU, VI, AS or MP.
+             * @example US
+             */
+            country?: string;
             /**
              * @description Contact phone number in E.164 format
              * @example +18087857650
              */
             phone_number: string;
+            phone_extension?: string;
             /**
              * @description Name of the contact person at this location
              * @example Mike Johnson
@@ -1225,7 +1367,7 @@ export interface components {
              * @example PICKED_UP
              * @enum {string}
              */
-            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "REJECTED";
             /**
              * Format: date-time
              * @description Actual pickup date/time (ISO 8601 format)
@@ -1333,7 +1475,7 @@ export interface components {
              * @example CONFIRMED
              * @enum {string}
              */
-            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            order_status?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "REJECTED";
             /**
              * @description Cargo description
              * @example Electronics - 2 pallets shrink-wrapped
@@ -1642,15 +1784,21 @@ export interface components {
              */
             city: string;
             /**
-             * @description Two-letter state abbreviation
+             * @description Two-letter subdivision code. A request must name a US state, territory or DC; a response may name the subdivision of another country, which country names.
              * @example CA
              */
             state: string;
             /**
-             * @description 5-digit ZIP code
+             * @description 5-digit ZIP code. The placeholders 00000 and 99999 are rejected: neither is an assignable USPS code, and both are what a caller sends when a numeric ZIP field defaults to zero or saturates.
              * @example 90804
              */
             zipCode: string;
+            /**
+             * @description Two-letter ISO 3166-1 alpha-2 country code, case-insensitive and normalized to upper case. Defaults to US when omitted. Oway currently serves the US and its territories, so US, PR, GU, VI, AS and MP are accepted and any other recognized code is rejected with 400 rather than quoted. A territory may also be addressed the way a carrier would, as country US with the territory in state.
+             * @default US
+             * @example US
+             */
+            country?: string;
             /**
              * @description Contact phone number in E.164 format
              * @example +18087857650
@@ -1683,7 +1831,7 @@ export interface components {
              */
             closeTime?: string;
             /**
-             * @description Additional notes or instructions for the driver
+             * @description Additional notes or instructions for the driver. On a shipment they print on the bill of lading for this stop.
              * @example Dock 3, enter from back of building
              */
             notes?: string;
@@ -1727,6 +1875,8 @@ export interface components {
         };
         /** @description Request to create a new shipment */
         CreateShipmentRequest: {
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmat?: boolean;
             /**
              * @description Optional ID of a previously generated quote.
              * @example 507f1f77bcf86cd799439013
@@ -1743,8 +1893,6 @@ export interface components {
              * @example Electronics - fragile
              */
             description: string;
-            hazmat?: boolean;
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
             /**
              * @description Purchase order number for reference
              * @example PO-2024-12345
@@ -1770,14 +1918,14 @@ export interface components {
             referenceNumbers?: string[];
             /**
              * Format: date-time
-             * @description Required pickup date (ISO 8601 format)
-             * @example 2024-12-24T08:00:00Z
+             * @description Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.
+             * @example 2026-04-01T08:00:00-07:00
              */
             requiredPickupDate?: string;
             /**
              * Format: date-time
-             * @description Required delivery by date (ISO 8601 format)
-             * @example 2024-12-26T17:00:00Z
+             * @description Required delivery date (ISO 8601). Read as a calendar day, its UTC date; the deadline is the delivery stop's closing time on that day, in the stop's time zone.
+             * @example 2024-12-26T12:00:00Z
              */
             requiredDeliveryBy?: string;
             /** @description Optional inline appointment metadata per stop. May only be set for stops whose address has appointmentRequired=true. Each entry has the same shape as PUT /v1/shipper/shipment/{orderNumber}/appointment/{stop}. */
@@ -1926,20 +2074,30 @@ export interface components {
             /** @description User ID that performed the upload */
             uploadedBy?: string;
         };
+        /** @description A set of shipments to price together. The batch is accepted at once and priced afterwards; read it until its status is COMPLETED or FAILED. */
+        QuoteBatchRequest: {
+            /**
+             * @description Your own reference for the whole set, such as a plan or file name. Stored on the batch only; each item carries its own `customerReference`, or none.
+             * @example plan-2026-10-14
+             */
+            customerReference?: string;
+            /** @description The shipments to price: each one exactly a quote request. 1 to 1,000. Results come back in this order, so the position is how you match them; give an item a `customerReference` to find its quote later by your own identifier. */
+            items: components["schemas"]["QuoteRequest"][];
+        };
         /** @description Request to generate a shipping quote. Quotes are valid for 2 days from creation. */
         QuoteRequest: {
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmat?: boolean;
             /** @description Pickup location. Only zipCode is required for quotes. */
             pickupAddress: components["schemas"]["Address"];
             /** @description Delivery location. Only zipCode is required for quotes. */
             deliveryAddress: components["schemas"]["Address"];
-            hazmat?: boolean;
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
             /** @description List of pallets or freight pieces. */
             orderComponents: components["schemas"]["OrderComponent"][];
             /**
              * Format: date-time
-             * @description Required pickup date (ISO 8601).
-             * @example 2026-04-01T08:00:00Z
+             * @description Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.
+             * @example 2026-04-01T08:00:00-07:00
              */
             requiredPickupDate?: string;
             /**
@@ -1947,9 +2105,100 @@ export interface components {
              * @enum {string}
              */
             shipmentMode?: "ltl" | "ftl";
+            /**
+             * @description Your own reference for this load, such as your order or load number, at most 64 characters. Stored on the quote, so a later shipment can name it and `GET /v1/shipper/quotes/by-reference` can find the quote.
+             * @example 2835391
+             */
+            customerReference?: string;
+        };
+        /** @description A batch of quote requests and what became of each. The same body comes back from creating the batch and from reading it, so read it until `status` is COMPLETED or FAILED. */
+        QuoteBatch: {
+            /**
+             * @description The batch id; read the batch by it
+             * @example QB-8F3K29XA
+             */
+            id?: string;
+            /**
+             * @description PRICING: accepted, still pricing; read the batch again after `Retry-After` seconds. COMPLETED: every item has an outcome; items can still move from UNDER_REVIEW to QUOTED or NOT_QUOTED, and nothing else on the batch changes. FAILED: the run could not finish; submit the items again.
+             * @enum {string}
+             */
+            status: "PRICING" | "COMPLETED" | "FAILED";
+            /**
+             * @description Your reference for the whole set, as sent
+             * @example plan-2026-10-14
+             */
+            customerReference?: string;
+            /**
+             * Format: date-time
+             * @description When the batch was accepted
+             * @example 2026-10-14T13:05:00Z
+             */
+            createdAt?: string;
+            /**
+             * Format: date-time
+             * @description When every item had an outcome; absent while PRICING
+             * @example 2026-10-14T13:06:40Z
+             */
+            completedAt?: string;
+            /** @description How many items ended each way */
+            counts?: components["schemas"]["QuoteBatchCounts"];
+            /** @description One entry per item, in the order you sent them; match by position */
+            items?: components["schemas"]["QuoteBatchItemResult"][];
+        };
+        /** @description How many items ended each way */
+        QuoteBatchCounts: {
+            /**
+             * Format: int32
+             * @description Items in the batch
+             * @example 120
+             */
+            items?: number;
+            /**
+             * Format: int32
+             * @description Items with a price you can book
+             * @example 97
+             */
+            quoted?: number;
+            /**
+             * Format: int32
+             * @description Items deliberately not priced
+             * @example 20
+             */
+            notQuoted?: number;
+            /**
+             * Format: int32
+             * @description Items a person will decide
+             * @example 3
+             */
+            underReview?: number;
+            /**
+             * Format: int32
+             * @description Items not priced yet
+             * @example 0
+             */
+            pending?: number;
+        };
+        /** @description One item's outcome, at the item's position in the request. A QUOTED item carries `quote`; a NOT_QUOTED or UNDER_REVIEW item carries `problem`, the same shape a single quote request answers with; a PENDING item carries neither yet. */
+        QuoteBatchItemResult: {
+            /**
+             * @description Your own reference for the load, as sent on the item and stored on the quote; absent when the item carried none. Results are in request order, so the position is the match.
+             * @example 2835391
+             */
+            customerReference?: string;
+            /**
+             * @description The outcome
+             * @enum {string}
+             */
+            status: "PENDING" | "QUOTED" | "NOT_QUOTED" | "UNDER_REVIEW";
+            /** @description The quote, on a QUOTED item: book with its `id` before it expires */
+            quote?: components["schemas"]["QuoteResponse"];
+            /** @description Why there is no price, on a NOT_QUOTED or UNDER_REVIEW item. `status` and `reason` are what a single quote request would have answered with: 400 with `violations` for a malformed item, 422 with the coverage reason code for a lane or load we cannot serve. Reason `under_review` means a person will decide. */
+            problem?: components["schemas"]["ProblemDetail"];
         };
         /** @description Response containing a shipping quote */
         QuoteResponse: {
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            hazmat?: boolean;
             /**
              * @description Unique quote identifier
              * @example 507f1f77bcf86cd799439013
@@ -1979,8 +2228,43 @@ export interface components {
              * @example 2024-12-22T15:30:00Z
              */
             estimatedDeliveryDate?: string | null;
-            hazmat?: boolean;
-            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            /** @description The services this quote was priced for at the pickup stop. Omitted when the quote recorded none. */
+            pickupAccessorials?: components["schemas"]["QuoteStopAccessorials"];
+            /** @description The services this quote was priced for at the delivery stop. Omitted when the quote recorded none. */
+            deliveryAccessorials?: components["schemas"]["QuoteStopAccessorials"];
+        };
+        /** @description The services a quote was priced for at one stop, as the quote request asked for them. The fields mirror the accessorial flags on the request's address. */
+        QuoteStopAccessorials: {
+            /**
+             * @description A liftgate was requested at this stop
+             * @example false
+             */
+            liftgateRequired?: boolean;
+            /**
+             * @description This stop was quoted as a limited access location
+             * @example false
+             */
+            limitedAccess?: boolean;
+            /**
+             * @description An appointment was requested at this stop
+             * @example true
+             */
+            appointmentRequired?: boolean;
+            /**
+             * @description A call-ahead was requested before arriving at this stop
+             * @example false
+             */
+            callAheadRequired?: boolean;
+            /**
+             * @description Third-party lumper labor was declared at this stop
+             * @example false
+             */
+            lumperRequired?: boolean;
+            /**
+             * @description Inside service was requested at this stop
+             * @example false
+             */
+            insideRequired?: boolean;
         };
         /** @description Request a pre-signed URL to upload a file (signature image or proof of delivery) */
         UploadUrlRequest: {
@@ -2313,69 +2597,6 @@ export interface components {
              */
             speed: number;
         };
-        HazmatCertificationRequest: {
-            confirmed?: boolean;
-            signerName?: string;
-            /** @enum {string} */
-            statement?: "DOT_172_204_A1" | "DOT_172_204_A2";
-        };
-        HazmatFindingResponse: {
-            citation?: string;
-            /** Format: int32 */
-            entryIndex?: number;
-            message?: string;
-            rule?: string;
-            severity?: string;
-        };
-        HazmatPaperEntryRequest: {
-            emergencyContactConfirmed?: boolean;
-            emergencyPhone?: string;
-            emergencyProvider?: string;
-            emergencyRegistrantIdentifier?: string;
-            entryId?: string;
-            /** Format: double */
-            flashPointC?: number;
-            hazardClass?: string;
-            hazardousSubstance?: boolean;
-            identificationNumber?: string;
-            /** Format: double */
-            innerPackagingNetCapacityL?: number;
-            limitedQuantity?: boolean;
-            lqMarked?: boolean;
-            marinePollutant?: boolean;
-            marinePollutantComponent?: string;
-            /** Format: double */
-            outerPackageGrossKg?: number;
-            /** Format: int32 */
-            packageCount?: number;
-            packageType?: string;
-            /** @enum {string} */
-            packingGroup?: "I" | "II" | "III";
-            productId?: string;
-            properShippingName?: string;
-            psnQualifier?: string;
-            quantityUnit?: string;
-            reportableQuantity?: boolean;
-            responseInformationDocumentIds?: string[];
-            sourceItemReference?: string;
-            subsidiaryHazards?: string[];
-            technicalNames?: string[];
-            /** Format: double */
-            totalQuantity?: number;
-            unitizedPer173_156b2?: boolean;
-        };
-        HazmatPaperRequest: {
-            certification?: components["schemas"]["HazmatCertificationRequest"];
-            /** @enum {string} */
-            classification?: "LIMITED_QUANTITY" | "FULL";
-            emergencyContactCoversAll?: boolean;
-            emergencyPhone?: string;
-            emergencyProvider?: string;
-            emergencyRegistrantIdentifier?: string;
-            entries?: components["schemas"]["HazmatPaperEntryRequest"][];
-            /** Format: int64 */
-            expectedRevision?: number;
-        };
         /** @description Current estimated shipment position with an uncertainty radius */
         ShipmentLocation: {
             /** @description Estimated center point of the shipment's current position (route-interpolated, refined by recent vehicle positions when available) */
@@ -2415,11 +2636,11 @@ export interface components {
              */
             orderNumber?: string;
             /**
-             * @description Current status of the order
+             * @description Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
              * @example PICKED_UP
-             * @enum {string}
+             * @enum {string|null}
              */
-            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+            orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "REJECTED" | null;
             /**
              * Format: date-time
              * @description Actual pickup date/time (ISO 8601 format)
@@ -2440,10 +2661,10 @@ export interface components {
             estimatedPickupDate?: string;
             /**
              * Format: date-time
-             * @description Estimated delivery date/time (ISO 8601 format)
+             * @description Estimated delivery date/time (ISO 8601 format). Null until a delivery window has been predicted or an appointment booked, which for most orders is at dispatch.
              * @example 2024-12-25T12:00:00Z
              */
-            estimatedDeliveryDate?: string;
+            estimatedDeliveryDate?: string | null;
             /** @description Live position estimate; present only when include=location is requested */
             location?: components["schemas"]["ShipmentLocation"];
         };
@@ -2587,6 +2808,70 @@ export interface components {
              * @example https://s3.amazonaws.com/...
              */
             downloadLink?: string;
+        };
+        /** @description The newest quote your company holds under a given customer reference. Use `matchable` to decide whether to tender against it: true means the quote is open, still inside its validity window, and carries a price you can book at. */
+        QuoteByReferenceResponse: {
+            hazmat?: boolean;
+            hazmatPaper?: components["schemas"]["HazmatPaperRequest"];
+            /**
+             * @description Oway's quote ID.
+             * @example QT-8F3K29XA
+             */
+            quoteId?: string;
+            /**
+             * @description The reference you asked for, as stored on the quote.
+             * @example 2835391
+             */
+            customerReference?: string;
+            /**
+             * @description Quote status. OPEN is the only status that can back a booking.
+             * @example OPEN
+             */
+            status?: string;
+            /**
+             * Format: int64
+             * @description All-in price in cents. Omitted when the quote carries no price you can book at (for example a lane we could not serve).
+             * @example 123400
+             */
+            priceCents?: number;
+            /**
+             * Format: date-time
+             * @description When the quote stops being bookable. 48 hours after it was issued.
+             * @example 2026-09-25T16:05:00Z
+             */
+            validUntil?: string;
+            /**
+             * @description Origin ZIP the quote was priced for.
+             * @example 91730
+             */
+            originZip?: string;
+            /**
+             * @description Destination ZIP the quote was priced for.
+             * @example 95206
+             */
+            destinationZip?: string;
+            /**
+             * Format: int32
+             * @description Pallet positions the quote was priced for.
+             * @example 12
+             */
+            pallets?: number;
+            /**
+             * Format: float
+             * @description Total weight in pounds the quote was priced for.
+             * @example 18400
+             */
+            weightLbs?: number;
+            /**
+             * @description True once validUntil has passed.
+             * @example false
+             */
+            expired?: boolean;
+            /**
+             * @description True when this quote will back a tender as it stands: open, unexpired, and priced. When false, tender anyway if you want the load moved: we re-price it and book at the new price rather than refusing it.
+             * @example true
+             */
+            matchable?: boolean;
         };
         /** @description A single GPS tracking data point */
         TrackingPoint: {
@@ -3459,12 +3744,20 @@ export interface operations {
                 };
             };
             /**
-             * @description Unprocessable Entity. Possible reasons:
+             * @description Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:
              *
-             *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
-             *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
-             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
-             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.
+             *     - **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.
+             *     - **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.
+             *     - **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.
+             *     - **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.
+             *     - **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.
+             *     - **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.
+             *     - **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.
+             *     - **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
+             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.
+             *     - **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.
+             *     - **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.
              */
             422: {
                 headers: {
@@ -3607,6 +3900,78 @@ export interface operations {
             };
         };
     };
+    createBatch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional idempotency key. Retrying the same request with the same key within 24h returns the original response. Reusing the key with a different body returns 409 idempotency_key_conflict. */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Batch accepted and pricing. `Location` is where to read it. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteBatch"];
+                };
+            };
+            /** @description Invalid envelope (`reason: invalid_batch`): no items, more than 1,000, or an empty item. Per-item problems are never a 400; they are the item's result. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key, or user does not belong to the authorized company */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict. `reason: batch_in_progress`: a different batch is already pricing for your account; its id is in `detail`. `reason: idempotency_key_conflict`: the `Idempotency-Key` was used with a different body. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     requestQuote: {
         parameters: {
             query?: never;
@@ -3657,12 +4022,20 @@ export interface operations {
                 };
             };
             /**
-             * @description Unprocessable Entity. Possible reasons:
+             * @description Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:
              *
-             *     - **Location Not Serviceable** (`reason: no_coverage`) — the lane is not within Oway's active coverage area.
-             *     - **Request Not Permitted** (`reason: account_restriction`) — the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
-             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`) — your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
-             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`) — one or more pallets exceed Oway's dimension or weight limits; per-field details are in `violations`.
+             *     - **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.
+             *     - **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.
+             *     - **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.
+             *     - **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.
+             *     - **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.
+             *     - **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.
+             *     - **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.
+             *     - **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
+             *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.
+             *     - **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.
+             *     - **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.
              */
             422: {
                 headers: {
@@ -4414,6 +4787,118 @@ export interface operations {
                 };
                 content: {
                     "application/pdf": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getQuoteByReference: {
+        parameters: {
+            query: {
+                /**
+                 * @description Your own identifier for the load, as sent on the quote request
+                 * @example 2835391
+                 */
+                reference: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quote found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteByReferenceResponse"];
+                };
+            };
+            /** @description Invalid request: reference is missing */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing, invalid, or expired API key (authorization failed) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Your company holds no quote under that reference */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    readBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The batch id the create call answered with */
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The batch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteBatch"];
+                };
+            };
+            /** @description Unauthorized: missing or invalid Bearer token (authentication failed) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden: missing/invalid API key */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description No batch with this id belongs to your company */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
         };

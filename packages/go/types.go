@@ -9,6 +9,9 @@ import (
 // Quote is the response payload returned by RequestQuote and GetQuote.
 type Quote = client.QuoteResponse
 
+// QuoteStopAccessorials is what a quote was priced for at one stop, as the quote request asked.
+type QuoteStopAccessorials = client.QuoteStopAccessorials
+
 // Shipment is the response payload returned by shipment endpoints.
 type Shipment = client.Shipment
 
