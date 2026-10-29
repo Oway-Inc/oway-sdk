@@ -4,6 +4,8 @@ All notable changes to the Oway Go SDK will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.3]
+
 ### Added
 
 - `PickupAccessorials` and `DeliveryAccessorials` on `Quote`: the services the
