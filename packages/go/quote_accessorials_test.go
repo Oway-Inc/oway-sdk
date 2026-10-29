@@ -13,7 +13,7 @@ func TestQuoteCarriesTheAccessorialsEachStopWasPricedFor(t *testing.T) {
 	if err := json.Unmarshal([]byte(body), &quote); err != nil {
 		t.Fatal(err)
 	}
-	var delivery *QuoteStopAccessorials = quote.DeliveryAccessorials
+	delivery := quote.DeliveryAccessorials
 	if delivery == nil || delivery.AppointmentRequired == nil || !*delivery.AppointmentRequired {
 		t.Fatalf("delivery appointment not decoded: %+v", delivery)
 	}
