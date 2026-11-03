@@ -91,11 +91,11 @@ jobs:
             ```
 
             ### Changes
-            See [CHANGELOG.md](./packages/typescript/CHANGELOG.md)
+            See [CHANGELOG.md](https://github.com/Oway-Inc/oway-sdk/blob/${{ github.ref_name }}/packages/typescript/CHANGELOG.md)
 
             ### Documentation
-            - [README](./packages/typescript/README.md)
-            - [API Docs](https://docs.shipoway.com)
+            - [README](https://github.com/Oway-Inc/oway-sdk/blob/${{ github.ref_name }}/packages/typescript/README.md)
+            - [API Docs](https://docs.oway.io)
 
   release-go:
     name: Release Go SDK
@@ -133,10 +133,10 @@ jobs:
             ```
 
             ### Changes
-            See [CHANGELOG.md](./packages/go/CHANGELOG.md)
+            See [CHANGELOG.md](https://github.com/Oway-Inc/oway-sdk/blob/${{ github.ref_name }}/packages/go/CHANGELOG.md)
 
             ### Documentation
-            - [README](./packages/go/README.md)
+            - [README](https://github.com/Oway-Inc/oway-sdk/blob/${{ github.ref_name }}/packages/go/README.md)
             - [pkg.go.dev](https://pkg.go.dev/github.com/Oway-Inc/oway-sdk/packages/go)
 
             **Note:** pkg.go.dev will index this release within ~15 minutes.

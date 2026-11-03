@@ -4,6 +4,18 @@ All notable changes to the Oway Go SDK will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-03
+
+### Added
+
+- `RequestCarrierUploadURL`, `ConfirmCarrierUpload`, and `GetCarrierUploadedDocument` helpers for hosted POD registration and retrieval. Delivery accepts an optional `ProofOfDeliveryDocumentId` after authorized POD review.
+- Runnable shipper and carrier sandbox examples with persistent recovery state and explicit business-state checks.
+
+### Fixed
+
+- Existing generated enum names remain available when the additive upload schemas require qualified enum names.
+- Authentication and documentation links clarify company-key requirements and onboarding.
+
 ## [0.4.3]
 
 ### Added
@@ -52,6 +64,15 @@ All notable changes to the Oway Go SDK will be documented in this file.
   API asks callers to retry.
 
 Purely additive for existing callers.
+
+## [0.4.1] - 2026-10-09
+
+### Changed
+
+- Shipment `referenceNumbers` documentation now allows up to 100 entries, each
+  at most 128 characters. Supplied order and repeated values are preserved.
+  Wire types and runtime behavior are unchanged. Confirm API support before
+  submitting more than ten references.
 
 ## [0.3.1]
 

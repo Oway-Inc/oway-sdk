@@ -7,20 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-03
+
 ### Added
 
-- `pickupAccessorials` and `deliveryAccessorials` on `Quote`: the services the quote was priced for at each stop, as the request asked for them, with the `QuoteStopAccessorials` type. Omitted when the quote recorded none.
-- Regenerated from the production API: optional `country` on addresses (defaults to US), `customerReference` on quote requests, `country` and `phone_extension` on carrier addresses, the `REJECTED` order status, and the quote batch and quote-by-reference operations in the generated `paths` types.
+- Runnable shipper and carrier quickstarts with persistent recovery state, business-state checks, and sandbox prerequisites.
+- Carrier `requestUploadUrl`, `confirmUpload`, and `uploadedDocument` helpers, with typed upload metadata and optional `proof_of_delivery_document_id` for delivery after authorized POD review.
+- `shipments.create(params, companyApiKey, { idempotencyKey })` sets the creation key; `CreateShipmentOptions` is exported.
+- `pickupAccessorials` and `deliveryAccessorials` on `Quote`, with the `QuoteStopAccessorials` type. Omitted when the quote recorded none.
+- Hazardous material declarations on quotes and shipments, with the `HazmatPaper`, `HazmatEntry`, `HazmatCertification`, `HazmatClassification` and `HazmatFinding` types. See `docs/hazmat-capture.md`.
+- Optional per-component `freightClass`, shipment `instructions` and `referenceNumbers`, invoice line-item `nmfcCode`, carrier milestone reporting types, and quote `shipmentMode`.
+- Optional address email, phone extension, country, inside-service and lumper-service fields; `customerReference` on quotes; carrier address country/phone extension; the `REJECTED` status; generated quote batch and quote-by-reference operations.
 
-- Hazardous material declarations: `hazmat` and `hazmatPaper` on quote and shipment requests and responses, with the `HazmatPaper`, `HazmatEntry`, `HazmatCertification`, `HazmatClassification` and `HazmatFinding` types. See `docs/hazmat-capture.md`.
-- `shipments.create(params, companyApiKey, { idempotencyKey })` sets the `Idempotency-Key` the create sends. `CreateShipmentOptions` is exported.
+### Changed
+
+- Shipment references allow up to 100 entries, each at most 128 characters. Supplied order and repeated values are preserved. Confirm API support before submitting more than ten references.
+- New fields remain optional for existing callers. Address country defaults to US.
 
 ### Fixed
 
-- A request property the API gives a default value (`country` on addresses) was generated as required, so every address without a country stopped type-checking. Properties with defaults stay optional.
-- `shipments.create` retried a 5xx, 408 or 429 without an idempotency key, so a create that succeeded behind a lost response could make a second shipment. Every attempt of a call now sends one key: the caller's, or one generated per call.
-- `OwayError.isRetryable()` is true for 409 `idempotency_key_in_progress`, which the API asks callers to retry.
-- The examples use the current request shapes and are type-checked by `npm run lint`.
+- Shipment document helpers send canonical document types and map `downloadLink` into the existing `{url}` result. Existing BOL and LABEL aliases remain supported.
+- Creation retries reuse one idempotency key, including when the caller omits an explicit key. `OwayError.isRetryable()` recognizes `idempotency_key_in_progress`.
+- Properties with API defaults, such as address country, remain optional in generated request types.
+- Authentication and onboarding links explain the required company key and environment setup.
+- Missing sandbox credentials explicitly skip integration tests; quickstart tests run against SDK source before building. Examples are typechecked by the existing lint command.
 
 ## [0.2.2]
 

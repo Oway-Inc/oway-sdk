@@ -1,6 +1,6 @@
 {
   "name": "@oway/sdk",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Official Oway JavaScript/TypeScript SDK",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

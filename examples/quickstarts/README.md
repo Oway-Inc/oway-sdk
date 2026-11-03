@@ -6,8 +6,8 @@ These examples create persistent sandbox records. Read [authentication](../../AU
 
 - cURL with jq exercises the HTTP contract directly.
 - Go shipper example uses the released `packages/go/v0.4.3` API, including `WithIdempotencyKey` and `GetDocument`.
-- TypeScript shipper example requires the source revision containing `CreateShipmentOptions` and the document-helper fix. These are **not both available in npm 0.3.0**. Build this checkout until the matching release is published. Do not label a workspace-source test as a released-package test.
-- Carrier hosted-POD completion requires the corresponding API and SDK release. It must not be run against an environment until that operation is deployed.
+- TypeScript examples require `@oway/sdk` **0.4.0 or later** for explicit creation idempotency, corrected document handling, and hosted POD helpers. npm 0.3.0 does not support these complete journeys.
+- Carrier hosted-POD completion requires Go **0.4.4 or later** or TypeScript **0.4.0 or later**, plus the corresponding API capability. Confirm it is enabled in your environment before running.
 
 ## Shipper
 
@@ -39,6 +39,8 @@ go run ./examples/shipper
 ```
 
 The examples authenticate, quote, create, replay the same create key/body, confirm, track and retrieve a BOL. They require `CONFIRMED` in the response, not only HTTP success. A BOL may be temporarily unavailable; retrieve the existing shipment/document instead of creating another shipment. POD is a later carrier lifecycle document.
+
+For a clean TypeScript consumer, create a new directory outside this checkout, run `npm init -y`, then `npm install @oway/sdk@0.4.0` and `npm install --save-dev tsx@4.20.6`. Copy `quickstart-config.ts` and the selected runner from `packages/typescript/examples` into that directory. Run `npx tsx quote-and-schedule.ts` or `npx tsx carrier-quickstart.ts` with the same environment variables. Install from the registry only after the required version is published; a workspace-source build is not a registry-consumer test.
 
 For a clean Go consumer, copy `packages/go/examples/shipper/main.go` into a new module, run `go get github.com/Oway-Inc/oway-sdk/packages/go@v0.4.3`, and run it with the same environment. Use a fresh fixture and key for each independent complete run.
 
@@ -85,3 +87,5 @@ go run ./examples/carrier
 ```
 
 Each language run needs its own offer and state file. To recover from a failed storage PUT, retain the old state file, choose a **new** state-file path, and run `prepare` with the **same** offer ID. The runner observes PICKED_UP and does not repeat pickup. To recover from an uncertain successful completion, use `confirm-upload` with the original state file instead.
+
+For a clean Go carrier consumer, copy `packages/go/examples/carrier/main.go` to a new module and run `go get github.com/Oway-Inc/oway-sdk/packages/go@v0.4.4`, then `go run .` with the same variables.
