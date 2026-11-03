@@ -105,3 +105,17 @@ it.each([undefined, null])('keeps an omitted or null extension distinct from an 
   if (extension === undefined) expect(sent).not.toHaveProperty('phoneExtension');
   else expect(sent.phoneExtension).toBeNull();
 });
+
+
+describe('Shipments.document', () => {
+  it.each([
+    ['BOL', 'BILL_OF_LADING'], ['LABEL', 'SHIPPING_LABEL'],
+    ['BILL_OF_LADING', 'BILL_OF_LADING'], ['SHIPPING_LABEL', 'SHIPPING_LABEL'],
+    ['INVOICE', 'INVOICE'], ['POD', 'POD'],
+  ] as const)('maps %s to the wire contract and returns the download link', async (input, wire) => {
+    const get = vi.fn().mockResolvedValue({ filename: 'example.pdf', fileType: 'application/pdf', downloadLink: 'https://example.com/document.pdf' });
+    const result = await new Shipments({ get } as unknown as HttpClient).document('ABCDE', input, 'oway_sk_example');
+    expect(get).toHaveBeenCalledWith(`/v1/shipper/shipment/ABCDE/document/${wire}`, undefined, 'oway_sk_example');
+    expect(result).toEqual({ url: 'https://example.com/document.pdf' });
+  });
+});
