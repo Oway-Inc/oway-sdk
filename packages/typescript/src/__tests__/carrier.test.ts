@@ -89,3 +89,22 @@ describe('Carrier Resource', () => {
     expect(c.post).not.toHaveBeenCalled();
   });
 });
+
+describe('carrier uploaded documents', () => {
+  const metadata = { document_type: 'PROOF_OF_DELIVERY' as const, content_type: 'application/pdf' as const, file_name: 'pod.pdf' };
+  it('preserves snake_case metadata, company identity and encoded path segments', async () => {
+    const c = mockClient(); const carrier = new Carrier(c);
+    await carrier.requestUploadUrl('ref/one', metadata, 'company-key');
+    expect(c.post).toHaveBeenCalledWith('/v1/carrier/shipments/ref%2Fone/upload', metadata, 'company-key');
+    await carrier.confirmUpload('ref/one', 'document-id', metadata, 'company-key');
+    expect(c.put).toHaveBeenCalledWith('/v1/carrier/shipments/ref%2Fone/uploads/document-id/confirm', metadata, 'company-key');
+    await carrier.uploadedDocument('ref/one', 'document-id', 'company-key');
+    expect(c.get).toHaveBeenCalledWith('/v1/carrier/shipments/ref%2Fone/documents/document-id', undefined, 'company-key');
+  });
+  it('rejects missing document identity before any request', async () => {
+    const c = mockClient(); const carrier = new Carrier(c);
+    await expect(carrier.confirmUpload('offer-id', '', metadata)).rejects.toBeInstanceOf(OwayError);
+    await expect(carrier.uploadedDocument('offer-id', '')).rejects.toBeInstanceOf(OwayError);
+    expect(c.put).not.toHaveBeenCalled(); expect(c.get).not.toHaveBeenCalled();
+  });
+});

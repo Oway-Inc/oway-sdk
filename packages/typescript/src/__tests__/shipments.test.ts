@@ -42,3 +42,80 @@ describe('Shipments.tracking', () => {
     );
   });
 });
+
+describe('Shipments.create', () => {
+  const request = {} as Parameters<Shipments['create']>[0];
+
+  it('sends a new idempotency key per call', async () => {
+    const post = vi.fn().mockResolvedValue({});
+    const shipments = new Shipments({ post } as unknown as HttpClient);
+
+    await shipments.create(request);
+    await shipments.create(request);
+
+    const keys = post.mock.calls.map((call) => call[3]['Idempotency-Key']);
+    expect(keys[0]).toMatch(/^[0-9a-f-]{32,36}$/);
+    expect(keys[1]).not.toBe(keys[0]);
+  });
+
+  it('treats an empty key as none', async () => {
+    const post = vi.fn().mockResolvedValue({});
+    await new Shipments({ post } as unknown as HttpClient).create(request, undefined, {
+      idempotencyKey: '',
+    });
+    expect(post.mock.calls[0][3]['Idempotency-Key']).toMatch(/^[0-9a-f-]{32,36}$/);
+  });
+
+  it("sends the caller's key and company API key", async () => {
+    const post = vi.fn().mockResolvedValue({});
+    await new Shipments({ post } as unknown as HttpClient).create(request, 'oway_sk_company_xyz', {
+      idempotencyKey: 'order-4711',
+    });
+
+    expect(post).toHaveBeenCalledWith('/v1/shipper/shipment', request, 'oway_sk_company_xyz', {
+      'Idempotency-Key': 'order-4711',
+    });
+  });
+});
+
+it('forwards extension zeros and explicit clears without changing phone fields', async () => {
+  const post = vi.fn().mockResolvedValue({});
+  const shipments = new Shipments({ post } as unknown as HttpClient);
+  const contact: import('../generated/schema').components['schemas']['AppointmentContact'] = {
+    name: 'Dock desk', phone: '+12125550123', phoneExtension: '0042',
+  };
+  const request = { appointments: { pickup: { contacts: [contact] } } } as Parameters<Shipments['create']>[0];
+  await shipments.create(request);
+  expect(JSON.parse(JSON.stringify(post.mock.calls[0][1])).appointments.pickup.contacts[0]).toEqual(contact);
+  contact.phoneExtension = '';
+  await shipments.create(request);
+  expect(JSON.parse(JSON.stringify(post.mock.calls[1][1])).appointments.pickup.contacts[0].phoneExtension).toBe('');
+});
+
+
+it.each([undefined, null])('keeps an omitted or null extension distinct from an explicit clear: %s', async extension => {
+  const post = vi.fn().mockResolvedValue({});
+  const shipments = new Shipments({ post } as unknown as HttpClient);
+  const contact: import('../generated/schema').components['schemas']['AppointmentContact'] = {
+    name: 'Dock desk', phone: '+12125550123', phoneExtension: extension,
+  };
+  const request = { appointments: { pickup: { contacts: [contact] } } } as Parameters<Shipments['create']>[0];
+  await shipments.create(request);
+  const sent = JSON.parse(JSON.stringify(post.mock.calls[0][1])).appointments.pickup.contacts[0];
+  if (extension === undefined) expect(sent).not.toHaveProperty('phoneExtension');
+  else expect(sent.phoneExtension).toBeNull();
+});
+
+
+describe('Shipments.document', () => {
+  it.each([
+    ['BOL', 'BILL_OF_LADING'], ['LABEL', 'SHIPPING_LABEL'],
+    ['BILL_OF_LADING', 'BILL_OF_LADING'], ['SHIPPING_LABEL', 'SHIPPING_LABEL'],
+    ['INVOICE', 'INVOICE'], ['POD', 'POD'],
+  ] as const)('maps %s to the wire contract and returns the download link', async (input, wire) => {
+    const get = vi.fn().mockResolvedValue({ filename: 'example.pdf', fileType: 'application/pdf', downloadLink: 'https://example.com/document.pdf' });
+    const result = await new Shipments({ get } as unknown as HttpClient).document('ABCDE', input, 'oway_sk_example');
+    expect(get).toHaveBeenCalledWith(`/v1/shipper/shipment/ABCDE/document/${wire}`, undefined, 'oway_sk_example');
+    expect(result).toEqual({ url: 'https://example.com/document.pdf' });
+  });
+});

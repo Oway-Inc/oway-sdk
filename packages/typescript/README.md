@@ -74,9 +74,9 @@ console.log(`Status: ${tracking.orderStatus}`);
 ### M2M Credentials (Required)
 Contact Oway Sales Engineering (support@oway.io) to obtain a `clientId` and `clientSecret`.
 
-### Company API Key (Optional)
-Self-service at [app.oway.io/settings/api](https://app.oway.io/settings/api).
-- Shipper keys: `oway_sk_test_...` (test) / `oway_sk_live_...` (production)
+### Company API Key (Required for external API calls)
+Create a company key in your portal under Settings → API Keys after API access is enabled. External API calls require both the company key and a bearer token; see [authentication](../../AUTH_GUIDE.md).
+- Shipper keys: `oway_sk_...`; obtain credentials for the target environment
 - Carrier keys: `oway_ck_...`
 
 ## Authentication
@@ -101,6 +101,14 @@ const quote = await oway.quotes.create({
 
 // Retrieve a quote by ID
 const quote = await oway.quotes.retrieve('507f1f77bcf86cd799439011');
+```
+
+A quote states the services it was priced for at each stop, as the request asked for them. `pickupAccessorials` and `deliveryAccessorials` are omitted when the quote recorded none.
+
+```typescript
+if (quote.deliveryAccessorials?.appointmentRequired) {
+  // the delivery was quoted with an appointment
+}
 ```
 
 ### Shipments
@@ -174,11 +182,11 @@ const accepted = await oway.carrier.acceptOffer(offers[0].id!, {
 });
 
 // Stream GPS positions while in transit
-await oway.carrier.submitLocation(accepted.id!, { latitude: 34.05, longitude: -118.24 });
+await oway.carrier.submitLocation(accepted.id!, { latitude: 34.05, longitude: -118.24, timestamp: new Date().toISOString() });
 
 // Confirm pickup and delivery
-await oway.carrier.confirmPickup(accepted.id!, { coordinates: { latitude: 34.05, longitude: -118.24 } });
-await oway.carrier.confirmDelivery(accepted.id!, { coordinates: { latitude: 40.71, longitude: -74.0 } });
+await oway.carrier.confirmPickup(accepted.id!, { pickup_time: new Date().toISOString(), coordinates: { latitude: 34.05, longitude: -118.24 } });
+await oway.carrier.confirmDelivery(accepted.id!, { delivery_time: new Date().toISOString(), coordinates: { latitude: 40.71, longitude: -74.0 } });
 
 // GPS tracking history for a carrier shipment
 const history = await oway.carrier.tracking(accepted.id!);
@@ -189,7 +197,7 @@ The request bodies above are illustrative; the typed request interfaces exported
 
 ### Multi-Tenant (Per-Request API Key)
 
-All methods accept an optional `companyApiKey` as the last argument:
+Resource methods support a per-request `companyApiKey` override. Omitting it uses the configured key; external calls still require a company key:
 
 ```typescript
 const shipment = await oway.shipments.create(request, 'oway_sk_...');
@@ -205,7 +213,7 @@ const invoice  = await oway.shipments.invoice('ZKYQ5', 'oway_sk_...');
 const oway = new Oway({
   clientId: string,        // Required: M2M client ID
   clientSecret: string,    // Required: M2M client secret
-  apiKey?: string,         // Optional: Default company API key
+  apiKey?: string,         // Required unless supplied per request
   baseUrl?: string,        // Optional: Defaults to sandbox
   tokenUrl?: string,       // Optional: Custom token endpoint
   maxRetries?: number,     // Optional: Default 3
@@ -266,9 +274,23 @@ import type { Quote, Shipment, Tracking, Invoice, QuoteRequest, ShipmentRequest,
 
 ## Support
 
-- **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
+- **Documentation**: [docs.oway.io](https://docs.oway.io)
 - **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
+
+### Phone extensions
+
+Addresses and appointment contacts accept an optional `phoneExtension` string.
+Keep the base `phoneNumber` (address) or `phone` (appointment contact) in E.164
+format, and pass the extension separately, for example `phoneExtension: '0042'`.
+Leading zeros are significant; extensions contain 1–10 ASCII digits.
+
+Omitting the extension or sending `null` on an update preserves the stored value
+when the base phone is unchanged. Send `phoneExtension: ''` to clear it. Replacing
+an extension-bearing base phone requires an explicit extension or clear.
+Appointment contact lists retain their replacement semantics. Omitted extensions
+are preserved only for a unique matching name, email, base phone and role; supply
+each extension explicitly when a contact has multiple destinations.
 
 ## License
 

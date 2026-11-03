@@ -194,6 +194,12 @@ func TestError_IsRetryable(t *testing.T) {
 			t.Errorf("status %d: want %v got %v", tc.status, tc.want, got)
 		}
 	}
+	if !(&Error{StatusCode: 409, Code: "idempotency_key_in_progress"}).IsRetryable() {
+		t.Error("a create still in progress under the same key is worth retrying")
+	}
+	if (&Error{StatusCode: 409, Code: "idempotency_key_conflict"}).IsRetryable() {
+		t.Error("a key reused with another request never succeeds on retry")
+	}
 }
 
 func TestRetry_OnTransientUntilSuccess(t *testing.T) {

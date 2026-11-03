@@ -121,7 +121,7 @@ async function main() {
     } catch (err) {
       console.error(`  ✗ Failed to fetch spec: ${err.message}`);
       if (opts.url === URLS.local) {
-        console.error('  Hint: is oway-platform-rest running locally on port 8181?');
+        console.error('  Hint: is the Oway API running locally on port 8181?');
       }
       process.exit(1);
     }
@@ -131,7 +131,8 @@ async function main() {
 
   // Step 2: TypeScript
   console.log('\n→ Generating TypeScript SDK');
-  run('npx openapi-typescript ../../openapi/spec.json -o src/generated/schema.ts',
+  // A property with a default (Address.country defaults to US) stays optional for callers.
+  run('npx openapi-typescript ../../openapi/spec.json -o src/generated/schema.ts --default-non-nullable false',
     path.join(ROOT, 'packages', 'typescript'));
 
   // Step 3: Go

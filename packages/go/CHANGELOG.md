@@ -2,6 +2,69 @@
 
 All notable changes to the Oway Go SDK will be documented in this file.
 
+## [Unreleased]
+
+## [0.4.4] - 2026-11-03
+
+### Added
+
+- `RequestCarrierUploadURL`, `ConfirmCarrierUpload`, and `GetCarrierUploadedDocument` helpers for hosted POD registration and retrieval. Delivery accepts an optional `ProofOfDeliveryDocumentId` after authorized POD review.
+- Runnable shipper and carrier sandbox examples with persistent recovery state and explicit business-state checks.
+
+### Fixed
+
+- Existing generated enum names remain available when the additive upload schemas require qualified enum names.
+- Authentication and documentation links clarify company-key requirements and onboarding.
+
+## [0.4.3]
+
+### Added
+
+- `PickupAccessorials` and `DeliveryAccessorials` on `Quote`: the services the
+  quote was priced for at each stop, as the request asked for them, with the
+  `QuoteStopAccessorials` alias. Nil when the quote recorded none.
+- Regenerated from the production API: optional `Country` on `Address`
+  (defaults to US), `CustomerReference` on `QuoteRequest`, `Country` and
+  `PhoneExtension` on carrier addresses, the `REJECTED` order status, and the
+  quote batch and quote-by-reference operations in the generated `client`
+  package.
+
+### Changed
+
+- `Tracking.EstimatedDeliveryDate` and `Tracking.OrderStatus` keep their types;
+  the API now documents both as nullable, so they marshal as JSON `null` when
+  unset instead of being omitted.
+
+## [0.4.2]
+
+### Added
+
+- Optional `PhoneExtension` on appointment contacts. It preserves leading zeros;
+  nil omits the field, while a pointer to an empty string explicitly clears it.
+  Base phone numbers remain E.164. Address extensions have the same update semantics.
+
+
+### Added
+
+- Hazardous material declarations: `Hazmat` and `HazmatPaper` on `QuoteRequest`
+  and `ShipmentRequest`, with the `HazmatPaper`, `HazmatEntry`,
+  `HazmatCertification`, `HazmatClassification`, `HazmatPackingGroup`,
+  `HazmatCertificationStatement` and `HazmatFinding` aliases. Unknown facts are
+  omitted from requests, never sent as null. See `docs/hazmat-capture.md`.
+- `WithIdempotencyKey(ctx, key)` sets the `Idempotency-Key` that
+  `CreateShipment` sends.
+
+### Fixed
+
+- `CreateShipment` retried a 5xx, 408 or 429 without an idempotency key, so a
+  create that succeeded behind a lost response could make a second shipment.
+  Every attempt of a call now sends one key: the caller's, or one generated per
+  call.
+- `Error.IsRetryable` is true for 409 `idempotency_key_in_progress`, which the
+  API asks callers to retry.
+
+Purely additive for existing callers.
+
 ## [0.4.1] - 2026-10-09
 
 ### Changed

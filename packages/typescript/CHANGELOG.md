@@ -5,22 +5,32 @@ All notable changes to the Oway TypeScript SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2026-10-09
+## [Unreleased]
+
+## [0.4.0] - 2026-11-03
 
 ### Added
 
-- Optional per-component `freightClass` and shipment-level `instructions` and
-  `referenceNumbers` fields.
-- Optional invoice line-item `nmfcCode` and carrier milestone reporting types.
-- Quote `shipmentMode` values for full and less-than-truckload shipments.
-- Optional address email, phone extension, inside-service and lumper-service fields.
+- Runnable shipper and carrier quickstarts with persistent recovery state, business-state checks, and sandbox prerequisites.
+- Carrier `requestUploadUrl`, `confirmUpload`, and `uploadedDocument` helpers, with typed upload metadata and optional `proof_of_delivery_document_id` for delivery after authorized POD review.
+- `shipments.create(params, companyApiKey, { idempotencyKey })` sets the creation key; `CreateShipmentOptions` is exported.
+- `pickupAccessorials` and `deliveryAccessorials` on `Quote`, with the `QuoteStopAccessorials` type. Omitted when the quote recorded none.
+- Hazardous material declarations on quotes and shipments, with the `HazmatPaper`, `HazmatEntry`, `HazmatCertification`, `HazmatClassification` and `HazmatFinding` types. See `docs/hazmat-capture.md`.
+- Optional per-component `freightClass`, shipment `instructions` and `referenceNumbers`, invoice line-item `nmfcCode`, carrier milestone reporting types, and quote `shipmentMode`.
+- Optional address email, phone extension, country, inside-service and lumper-service fields; `customerReference` on quotes; carrier address country/phone extension; the `REJECTED` status; generated quote batch and quote-by-reference operations.
 
 ### Changed
 
-- Shipment `referenceNumbers` documentation now allows up to 100 entries, each
-  at most 128 characters. Supplied order and repeated values are preserved.
-  Confirm API support before submitting more than ten references.
-- Generated types remain compatible with callers that omit the new optional fields.
+- Shipment references allow up to 100 entries, each at most 128 characters. Supplied order and repeated values are preserved. Confirm API support before submitting more than ten references.
+- New fields remain optional for existing callers. Address country defaults to US.
+
+### Fixed
+
+- Shipment document helpers send canonical document types and map `downloadLink` into the existing `{url}` result. Existing BOL and LABEL aliases remain supported.
+- Creation retries reuse one idempotency key, including when the caller omits an explicit key. `OwayError.isRetryable()` recognizes `idempotency_key_in_progress`.
+- Properties with API defaults, such as address country, remain optional in generated request types.
+- Authentication and onboarding links explain the required company key and environment setup.
+- Missing sandbox credentials explicitly skip integration tests; quickstart tests run against SDK source before building. Examples are typechecked by the existing lint command.
 
 ## [0.2.2]
 

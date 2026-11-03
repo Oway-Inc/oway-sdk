@@ -75,6 +75,7 @@ const (
 	CarrierTrackingOrderStatusINITIALIZED CarrierTrackingOrderStatus = "INITIALIZED"
 	CarrierTrackingOrderStatusINTRANSIT   CarrierTrackingOrderStatus = "IN_TRANSIT"
 	CarrierTrackingOrderStatusPICKEDUP    CarrierTrackingOrderStatus = "PICKED_UP"
+	CarrierTrackingOrderStatusREJECTED    CarrierTrackingOrderStatus = "REJECTED"
 )
 
 // Defines values for ExceptionReportRequestExceptionType.
@@ -95,6 +96,25 @@ const (
 	ExceptionReportRequestExceptionTypeTruckBreakdown       ExceptionReportRequestExceptionType = "truck_breakdown"
 	ExceptionReportRequestExceptionTypeWeatherDelay         ExceptionReportRequestExceptionType = "weather_delay"
 	ExceptionReportRequestExceptionTypeWrongEquipment       ExceptionReportRequestExceptionType = "wrong_equipment"
+)
+
+// Defines values for HazmatCertificationRequestStatement.
+const (
+	DOT172204A1 HazmatCertificationRequestStatement = "DOT_172_204_A1"
+	DOT172204A2 HazmatCertificationRequestStatement = "DOT_172_204_A2"
+)
+
+// Defines values for HazmatPaperEntryRequestPackingGroup.
+const (
+	I   HazmatPaperEntryRequestPackingGroup = "I"
+	II  HazmatPaperEntryRequestPackingGroup = "II"
+	III HazmatPaperEntryRequestPackingGroup = "III"
+)
+
+// Defines values for HazmatPaperRequestClassification.
+const (
+	FULL            HazmatPaperRequestClassification = "FULL"
+	LIMITEDQUANTITY HazmatPaperRequestClassification = "LIMITED_QUANTITY"
 )
 
 // Defines values for MergedDiagnosticFields.
@@ -136,6 +156,22 @@ const (
 	OrderOrderStatusINITIALIZED OrderOrderStatus = "INITIALIZED"
 	OrderOrderStatusINTRANSIT   OrderOrderStatus = "IN_TRANSIT"
 	OrderOrderStatusPICKEDUP    OrderOrderStatus = "PICKED_UP"
+	OrderOrderStatusREJECTED    OrderOrderStatus = "REJECTED"
+)
+
+// Defines values for QuoteBatchStatus.
+const (
+	COMPLETED QuoteBatchStatus = "COMPLETED"
+	FAILED    QuoteBatchStatus = "FAILED"
+	PRICING   QuoteBatchStatus = "PRICING"
+)
+
+// Defines values for QuoteBatchItemResultStatus.
+const (
+	QuoteBatchItemResultStatusNOTQUOTED   QuoteBatchItemResultStatus = "NOT_QUOTED"
+	QuoteBatchItemResultStatusPENDING     QuoteBatchItemResultStatus = "PENDING"
+	QuoteBatchItemResultStatusQUOTED      QuoteBatchItemResultStatus = "QUOTED"
+	QuoteBatchItemResultStatusUNDERREVIEW QuoteBatchItemResultStatus = "UNDER_REVIEW"
 )
 
 // Defines values for QuoteRequestShipmentMode.
@@ -163,6 +199,7 @@ const (
 	ShipmentOrderStatusINITIALIZED ShipmentOrderStatus = "INITIALIZED"
 	ShipmentOrderStatusINTRANSIT   ShipmentOrderStatus = "IN_TRANSIT"
 	ShipmentOrderStatusPICKEDUP    ShipmentOrderStatus = "PICKED_UP"
+	ShipmentOrderStatusREJECTED    ShipmentOrderStatus = "REJECTED"
 )
 
 // Defines values for ShipmentMilestoneDTOSource.
@@ -193,19 +230,38 @@ const (
 	INITIALIZED TrackingOrderStatus = "INITIALIZED"
 	INTRANSIT   TrackingOrderStatus = "IN_TRANSIT"
 	PICKEDUP    TrackingOrderStatus = "PICKED_UP"
+	REJECTED    TrackingOrderStatus = "REJECTED"
+)
+
+// Defines values for UploadConfirmationRequestContentType.
+const (
+	UploadConfirmationRequestContentTypeApplicationpdf UploadConfirmationRequestContentType = "application/pdf"
+	UploadConfirmationRequestContentTypeImagejpeg      UploadConfirmationRequestContentType = "image/jpeg"
+	UploadConfirmationRequestContentTypeImagepng       UploadConfirmationRequestContentType = "image/png"
+)
+
+// Defines values for UploadConfirmationRequestDocumentType.
+const (
+	UploadConfirmationRequestDocumentTypePROOFOFDELIVERY UploadConfirmationRequestDocumentType = "PROOF_OF_DELIVERY"
 )
 
 // Defines values for UploadUrlRequestContentType.
 const (
-	Applicationpdf UploadUrlRequestContentType = "application/pdf"
-	Imagejpeg      UploadUrlRequestContentType = "image/jpeg"
-	Imagepng       UploadUrlRequestContentType = "image/png"
+	UploadUrlRequestContentTypeApplicationpdf UploadUrlRequestContentType = "application/pdf"
+	UploadUrlRequestContentTypeImagejpeg      UploadUrlRequestContentType = "image/jpeg"
+	UploadUrlRequestContentTypeImagepng       UploadUrlRequestContentType = "image/png"
 )
 
 // Defines values for UploadUrlRequestDocumentType.
 const (
-	PROOFOFDELIVERY UploadUrlRequestDocumentType = "PROOF_OF_DELIVERY"
-	SIGNATURE       UploadUrlRequestDocumentType = "SIGNATURE"
+	UploadUrlRequestDocumentTypePROOFOFDELIVERY UploadUrlRequestDocumentType = "PROOF_OF_DELIVERY"
+	UploadUrlRequestDocumentTypeSIGNATURE       UploadUrlRequestDocumentType = "SIGNATURE"
+)
+
+// Defines values for UploadedDocumentResponseReviewStatus.
+const (
+	UploadedDocumentResponseReviewStatusAPPROVED UploadedDocumentResponseReviewStatus = "APPROVED"
+	UploadedDocumentResponseReviewStatusPENDING  UploadedDocumentResponseReviewStatus = "PENDING"
 )
 
 // Defines values for GetShipmentDocumentParamsDocumentType.
@@ -325,6 +381,9 @@ type Address struct {
 	// ContactPerson Name of the contact person at this location
 	ContactPerson string `json:"contactPerson"`
 
+	// Country Two-letter ISO 3166-1 alpha-2 country code, case-insensitive and normalized to upper case. Defaults to US when omitted. Oway currently serves the US and its territories, so US, PR, GU, VI, AS and MP are accepted and any other recognized code is rejected with 400 rather than quoted. A territory may also be addressed the way a carrier would, as country US with the territory in state.
+	Country *string `json:"country,omitempty"`
+
 	// Email Contact email for this location
 	Email *openapi_types.Email `json:"email,omitempty"`
 
@@ -343,22 +402,22 @@ type Address struct {
 	// Name Name of the location or business
 	Name string `json:"name"`
 
-	// Notes Additional notes or instructions for the driver
+	// Notes Additional notes or instructions for the driver. On a shipment they print on the bill of lading for this stop.
 	Notes *string `json:"notes,omitempty"`
 
 	// OpenTime Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
 	OpenTime *string `json:"openTime,omitempty"`
 
-	// PhoneExtension Phone extension, dialled after the main number
+	// PhoneExtension Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves on update only if the normalized base phone is unchanged; changing a base with an existing extension requires an explicit extension or empty string to clear.
 	PhoneExtension *string `json:"phoneExtension,omitempty"`
 
 	// PhoneNumber Contact phone number in E.164 format
 	PhoneNumber string `json:"phoneNumber"`
 
-	// State Two-letter state abbreviation
+	// State Two-letter subdivision code. A request must name a US state, territory or DC; a response may name the subdivision of another country, which country names.
 	State string `json:"state"`
 
-	// ZipCode 5-digit ZIP code
+	// ZipCode 5-digit ZIP code. The placeholders 00000 and 99999 are rejected: neither is an assignable USPS code, and both are what a caller sends when a numeric ZIP field defaults to zero or saturates.
 	ZipCode string `json:"zipCode"`
 }
 
@@ -372,6 +431,9 @@ type AppointmentContact struct {
 
 	// Phone Phone in E.164 format
 	Phone *string `json:"phone,omitempty"`
+
+	// PhoneExtension Optional 1-10 ASCII digit extension; leading zeros are significant. Omitted/null preserves only a unique existing contact match by name, email, normalized base phone and role; ambiguous matches are rejected. Empty clears.
+	PhoneExtension *string `json:"phoneExtension,omitempty"`
 
 	// Role Role of the contact at the facility
 	Role *string `json:"role,omitempty"`
@@ -514,6 +576,9 @@ type CarrierAddress struct {
 	// ContactPerson Name of the contact person at this location
 	ContactPerson string `json:"contact_person"`
 
+	// Country Two-letter ISO 3166-1 alpha-2 country code of the stop. Oway serves the US and its territories, so this is one of US, PR, GU, VI, AS or MP.
+	Country *string `json:"country,omitempty"`
+
 	// InsideRequired Freight must be brought inside the facility rather than left at the dock.
 	InsideRequired *bool `json:"inside_required,omitempty"`
 
@@ -533,15 +598,16 @@ type CarrierAddress struct {
 	Notes *string `json:"notes,omitempty"`
 
 	// OpenTime Opening time for the location in 24-hour format (HH:mm). Defaults to 10:00 if not provided.
-	OpenTime *string `json:"open_time,omitempty"`
+	OpenTime       *string `json:"open_time,omitempty"`
+	PhoneExtension *string `json:"phone_extension,omitempty"`
 
 	// PhoneNumber Contact phone number in E.164 format
 	PhoneNumber string `json:"phone_number"`
 
-	// State Two-letter state abbreviation
+	// State Two-letter subdivision code: a US state, territory or DC, or the subdivision of the country the country field names.
 	State string `json:"state"`
 
-	// ZipCode 5-digit ZIP code
+	// ZipCode Postal code of the location, in the format of the country the country field names: a 5-digit ZIP code for a US stop.
 	ZipCode string `json:"zip_code"`
 }
 
@@ -719,7 +785,9 @@ type CreateShipmentRequest struct {
 	DeliveryAddress Address `json:"deliveryAddress"`
 
 	// Description Description of the shipment contents
-	Description string `json:"description"`
+	Description string              `json:"description"`
+	Hazmat      *bool               `json:"hazmat,omitempty"`
+	HazmatPaper *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// Instructions Free-text instructions to render on the shipment's documents. Matches the instructions field on appointment requirements.
 	Instructions *string `json:"instructions,omitempty"`
@@ -742,10 +810,10 @@ type CreateShipmentRequest struct {
 	// ReferenceNumbers Reference numbers (PO, customer pickup #, etc.) to render on the shipment's documents, beyond poNumber and refNumber. Up to 100 entries, each at most 128 characters; supplied order and repeated values are preserved.
 	ReferenceNumbers *[]string `json:"referenceNumbers,omitempty"`
 
-	// RequiredDeliveryBy Required delivery by date (ISO 8601 format)
+	// RequiredDeliveryBy Required delivery date (ISO 8601). Read as a calendar day, its UTC date; the deadline is the delivery stop's closing time on that day, in the stop's time zone.
 	RequiredDeliveryBy *time.Time `json:"requiredDeliveryBy,omitempty"`
 
-	// RequiredPickupDate Required pickup date (ISO 8601 format)
+	// RequiredPickupDate Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
 
 	// ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
@@ -768,6 +836,9 @@ type DeliveryConfirmation struct {
 
 	// Notes Additional notes about the delivery
 	Notes *string `json:"notes,omitempty"`
+
+	// ProofOfDeliveryDocumentId Registered POD identity, when confirmed using an Oway-hosted upload
+	ProofOfDeliveryDocumentId *string `json:"proof_of_delivery_document_id,omitempty"`
 
 	// ProofOfDeliveryUrl URL to proof of delivery document
 	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
@@ -795,6 +866,9 @@ type DeliveryConfirmationRequest struct {
 
 	// Notes Additional notes about the delivery
 	Notes *string `json:"notes,omitempty"`
+
+	// ProofOfDeliveryDocumentId Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery.
+	ProofOfDeliveryDocumentId *string `json:"proof_of_delivery_document_id,omitempty"`
 
 	// ProofOfDeliveryUrl URL to the proof of delivery document
 	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
@@ -925,6 +999,76 @@ type GpsData struct {
 	// VehicleId Unique identifier for the vehicle
 	VehicleId string `json:"vehicleId"`
 }
+
+// HazmatCertificationRequest defines model for HazmatCertificationRequest.
+type HazmatCertificationRequest struct {
+	Confirmed  *bool                                `json:"confirmed,omitempty"`
+	SignerName *string                              `json:"signerName,omitempty"`
+	Statement  *HazmatCertificationRequestStatement `json:"statement,omitempty"`
+}
+
+// HazmatCertificationRequestStatement defines model for HazmatCertificationRequest.Statement.
+type HazmatCertificationRequestStatement string
+
+// HazmatFindingResponse defines model for HazmatFindingResponse.
+type HazmatFindingResponse struct {
+	Citation   *string `json:"citation,omitempty"`
+	EntryIndex *int32  `json:"entryIndex,omitempty"`
+	Message    *string `json:"message,omitempty"`
+	Rule       *string `json:"rule,omitempty"`
+	Severity   *string `json:"severity,omitempty"`
+}
+
+// HazmatPaperEntryRequest defines model for HazmatPaperEntryRequest.
+type HazmatPaperEntryRequest struct {
+	EmergencyContactConfirmed      *bool                                `json:"emergencyContactConfirmed,omitempty"`
+	EmergencyPhone                 *string                              `json:"emergencyPhone,omitempty"`
+	EmergencyProvider              *string                              `json:"emergencyProvider,omitempty"`
+	EmergencyRegistrantIdentifier  *string                              `json:"emergencyRegistrantIdentifier,omitempty"`
+	EntryId                        *string                              `json:"entryId,omitempty"`
+	FlashPointC                    *float64                             `json:"flashPointC,omitempty"`
+	HazardClass                    *string                              `json:"hazardClass,omitempty"`
+	HazardousSubstance             *bool                                `json:"hazardousSubstance,omitempty"`
+	IdentificationNumber           *string                              `json:"identificationNumber,omitempty"`
+	InnerPackagingNetCapacityL     *float64                             `json:"innerPackagingNetCapacityL,omitempty"`
+	LimitedQuantity                *bool                                `json:"limitedQuantity,omitempty"`
+	LqMarked                       *bool                                `json:"lqMarked,omitempty"`
+	MarinePollutant                *bool                                `json:"marinePollutant,omitempty"`
+	MarinePollutantComponent       *string                              `json:"marinePollutantComponent,omitempty"`
+	OuterPackageGrossKg            *float64                             `json:"outerPackageGrossKg,omitempty"`
+	PackageCount                   *int32                               `json:"packageCount,omitempty"`
+	PackageType                    *string                              `json:"packageType,omitempty"`
+	PackingGroup                   *HazmatPaperEntryRequestPackingGroup `json:"packingGroup,omitempty"`
+	ProductId                      *string                              `json:"productId,omitempty"`
+	ProperShippingName             *string                              `json:"properShippingName,omitempty"`
+	PsnQualifier                   *string                              `json:"psnQualifier,omitempty"`
+	QuantityUnit                   *string                              `json:"quantityUnit,omitempty"`
+	ReportableQuantity             *bool                                `json:"reportableQuantity,omitempty"`
+	ResponseInformationDocumentIds *[]string                            `json:"responseInformationDocumentIds,omitempty"`
+	SourceItemReference            *string                              `json:"sourceItemReference,omitempty"`
+	SubsidiaryHazards              *[]string                            `json:"subsidiaryHazards,omitempty"`
+	TechnicalNames                 *[]string                            `json:"technicalNames,omitempty"`
+	TotalQuantity                  *float64                             `json:"totalQuantity,omitempty"`
+	UnitizedPer173156b2            *bool                                `json:"unitizedPer173_156b2,omitempty"`
+}
+
+// HazmatPaperEntryRequestPackingGroup defines model for HazmatPaperEntryRequest.PackingGroup.
+type HazmatPaperEntryRequestPackingGroup string
+
+// HazmatPaperRequest defines model for HazmatPaperRequest.
+type HazmatPaperRequest struct {
+	Certification                 *HazmatCertificationRequest       `json:"certification,omitempty"`
+	Classification                *HazmatPaperRequestClassification `json:"classification,omitempty"`
+	EmergencyContactCoversAll     *bool                             `json:"emergencyContactCoversAll,omitempty"`
+	EmergencyPhone                *string                           `json:"emergencyPhone,omitempty"`
+	EmergencyProvider             *string                           `json:"emergencyProvider,omitempty"`
+	EmergencyRegistrantIdentifier *string                           `json:"emergencyRegistrantIdentifier,omitempty"`
+	Entries                       *[]HazmatPaperEntryRequest        `json:"entries,omitempty"`
+	ExpectedRevision              *int64                            `json:"expectedRevision,omitempty"`
+}
+
+// HazmatPaperRequestClassification defines model for HazmatPaperRequest.Classification.
+type HazmatPaperRequestClassification string
 
 // InvoiceCharge A charge on an invoice
 type InvoiceCharge struct {
@@ -1267,10 +1411,125 @@ type ProblemDetail struct {
 	Violations *[]Violation `json:"violations,omitempty"`
 }
 
+// QuoteBatch A batch of quote requests and what became of each. The same body comes back from creating the batch and from reading it, so read it until `status` is COMPLETED or FAILED.
+type QuoteBatch struct {
+	// CompletedAt When every item had an outcome; absent while PRICING
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// Counts How many items ended each way
+	Counts *QuoteBatchCounts `json:"counts,omitempty"`
+
+	// CreatedAt When the batch was accepted
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// CustomerReference Your reference for the whole set, as sent
+	CustomerReference *string `json:"customerReference,omitempty"`
+
+	// Id The batch id; read the batch by it
+	Id *string `json:"id,omitempty"`
+
+	// Items One entry per item, in the order you sent them; match by position
+	Items *[]QuoteBatchItemResult `json:"items,omitempty"`
+
+	// Status PRICING: accepted, still pricing; read the batch again after `Retry-After` seconds. COMPLETED: every item has an outcome; items can still move from UNDER_REVIEW to QUOTED or NOT_QUOTED, and nothing else on the batch changes. FAILED: the run could not finish; submit the items again.
+	Status QuoteBatchStatus `json:"status"`
+}
+
+// QuoteBatchStatus PRICING: accepted, still pricing; read the batch again after `Retry-After` seconds. COMPLETED: every item has an outcome; items can still move from UNDER_REVIEW to QUOTED or NOT_QUOTED, and nothing else on the batch changes. FAILED: the run could not finish; submit the items again.
+type QuoteBatchStatus string
+
+// QuoteBatchCounts How many items ended each way
+type QuoteBatchCounts struct {
+	// Items Items in the batch
+	Items *int32 `json:"items,omitempty"`
+
+	// NotQuoted Items deliberately not priced
+	NotQuoted *int32 `json:"notQuoted,omitempty"`
+
+	// Pending Items not priced yet
+	Pending *int32 `json:"pending,omitempty"`
+
+	// Quoted Items with a price you can book
+	Quoted *int32 `json:"quoted,omitempty"`
+
+	// UnderReview Items a person will decide
+	UnderReview *int32 `json:"underReview,omitempty"`
+}
+
+// QuoteBatchItemResult One item's outcome, at the item's position in the request. A QUOTED item carries `quote`; a NOT_QUOTED or UNDER_REVIEW item carries `problem`, the same shape a single quote request answers with; a PENDING item carries neither yet.
+type QuoteBatchItemResult struct {
+	// CustomerReference Your own reference for the load, as sent on the item and stored on the quote; absent when the item carried none. Results are in request order, so the position is the match.
+	CustomerReference *string `json:"customerReference,omitempty"`
+
+	// Problem RFC 9457 Problem Details error response
+	Problem *ProblemDetail `json:"problem,omitempty"`
+
+	// Quote Response containing a shipping quote
+	Quote *QuoteResponse `json:"quote,omitempty"`
+
+	// Status The outcome
+	Status QuoteBatchItemResultStatus `json:"status"`
+}
+
+// QuoteBatchItemResultStatus The outcome
+type QuoteBatchItemResultStatus string
+
+// QuoteBatchRequest A set of shipments to price together. The batch is accepted at once and priced afterwards; read it until its status is COMPLETED or FAILED.
+type QuoteBatchRequest struct {
+	// CustomerReference Your own reference for the whole set, such as a plan or file name. Stored on the batch only; each item carries its own `customerReference`, or none.
+	CustomerReference *string `json:"customerReference,omitempty"`
+
+	// Items The shipments to price: each one exactly a quote request. 1 to 1,000. Results come back in this order, so the position is how you match them; give an item a `customerReference` to find its quote later by your own identifier.
+	Items []QuoteRequest `json:"items"`
+}
+
+// QuoteByReferenceResponse The newest quote your company holds under a given customer reference. Use `matchable` to decide whether to tender against it: true means the quote is open, still inside its validity window, and carries a price you can book at.
+type QuoteByReferenceResponse struct {
+	// CustomerReference The reference you asked for, as stored on the quote.
+	CustomerReference *string `json:"customerReference,omitempty"`
+
+	// DestinationZip Destination ZIP the quote was priced for.
+	DestinationZip *string `json:"destinationZip,omitempty"`
+
+	// Expired True once validUntil has passed.
+	Expired     *bool               `json:"expired,omitempty"`
+	Hazmat      *bool               `json:"hazmat,omitempty"`
+	HazmatPaper *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
+
+	// Matchable True when this quote will back a tender as it stands: open, unexpired, and priced. When false, tender anyway if you want the load moved: we re-price it and book at the new price rather than refusing it.
+	Matchable *bool `json:"matchable,omitempty"`
+
+	// OriginZip Origin ZIP the quote was priced for.
+	OriginZip *string `json:"originZip,omitempty"`
+
+	// Pallets Pallet positions the quote was priced for.
+	Pallets *int32 `json:"pallets,omitempty"`
+
+	// PriceCents All-in price in cents. Omitted when the quote carries no price you can book at (for example a lane we could not serve).
+	PriceCents *int64 `json:"priceCents,omitempty"`
+
+	// QuoteId Oway's quote ID.
+	QuoteId *string `json:"quoteId,omitempty"`
+
+	// Status Quote status. OPEN is the only status that can back a booking.
+	Status *string `json:"status,omitempty"`
+
+	// ValidUntil When the quote stops being bookable. 48 hours after it was issued.
+	ValidUntil *time.Time `json:"validUntil,omitempty"`
+
+	// WeightLbs Total weight in pounds the quote was priced for.
+	WeightLbs *float32 `json:"weightLbs,omitempty"`
+}
+
 // QuoteRequest Request to generate a shipping quote. Quotes are valid for 2 days from creation.
 type QuoteRequest struct {
+	// CustomerReference Your own reference for this load, such as your order or load number, at most 64 characters. Stored on the quote, so a later shipment can name it and `GET /v1/shipper/quotes/by-reference` can find the quote.
+	CustomerReference *string `json:"customerReference,omitempty"`
+
 	// DeliveryAddress Address information for pickup or delivery locations
-	DeliveryAddress Address `json:"deliveryAddress"`
+	DeliveryAddress Address             `json:"deliveryAddress"`
+	Hazmat          *bool               `json:"hazmat,omitempty"`
+	HazmatPaper     *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// OrderComponents List of pallets or freight pieces.
 	OrderComponents []OrderComponent `json:"orderComponents"`
@@ -1278,7 +1537,7 @@ type QuoteRequest struct {
 	// PickupAddress Address information for pickup or delivery locations
 	PickupAddress Address `json:"pickupAddress"`
 
-	// RequiredPickupDate Required pickup date (ISO 8601).
+	// RequiredPickupDate Required pickup date (ISO 8601), read as a day in the pickup location's time zone. Send it with that zone's offset so the day is unambiguous. A date before today in that zone is treated as as-soon-as-possible, as if omitted.
 	RequiredPickupDate *time.Time `json:"requiredPickupDate,omitempty"`
 
 	// ShipmentMode Shipment mode (LTL or FTL).
@@ -1290,11 +1549,19 @@ type QuoteRequestShipmentMode string
 
 // QuoteResponse Response containing a shipping quote
 type QuoteResponse struct {
+	// DeliveryAccessorials The services a quote was priced for at one stop, as the quote request asked for them. The fields mirror the accessorial flags on the request's address.
+	DeliveryAccessorials *QuoteStopAccessorials `json:"deliveryAccessorials,omitempty"`
+
 	// EstimatedDeliveryDate Estimated delivery date and time (ISO 8601 format, UTC). May be null when the ETA cannot be computed.
-	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate"`
+	EstimatedDeliveryDate *time.Time          `json:"estimatedDeliveryDate"`
+	Hazmat                *bool               `json:"hazmat,omitempty"`
+	HazmatPaper           *HazmatPaperRequest `json:"hazmatPaper,omitempty"`
 
 	// Id Unique quote identifier
 	Id *string `json:"id,omitempty"`
+
+	// PickupAccessorials The services a quote was priced for at one stop, as the quote request asked for them. The fields mirror the accessorial flags on the request's address.
+	PickupAccessorials *QuoteStopAccessorials `json:"pickupAccessorials,omitempty"`
 
 	// QuoteExpirationTime When this quote expires (ISO 8601 format). Quotes are valid for 2 days.
 	QuoteExpirationTime *time.Time `json:"quoteExpirationTime,omitempty"`
@@ -1304,6 +1571,27 @@ type QuoteResponse struct {
 
 	// TransitDays Number of business days to deliver the shipment after pickup. Pickup day is excluded; weekends are not counted. May be null when the ETA cannot be computed.
 	TransitDays *int32 `json:"transitDays"`
+}
+
+// QuoteStopAccessorials The services a quote was priced for at one stop, as the quote request asked for them. The fields mirror the accessorial flags on the request's address.
+type QuoteStopAccessorials struct {
+	// AppointmentRequired An appointment was requested at this stop
+	AppointmentRequired *bool `json:"appointmentRequired,omitempty"`
+
+	// CallAheadRequired A call-ahead was requested before arriving at this stop
+	CallAheadRequired *bool `json:"callAheadRequired,omitempty"`
+
+	// InsideRequired Inside service was requested at this stop
+	InsideRequired *bool `json:"insideRequired,omitempty"`
+
+	// LiftgateRequired A liftgate was requested at this stop
+	LiftgateRequired *bool `json:"liftgateRequired,omitempty"`
+
+	// LimitedAccess This stop was quoted as a limited access location
+	LimitedAccess *bool `json:"limitedAccess,omitempty"`
+
+	// LumperRequired Third-party lumper labor was declared at this stop
+	LumperRequired *bool `json:"lumperRequired,omitempty"`
 }
 
 // RejectOfferRequest Request body for rejecting an offer
@@ -1325,6 +1613,16 @@ type Shipment struct {
 
 	// CreatedAt Time when the order was created (ISO 8601 format)
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// Hazmat Whether this shipment declares hazardous material. Missing details require Ops completion before confirmation.
+	Hazmat            *bool                    `json:"hazmat,omitempty"`
+	HazmatCertifiedAt *time.Time               `json:"hazmatCertifiedAt,omitempty"`
+	HazmatFindings    *[]HazmatFindingResponse `json:"hazmatFindings,omitempty"`
+	HazmatPaper       *HazmatPaperRequest      `json:"hazmatPaper,omitempty"`
+
+	// HazmatReadiness Derived declaration readiness: not_declared, information_needed, or ready_for_ops_review. Never carrier or dispatch approval.
+	HazmatReadiness *string `json:"hazmatReadiness,omitempty"`
+	HazmatRevision  *int64  `json:"hazmatRevision,omitempty"`
 
 	// Id Unique identifier for the order
 	Id *string `json:"id,omitempty"`
@@ -1438,8 +1736,8 @@ type Tracking struct {
 	// ActualPickupDate Actual pickup date/time (ISO 8601 format)
 	ActualPickupDate *time.Time `json:"actualPickupDate,omitempty"`
 
-	// EstimatedDeliveryDate Estimated delivery date/time (ISO 8601 format)
-	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate,omitempty"`
+	// EstimatedDeliveryDate Estimated delivery date/time (ISO 8601 format). Null until a delivery window has been predicted or an appointment booked, which for most orders is at dispatch.
+	EstimatedDeliveryDate *time.Time `json:"estimatedDeliveryDate"`
 
 	// EstimatedPickupDate Estimated pickup date/time (ISO 8601 format)
 	EstimatedPickupDate *time.Time `json:"estimatedPickupDate,omitempty"`
@@ -1453,11 +1751,11 @@ type Tracking struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current status of the order
-	OrderStatus *TrackingOrderStatus `json:"orderStatus,omitempty"`
+	// OrderStatus Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
+	OrderStatus *TrackingOrderStatus `json:"orderStatus"`
 }
 
-// TrackingOrderStatus Current status of the order
+// TrackingOrderStatus Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
 type TrackingOrderStatus string
 
 // TrackingPoint A single GPS tracking data point
@@ -1489,6 +1787,21 @@ type TrackingResponse struct {
 	// Points Ordered list of GPS tracking points from pickup to current/delivery
 	Points *[]TrackingPoint `json:"points,omitempty"`
 }
+
+// UploadConfirmationRequest Register an uploaded POD after the storage PUT succeeds
+type UploadConfirmationRequest struct {
+	ContentType  UploadConfirmationRequestContentType  `json:"content_type"`
+	DocumentType UploadConfirmationRequestDocumentType `json:"document_type"`
+
+	// FileName Display filename; must match on retry
+	FileName string `json:"file_name"`
+}
+
+// UploadConfirmationRequestContentType defines model for UploadConfirmationRequest.ContentType.
+type UploadConfirmationRequestContentType string
+
+// UploadConfirmationRequestDocumentType defines model for UploadConfirmationRequest.DocumentType.
+type UploadConfirmationRequestDocumentType string
 
 // UploadUrlRequest Request a pre-signed URL to upload a file (signature image or proof of delivery)
 type UploadUrlRequest struct {
@@ -1522,6 +1835,20 @@ type UploadUrlResponse struct {
 	// UploadUrl Pre-signed PUT URL — upload your file directly to this URL using HTTP PUT with the specified content type
 	UploadUrl *string `json:"upload_url,omitempty"`
 }
+
+// UploadedDocumentResponse Immutable POD registration and a temporary download URL
+type UploadedDocumentResponse struct {
+	// DocumentId Stable ID to pass as proof_of_delivery_document_id after review
+	DocumentId *string `json:"document_id,omitempty"`
+
+	// DownloadUrl Temporary GET URL; never send it as the legacy proof_of_delivery_url
+	DownloadUrl  *string                               `json:"download_url,omitempty"`
+	ExpiresAt    *time.Time                            `json:"expires_at,omitempty"`
+	ReviewStatus *UploadedDocumentResponseReviewStatus `json:"review_status,omitempty"`
+}
+
+// UploadedDocumentResponseReviewStatus defines model for UploadedDocumentResponse.ReviewStatus.
+type UploadedDocumentResponseReviewStatus string
 
 // Violation A single field-level validation failure.
 type Violation struct {
@@ -1558,6 +1885,18 @@ type GetShipmentsParams struct {
 
 // GetShipmentDocumentParamsDocumentType defines parameters for GetShipmentDocument.
 type GetShipmentDocumentParamsDocumentType string
+
+// CreateBatchParams defines parameters for CreateBatch.
+type CreateBatchParams struct {
+	// IdempotencyKey Optional idempotency key. Retrying the same request with the same key within 24h returns the original response. Reusing the key with a different body returns 409 idempotency_key_conflict.
+	IdempotencyKey *string `json:"Idempotency-Key,omitempty"`
+}
+
+// GetQuoteByReferenceParams defines parameters for GetQuoteByReference.
+type GetQuoteByReferenceParams struct {
+	// Reference Your own identifier for the load, as sent on the quote request
+	Reference string `form:"reference" json:"reference"`
+}
 
 // CreateShipmentParams defines parameters for CreateShipment.
 type CreateShipmentParams struct {
@@ -1642,8 +1981,14 @@ type ConfirmPickupJSONRequestBody = PickupConfirmationRequest
 // RequestUploadUrlJSONRequestBody defines body for RequestUploadUrl for application/json ContentType.
 type RequestUploadUrlJSONRequestBody = UploadUrlRequest
 
+// ConfirmUploadJSONRequestBody defines body for ConfirmUpload for application/json ContentType.
+type ConfirmUploadJSONRequestBody = UploadConfirmationRequest
+
 // RequestQuoteJSONRequestBody defines body for RequestQuote for application/json ContentType.
 type RequestQuoteJSONRequestBody = QuoteRequest
+
+// CreateBatchJSONRequestBody defines body for CreateBatch for application/json ContentType.
+type CreateBatchJSONRequestBody = QuoteBatchRequest
 
 // CreateShipmentJSONRequestBody defines body for CreateShipment for application/json ContentType.
 type CreateShipmentJSONRequestBody = CreateShipmentRequest
@@ -1781,6 +2126,9 @@ type ClientInterface interface {
 	// GetShipmentDocument request
 	GetShipmentDocument(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetUploadedDocument request
+	GetUploadedDocument(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ReportExceptionWithBody request with any body
 	ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1809,6 +2157,11 @@ type ClientInterface interface {
 
 	RequestUploadUrl(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ConfirmUploadWithBody request with any body
+	ConfirmUploadWithBody(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmUpload(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RequestQuoteWithBody request with any body
 	RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1816,6 +2169,17 @@ type ClientInterface interface {
 
 	// GetQuote request
 	GetQuote(ctx context.Context, quoteId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateBatchWithBody request with any body
+	CreateBatchWithBody(ctx context.Context, params *CreateBatchParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateBatch(ctx context.Context, params *CreateBatchParams, body CreateBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReadBatch request
+	ReadBatch(ctx context.Context, batchId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQuoteByReference request
+	GetQuoteByReference(ctx context.Context, params *GetQuoteByReferenceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateShipmentWithBody request with any body
 	CreateShipmentWithBody(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2098,6 +2462,18 @@ func (c *Client) GetShipmentDocument(ctx context.Context, identifier string, doc
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetUploadedDocument(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUploadedDocumentRequest(c.Server, identifier, documentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewReportExceptionRequestWithBody(c.Server, identifier, contentType, body)
 	if err != nil {
@@ -2230,6 +2606,30 @@ func (c *Client) RequestUploadUrl(ctx context.Context, identifier string, body R
 	return c.Client.Do(req)
 }
 
+func (c *Client) ConfirmUploadWithBody(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUploadRequestWithBody(c.Server, identifier, documentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmUpload(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUploadRequest(c.Server, identifier, documentId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRequestQuoteRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -2256,6 +2656,54 @@ func (c *Client) RequestQuote(ctx context.Context, body RequestQuoteJSONRequestB
 
 func (c *Client) GetQuote(ctx context.Context, quoteId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetQuoteRequest(c.Server, quoteId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBatchWithBody(ctx context.Context, params *CreateBatchParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBatchRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBatch(ctx context.Context, params *CreateBatchParams, body CreateBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBatchRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReadBatch(ctx context.Context, batchId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReadBatchRequest(c.Server, batchId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQuoteByReference(ctx context.Context, params *GetQuoteByReferenceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQuoteByReferenceRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3036,6 +3484,47 @@ func NewGetShipmentDocumentRequest(server string, identifier string, documentTyp
 	return req, nil
 }
 
+// NewGetUploadedDocumentRequest generates requests for GetUploadedDocument
+func NewGetUploadedDocumentRequest(server string, identifier string, documentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "documentId", runtime.ParamLocationPath, documentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/documents/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewReportExceptionRequest calls the generic ReportException builder with application/json body
 func NewReportExceptionRequest(server string, identifier string, body ReportExceptionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3305,6 +3794,60 @@ func NewRequestUploadUrlRequestWithBody(server string, identifier string, conten
 	return req, nil
 }
 
+// NewConfirmUploadRequest calls the generic ConfirmUpload builder with application/json body
+func NewConfirmUploadRequest(server string, identifier string, documentId string, body ConfirmUploadJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmUploadRequestWithBody(server, identifier, documentId, "application/json", bodyReader)
+}
+
+// NewConfirmUploadRequestWithBody generates requests for ConfirmUpload with any type of body
+func NewConfirmUploadRequestWithBody(server string, identifier string, documentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "documentId", runtime.ParamLocationPath, documentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/uploads/%s/confirm", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewRequestQuoteRequest calls the generic RequestQuote builder with application/json body
 func NewRequestQuoteRequest(server string, body RequestQuoteJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3369,6 +3912,140 @@ func NewGetQuoteRequest(server string, quoteId string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateBatchRequest calls the generic CreateBatch builder with application/json body
+func NewCreateBatchRequest(server string, params *CreateBatchParams, body CreateBatchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateBatchRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateBatchRequestWithBody generates requests for CreateBatch with any type of body
+func NewCreateBatchRequestWithBody(server string, params *CreateBatchParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/quotes/batch")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Idempotency-Key", runtime.ParamLocationHeader, *params.IdempotencyKey)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewReadBatchRequest generates requests for ReadBatch
+func NewReadBatchRequest(server string, batchId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "batchId", runtime.ParamLocationPath, batchId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/quotes/batch/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetQuoteByReferenceRequest generates requests for GetQuoteByReference
+func NewGetQuoteByReferenceRequest(server string, params *GetQuoteByReferenceParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/shipper/quotes/by-reference")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reference", runtime.ParamLocationQuery, params.Reference); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -4035,6 +4712,9 @@ type ClientWithResponsesInterface interface {
 	// GetShipmentDocumentWithResponse request
 	GetShipmentDocumentWithResponse(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetShipmentDocumentResponse, error)
 
+	// GetUploadedDocumentWithResponse request
+	GetUploadedDocumentWithResponse(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*GetUploadedDocumentResponse, error)
+
 	// ReportExceptionWithBodyWithResponse request with any body
 	ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error)
 
@@ -4063,6 +4743,11 @@ type ClientWithResponsesInterface interface {
 
 	RequestUploadUrlWithResponse(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error)
 
+	// ConfirmUploadWithBodyWithResponse request with any body
+	ConfirmUploadWithBodyWithResponse(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error)
+
+	ConfirmUploadWithResponse(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error)
+
 	// RequestQuoteWithBodyWithResponse request with any body
 	RequestQuoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestQuoteResponse, error)
 
@@ -4070,6 +4755,17 @@ type ClientWithResponsesInterface interface {
 
 	// GetQuoteWithResponse request
 	GetQuoteWithResponse(ctx context.Context, quoteId string, reqEditors ...RequestEditorFn) (*GetQuoteResponse, error)
+
+	// CreateBatchWithBodyWithResponse request with any body
+	CreateBatchWithBodyWithResponse(ctx context.Context, params *CreateBatchParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBatchResponse, error)
+
+	CreateBatchWithResponse(ctx context.Context, params *CreateBatchParams, body CreateBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBatchResponse, error)
+
+	// ReadBatchWithResponse request
+	ReadBatchWithResponse(ctx context.Context, batchId string, reqEditors ...RequestEditorFn) (*ReadBatchResponse, error)
+
+	// GetQuoteByReferenceWithResponse request
+	GetQuoteByReferenceWithResponse(ctx context.Context, params *GetQuoteByReferenceParams, reqEditors ...RequestEditorFn) (*GetQuoteByReferenceResponse, error)
 
 	// CreateShipmentWithBodyWithResponse request with any body
 	CreateShipmentWithBodyWithResponse(ctx context.Context, params *CreateShipmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateShipmentResponse, error)
@@ -4482,6 +5178,32 @@ func (r GetShipmentDocumentResponse) StatusCode() int {
 	return 0
 }
 
+type GetUploadedDocumentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UploadedDocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUploadedDocumentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUploadedDocumentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ReportExceptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4647,6 +5369,34 @@ func (r RequestUploadUrlResponse) StatusCode() int {
 	return 0
 }
 
+type ConfirmUploadResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UploadedDocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON413      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmUploadResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmUploadResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type RequestQuoteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4700,6 +5450,84 @@ func (r GetQuoteResponse) StatusCode() int {
 	return 0
 }
 
+type CreateBatchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *QuoteBatch
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON500      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateBatchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateBatchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ReadBatchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QuoteBatch
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ReadBatchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReadBatchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQuoteByReferenceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QuoteByReferenceResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQuoteByReferenceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQuoteByReferenceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateShipmentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4707,6 +5535,7 @@ type CreateShipmentResponse struct {
 	JSON400      *ProblemDetail
 	JSON401      *ProblemDetail
 	JSON403      *ProblemDetail
+	JSON409      *ProblemDetail
 	JSON422      *ProblemDetail
 	JSON500      *ProblemDetail
 }
@@ -5177,6 +6006,15 @@ func (c *ClientWithResponses) GetShipmentDocumentWithResponse(ctx context.Contex
 	return ParseGetShipmentDocumentResponse(rsp)
 }
 
+// GetUploadedDocumentWithResponse request returning *GetUploadedDocumentResponse
+func (c *ClientWithResponses) GetUploadedDocumentWithResponse(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*GetUploadedDocumentResponse, error) {
+	rsp, err := c.GetUploadedDocument(ctx, identifier, documentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUploadedDocumentResponse(rsp)
+}
+
 // ReportExceptionWithBodyWithResponse request with arbitrary body returning *ReportExceptionResponse
 func (c *ClientWithResponses) ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error) {
 	rsp, err := c.ReportExceptionWithBody(ctx, identifier, contentType, body, reqEditors...)
@@ -5271,6 +6109,23 @@ func (c *ClientWithResponses) RequestUploadUrlWithResponse(ctx context.Context, 
 	return ParseRequestUploadUrlResponse(rsp)
 }
 
+// ConfirmUploadWithBodyWithResponse request with arbitrary body returning *ConfirmUploadResponse
+func (c *ClientWithResponses) ConfirmUploadWithBodyWithResponse(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error) {
+	rsp, err := c.ConfirmUploadWithBody(ctx, identifier, documentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUploadResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmUploadWithResponse(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error) {
+	rsp, err := c.ConfirmUpload(ctx, identifier, documentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUploadResponse(rsp)
+}
+
 // RequestQuoteWithBodyWithResponse request with arbitrary body returning *RequestQuoteResponse
 func (c *ClientWithResponses) RequestQuoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestQuoteResponse, error) {
 	rsp, err := c.RequestQuoteWithBody(ctx, contentType, body, reqEditors...)
@@ -5295,6 +6150,41 @@ func (c *ClientWithResponses) GetQuoteWithResponse(ctx context.Context, quoteId 
 		return nil, err
 	}
 	return ParseGetQuoteResponse(rsp)
+}
+
+// CreateBatchWithBodyWithResponse request with arbitrary body returning *CreateBatchResponse
+func (c *ClientWithResponses) CreateBatchWithBodyWithResponse(ctx context.Context, params *CreateBatchParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBatchResponse, error) {
+	rsp, err := c.CreateBatchWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBatchResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateBatchWithResponse(ctx context.Context, params *CreateBatchParams, body CreateBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBatchResponse, error) {
+	rsp, err := c.CreateBatch(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBatchResponse(rsp)
+}
+
+// ReadBatchWithResponse request returning *ReadBatchResponse
+func (c *ClientWithResponses) ReadBatchWithResponse(ctx context.Context, batchId string, reqEditors ...RequestEditorFn) (*ReadBatchResponse, error) {
+	rsp, err := c.ReadBatch(ctx, batchId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReadBatchResponse(rsp)
+}
+
+// GetQuoteByReferenceWithResponse request returning *GetQuoteByReferenceResponse
+func (c *ClientWithResponses) GetQuoteByReferenceWithResponse(ctx context.Context, params *GetQuoteByReferenceParams, reqEditors ...RequestEditorFn) (*GetQuoteByReferenceResponse, error) {
+	rsp, err := c.GetQuoteByReference(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQuoteByReferenceResponse(rsp)
 }
 
 // CreateShipmentWithBodyWithResponse request with arbitrary body returning *CreateShipmentResponse
@@ -6219,6 +7109,60 @@ func ParseGetShipmentDocumentResponse(rsp *http.Response) (*GetShipmentDocumentR
 	return response, nil
 }
 
+// ParseGetUploadedDocumentResponse parses an HTTP response from a GetUploadedDocumentWithResponse call
+func ParseGetUploadedDocumentResponse(rsp *http.Response) (*GetUploadedDocumentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUploadedDocumentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UploadedDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseReportExceptionResponse parses an HTTP response from a ReportExceptionWithResponse call
 func ParseReportExceptionResponse(rsp *http.Response) (*ReportExceptionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6606,6 +7550,74 @@ func ParseRequestUploadUrlResponse(rsp *http.Response) (*RequestUploadUrlRespons
 	return response, nil
 }
 
+// ParseConfirmUploadResponse parses an HTTP response from a ConfirmUploadWithResponse call
+func ParseConfirmUploadResponse(rsp *http.Response) (*ConfirmUploadResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmUploadResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UploadedDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseRequestQuoteResponse parses an HTTP response from a RequestQuoteWithResponse call
 func ParseRequestQuoteResponse(rsp *http.Response) (*RequestQuoteResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6721,6 +7733,168 @@ func ParseGetQuoteResponse(rsp *http.Response) (*GetQuoteResponse, error) {
 	return response, nil
 }
 
+// ParseCreateBatchResponse parses an HTTP response from a CreateBatchWithResponse call
+func ParseCreateBatchResponse(rsp *http.Response) (*CreateBatchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateBatchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest QuoteBatch
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReadBatchResponse parses an HTTP response from a ReadBatchWithResponse call
+func ParseReadBatchResponse(rsp *http.Response) (*ReadBatchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReadBatchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QuoteBatch
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQuoteByReferenceResponse parses an HTTP response from a GetQuoteByReferenceWithResponse call
+func ParseGetQuoteByReferenceResponse(rsp *http.Response) (*GetQuoteByReferenceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQuoteByReferenceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QuoteByReferenceResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateShipmentResponse parses an HTTP response from a CreateShipmentWithResponse call
 func ParseCreateShipmentResponse(rsp *http.Response) (*CreateShipmentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6762,6 +7936,13 @@ func ParseCreateShipmentResponse(rsp *http.Response) (*CreateShipmentResponse, e
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest ProblemDetail

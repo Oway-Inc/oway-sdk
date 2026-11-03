@@ -22,7 +22,7 @@ npm install @oway/sdk
 ```bash
 export OWAY_M2M_CLIENT_ID="your-client-id"
 export OWAY_M2M_CLIENT_SECRET="your-client-secret"
-export OWAY_API_KEY="oway_sk_test_..."  # optional — from app.oway.io/settings/api
+export OWAY_API_KEY="oway_sk_test_..."  # required company key for external API calls
 ```
 
 ### 3. Get a quote, book a shipment, and track it
@@ -99,7 +99,7 @@ go get github.com/Oway-Inc/oway-sdk/packages/go
 ```bash
 export OWAY_M2M_CLIENT_ID="your-client-id"
 export OWAY_M2M_CLIENT_SECRET="your-client-secret"
-export OWAY_API_KEY="oway_sk_test_..."  # optional — from app.oway.io/settings/api
+export OWAY_API_KEY="oway_sk_test_..."  # required company key for external API calls
 ```
 
 ### 3. Get a quote, book a shipment, and track it
@@ -200,6 +200,10 @@ func main() {
 }
 ```
 
+## Runnable integration quickstarts
+
+See [shipper and carrier examples](examples/quickstarts/README.md) for prerequisites, expected states, recovery and supported SDK versions.
+
 ## Environments
 
 | Environment | Constant | URL |
@@ -214,10 +218,12 @@ Start with Sandbox for development and testing. Switch to Production when you're
 ### M2M Credentials (Required)
 Contact Oway Sales Engineering at **support@oway.io** to get your `clientId` and `clientSecret`. These authenticate your application with the Oway platform.
 
-### Company API Keys (Optional)
-Generate API keys self-service at [app.oway.io/settings/api](https://app.oway.io/settings/api):
-- **Test keys** (`oway_sk_test_...`) — for sandbox development
-- **Live keys** (`oway_sk_live_...`) — for production shipments
+### Company API Keys (Required for external integrations)
+Create a key in your company portal under Settings → API Keys after API access is enabled. Select the matching company, role and environment:
+- **Shipper keys** (`oway_sk_...`) — for shipper operations
+- **Carrier keys** (`oway_ck_...`) — for carrier operations
+
+Use credentials provisioned for the target environment; do not infer environment access from a key prefix.
 
 See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for full authentication details.
 
@@ -252,8 +258,8 @@ See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for full authentication details.
 
 - **[TypeScript SDK Reference](./packages/typescript/README.md)** — full API reference, error handling, configuration
 - **[Go SDK Reference](./packages/go/README.md)** — Go client documentation
-- **[API Documentation](https://docs.shipoway.com)** — platform docs and guides
-- **[AI Agent Guide](./AI_AGENT_GUIDE.md)** — integrate with Copilot, Cursor, Claude Code, and more
+- **[API Documentation](https://docs.oway.io)** — platform docs and guides
+- **[AI Agent Guide](./packages/typescript/AI_AGENT_GUIDE.md)** — integrate with Copilot, Cursor, Claude Code, and more
 
 ## Requirements
 
@@ -263,7 +269,7 @@ See [AUTH_GUIDE.md](./AUTH_GUIDE.md) for full authentication details.
 ## Support
 
 - **Email**: support@oway.io
-- **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
+- **Documentation**: [docs.oway.io](https://docs.oway.io)
 
 ## License
 

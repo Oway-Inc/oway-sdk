@@ -157,6 +157,15 @@ quote, err := client.RequestQuote(ctx, &oway.QuoteRequest{ /* ... */ })
 quote, err := client.GetQuote(ctx, quoteID)
 ```
 
+A quote states the services it was priced for at each stop, as the request asked for them.
+`PickupAccessorials` and `DeliveryAccessorials` are nil when the quote recorded none.
+
+```go
+if a := quote.DeliveryAccessorials; a != nil && a.AppointmentRequired != nil && *a.AppointmentRequired {
+	// the delivery was quoted with an appointment
+}
+```
+
 ### Shipments
 
 ```go
@@ -182,7 +191,7 @@ Document types: `DocumentTypeBOL`, `DocumentTypeInvoice`, `DocumentTypeShippingL
 oway.New(oway.Config{
 	ClientID:     "...",                   // required
 	ClientSecret: "...",                   // required
-	APIKey:       "oway_sk_...",           // default company key (optional)
+	APIKey:       "oway_sk_...",           // required unless supplied through WithCompanyAPIKey
 	BaseURL:      oway.EnvironmentSandbox, // default
 	TokenURL:     "...",                   // default: BaseURL + /v1/auth/token
 	HTTPClient:   &http.Client{},          // optional override
@@ -226,9 +235,23 @@ resp, err := raw.GetShipmentWithResponse(ctx, orderNumber)
 
 ## Support
 
-- **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
+- **Documentation**: [docs.oway.io](https://docs.oway.io)
 - **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
+
+### Phone extensions
+
+Keep the base phone in E.164 format, such as `+12125550123`. Store a separate
+optional `PhoneExtension` string on addresses and appointment contacts, such as
+`"0042"`. Leading zeros are significant; extensions contain 1–10 ASCII digits.
+Do not append extension digits or `;ext=` to the base phone field.
+
+On an update, an omitted or null extension preserves the stored extension when
+the base phone is unchanged. A pointer to `""` explicitly clears it. When replacing
+an extension-bearing base phone, send the intended extension or an explicit clear.
+Appointment contacts are replaced as a list; omitted extensions are preserved only
+for a unique matching contact identity (name, email, base phone and role). If one
+identity has multiple extensions, send the extension for each destination.
 
 ## License
 

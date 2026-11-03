@@ -24,8 +24,14 @@ export class Oway {
 // Export clean types
 export type {
   QuoteRequest,
+  HazmatPaper,
+  HazmatClassification,
+  HazmatEntry,
+  HazmatCertification,
+  HazmatFinding,
   ShipmentRequest,
   Quote,
+  QuoteStopAccessorials,
   Shipment,
   Tracking,
   Invoice,
@@ -42,10 +48,15 @@ export type {
   ExceptionResponse,
   CarrierTripRequest,
   CarrierTracking,
+  UploadUrlRequest,
+  UploadUrlResponse,
+  UploadConfirmationRequest,
+  UploadedDocumentResponse,
 } from './types';
 
 // Export errors and config
 export { OwayError, type OwayConfig } from './client';
+export type { CreateShipmentOptions } from './resources/shipments';
 
 // Export generated types for advanced usage
 export type { paths, components } from './generated/schema';

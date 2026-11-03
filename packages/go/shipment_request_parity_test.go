@@ -120,6 +120,8 @@ func fullyPopulatedShipmentRequest() ShipmentRequest {
 	instructions := "Call receiving before arrival; dock 4 only."
 	referenceNumbers := []string{"SO-45821", "CUST-REF-7781"}
 	return ShipmentRequest{
+		Hazmat:             func() *bool { value := true; return &value }(),
+		HazmatPaper:        &HazmatPaper{Entries: &[]HazmatEntry{{}}},
 		PickupAddress:      client.Address{Address1: "1 Pickup St", City: "Shafter", State: "CA", ZipCode: "93263"},
 		DeliveryAddress:    client.Address{Address1: "2 Delivery Ave", City: "Lake Havasu City", State: "AZ", ZipCode: "86404"},
 		Description:        "Parity probe cargo",

@@ -23,6 +23,10 @@ import (
 //
 //nolint:revive // re-exports; doc lives on the generated types
 type (
+	UploadUrlRequest            = client.UploadUrlRequest
+	UploadUrlResponse           = client.UploadUrlResponse
+	UploadConfirmationRequest   = client.UploadConfirmationRequest
+	UploadedDocumentResponse    = client.UploadedDocumentResponse
 	Offer                       = client.Offer
 	AcceptOfferRequest          = client.AcceptOfferRequest
 	RejectOfferRequest          = client.RejectOfferRequest
@@ -244,6 +248,57 @@ func (c *Client) GetCarrierTracking(ctx context.Context, identifier string) (*Ca
 	var out *CarrierTracking
 	err := c.retry(ctx, func() error {
 		r, err := c.api.GetShipmentTrackingWithResponse(ctx, identifier)
+		if err != nil {
+			return err
+		}
+		out, err = decode(r.StatusCode(), r.Body, r.HTTPResponse, r.JSON200)
+		return err
+	})
+	return out, err
+}
+
+// RequestCarrierUploadURL creates a staging URL; complete the upload separately to register a POD.
+func (c *Client) RequestCarrierUploadURL(ctx context.Context, identifier string, req UploadUrlRequest) (*UploadUrlResponse, error) {
+	if identifier == "" {
+		return nil, errors.New("oway: shipment identifier is required")
+	}
+	var out *UploadUrlResponse
+	err := c.retry(ctx, func() error {
+		r, err := c.api.RequestUploadUrlWithResponse(ctx, identifier, client.RequestUploadUrlJSONRequestBody(req))
+		if err != nil {
+			return err
+		}
+		out, err = decode(r.StatusCode(), r.Body, r.HTTPResponse, r.JSON200)
+		return err
+	})
+	return out, err
+}
+
+// ConfirmCarrierUpload freezes and registers a POD using a stable document ID and metadata.
+func (c *Client) ConfirmCarrierUpload(ctx context.Context, identifier, documentID string, req UploadConfirmationRequest) (*UploadedDocumentResponse, error) {
+	if identifier == "" || documentID == "" {
+		return nil, errors.New("oway: shipment and document identifiers are required")
+	}
+	var out *UploadedDocumentResponse
+	err := c.retry(ctx, func() error {
+		r, err := c.api.ConfirmUploadWithResponse(ctx, identifier, documentID, client.ConfirmUploadJSONRequestBody(req))
+		if err != nil {
+			return err
+		}
+		out, err = decode(r.StatusCode(), r.Body, r.HTTPResponse, r.JSON200)
+		return err
+	})
+	return out, err
+}
+
+// GetCarrierUploadedDocument retrieves an active POD with a fresh temporary download URL.
+func (c *Client) GetCarrierUploadedDocument(ctx context.Context, identifier, documentID string) (*UploadedDocumentResponse, error) {
+	if identifier == "" || documentID == "" {
+		return nil, errors.New("oway: shipment and document identifiers are required")
+	}
+	var out *UploadedDocumentResponse
+	err := c.retry(ctx, func() error {
+		r, err := c.api.GetUploadedDocumentWithResponse(ctx, identifier, documentID)
 		if err != nil {
 			return err
 		}

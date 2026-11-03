@@ -135,6 +135,27 @@ func WithCompanyAPIKey(ctx context.Context, apiKey string) context.Context {
 	return context.WithValue(ctx, companyAPIKeyContextKey{}, apiKey)
 }
 
+// idempotencyKeyContextKey carries a caller's Idempotency-Key for
+// CreateShipment through context values.
+type idempotencyKeyContextKey struct{}
+
+// WithIdempotencyKey returns a child context whose CreateShipment sends key as
+// its Idempotency-Key. Sending the same request with the same key within 24
+// hours returns the original shipment instead of creating another; reusing the
+// key with a different request is refused with 409 idempotency_key_conflict.
+// Derive the key from your own stable identity for the shipment so a retry
+// after a lost response, even from another process, is recognized.
+func WithIdempotencyKey(ctx context.Context, key string) context.Context {
+	return context.WithValue(ctx, idempotencyKeyContextKey{}, key)
+}
+
+func idempotencyKeyFromContext(ctx context.Context) string {
+	if v, ok := ctx.Value(idempotencyKeyContextKey{}).(string); ok {
+		return v
+	}
+	return ""
+}
+
 func companyAPIKeyFromContext(ctx context.Context) string {
 	if v, ok := ctx.Value(companyAPIKeyContextKey{}).(string); ok {
 		return v
@@ -349,18 +370,22 @@ func (c *Client) RequestQuote(ctx context.Context, req *QuoteRequest) (*Quote, e
 	return out, err
 }
 
-// CreateShipment creates a shipment.
+// CreateShipment creates a shipment. Every attempt, the SDK's own retries
+// included, sends one Idempotency-Key, so a retry never creates a second
+// shipment: the caller's from WithIdempotencyKey, or a new one per call.
 func (c *Client) CreateShipment(ctx context.Context, req *ShipmentRequest) (*Shipment, error) {
 	if req == nil {
 		return nil, errors.New("oway: ShipmentRequest is required")
 	}
 	body := req.toClient()
+	key := idempotencyKeyFromContext(ctx)
+	if key == "" {
+		key = newRequestID()
+	}
+	params := &client.CreateShipmentParams{IdempotencyKey: &key}
 	var out *Shipment
 	err := c.retry(ctx, func() error {
-		// nil params: the generated client now accepts an optional Idempotency-Key
-		// header on this endpoint. The SDK doesn't surface idempotency yet; callers
-		// who need it can drop down to GeneratedClient() until we add a wrapper option.
-		r, err := c.api.CreateShipmentWithResponse(ctx, nil, client.CreateShipmentJSONRequestBody(body))
+		r, err := c.api.CreateShipmentWithResponse(ctx, params, client.CreateShipmentJSONRequestBody(body))
 		if err != nil {
 			return err
 		}
