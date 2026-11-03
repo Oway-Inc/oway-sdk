@@ -191,7 +191,7 @@ Document types: `DocumentTypeBOL`, `DocumentTypeInvoice`, `DocumentTypeShippingL
 oway.New(oway.Config{
 	ClientID:     "...",                   // required
 	ClientSecret: "...",                   // required
-	APIKey:       "oway_sk_...",           // default company key (optional)
+	APIKey:       "oway_sk_...",           // required unless supplied through WithCompanyAPIKey
 	BaseURL:      oway.EnvironmentSandbox, // default
 	TokenURL:     "...",                   // default: BaseURL + /v1/auth/token
 	HTTPClient:   &http.Client{},          // optional override
@@ -235,7 +235,7 @@ resp, err := raw.GetShipmentWithResponse(ctx, orderNumber)
 
 ## Support
 
-- **Documentation**: [docs.shipoway.com](https://docs.shipoway.com)
+- **Documentation**: [docs.oway.io](https://docs.oway.io)
 - **API Reference**: [api.oway.io/api-docs](https://api.oway.io/api-docs)
 - **Email**: support@oway.io
 

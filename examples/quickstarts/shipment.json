@@ -1,0 +1,37 @@
+{
+  "pickupAddress": {
+    "name": "Example Pickup",
+    "address1": "123 Example Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zipCode": "90001",
+    "phoneNumber": "+12135550123",
+    "contactPerson": "Example Sender",
+    "openTime": "09:00",
+    "closeTime": "16:00"
+  },
+  "deliveryAddress": {
+    "name": "Example Delivery",
+    "address1": "456 Example Avenue",
+    "city": "San Diego",
+    "state": "CA",
+    "zipCode": "92101",
+    "phoneNumber": "+16195550123",
+    "contactPerson": "Example Receiver",
+    "openTime": "09:00",
+    "closeTime": "16:00"
+  },
+  "orderComponents": [
+    {
+      "palletCount": 1,
+      "poundsWeight": 500,
+      "dimensions": {
+        "length": 48,
+        "width": 40,
+        "height": 48
+      },
+      "freightClass": "70"
+    }
+  ],
+  "description": "Synthetic palletized freight"
+}

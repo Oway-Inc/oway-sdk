@@ -52,7 +52,7 @@
           "Shipper API"
         ],
         "summary": "Confirm a shipment by order number",
-        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - At least 1, up to the current per-order maximum\n- `totalPoundsWeight` - At least 1, within the current per-pallet weight cap, and when\n  either stop requires a liftgate, within the liftgate load weight limit\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - At least 1, within the current per-pallet weight cap\n- `palletDimensions` - Length, width and height in inches, each at least 1 and\n  within the current maximums. These limits are configurable and change over\n  time, so they are not restated here: a pallet that exceeds them is rejected\n  with a 422 whose violation message states the maximum that applied. A pallet\n  larger than the standard footprint is still accepted and priced as oversized,\n  and a stop that requires a liftgate applies a tighter maximum.\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
+        "description": "Confirms an existing shipment using its order number (PRO number).\nMoves the shipment from INITIALIZED to CONFIRMED state.\n\n**Prerequisites:**\n- The order must be in INITIALIZED state\n- The order must have an associated quote\n\n**Validation Requirements:**\n\nThe following fields are validated during confirmation. If any are missing or invalid,\nthe shipment will remain in INITIALIZED state.\n\n*Address Fields (required on BOTH pickup and delivery addresses):*\n- `name` - Location/company name\n- `address1` - Street address\n- `zipCode` - ZIP code\n- `contactPerson` - Contact name\n- `phoneNumber` - Contact phone (E.164 format, e.g., \"+15551234567\")\n- `openTime` - Opening time in HH:mm format (defaults to \"10:00\")\n- `closeTime` - Closing time in HH:mm format (defaults to \"16:00\")\n\n*Order Fields:*\n- `description` - Must not be empty\n- `totalPalletCount` - At least 1, up to the current per-order maximum\n- `totalPoundsWeight` - At least 1, within the current per-pallet weight cap, and when\n  either stop requires a liftgate, within the liftgate load weight limit\n\n*Order Component Fields (per component):*\n- `palletCount` - Must be at least 1\n- `poundsWeight` - At least 1, within the current per-pallet weight cap\n- `palletDimensions` - Length, width and height in inches, each at least 1 and\n  within the current maximums. These limits are configurable and change over\n  time, so they are not restated here: a pallet that exceeds them is rejected\n  with a validation error whose violation message states the maximum that applied. A pallet\n  larger than the standard footprint is still accepted and priced as oversized,\n  and a stop that requires a liftgate applies a tighter maximum.\n\n*Component Totals:*\n- Sum of component `palletCount` must equal order `totalPalletCount`\n- Sum of component `poundsWeight` must equal order `totalPoundsWeight`\n",
         "operationId": "confirmShipment",
         "parameters": [
           {
@@ -78,7 +78,7 @@
             }
           },
           "400": {
-            "description": "Invalid request: orderNumber is required, order is not in INITIALIZED state, or is missing a quote",
+            "description": "Invalid request: orderNumber is required, order is not in INITIALIZED state, is missing a quote, or confirmation fields are invalid (`reason: invalid_fields` with violations)",
             "content": {
               "application/json": {
                 "schema": {
@@ -381,7 +381,7 @@
           "Carrier API"
         ],
         "summary": "Confirm shipment pickup",
-        "description": "Confirm that the shipment has been picked up. Transitions the order to IN_TRANSIT status.\n\n**Required fields:** `pickupTime` is required. All other fields (location, coordinates, signedBy, notes) are optional but recommended.\n\n**State requirement:** The shipment must be in ACCEPTED status.",
+        "description": "Confirm that the shipment has been picked up. The carrier shipment status becomes PICKED_UP; the nested order status is also PICKED_UP (IN_TRANSIT is an accepted alias in the order status schema).\n\n**Required fields:** `pickup_time` is required. All other fields (location, coordinates, driver_name, signed_by, notes) are optional but recommended.\n\n**State requirement:** The shipment must be in ACCEPTED status.",
         "operationId": "confirmPickup",
         "parameters": [
           {
@@ -417,7 +417,7 @@
             }
           },
           "400": {
-            "description": "Invalid request: pickupTime is required",
+            "description": "Invalid request: pickup_time is required",
             "content": {
               "application/json": {
                 "schema": {
@@ -485,7 +485,7 @@
           "Carrier API"
         ],
         "summary": "Confirm shipment delivery",
-        "description": "Confirm that the shipment has been delivered. Transitions the order to DELIVERED status and initiates carrier payout.\n\n**Required fields:** `deliveryTime` is required. Proof of delivery fields (`signedBy`, `signatureImageUrl`, `proofOfDeliveryUrl`) are optional but recommended.\n\n**State requirement:** The shipment must be in ACCEPTED or PICKED_UP status.",
+        "description": "Confirm that the shipment has been delivered. Transitions the order to DELIVERED status and initiates carrier payout.\n\n**Required fields:** `delivery_time` is required. Proof of delivery fields (`signed_by`, `signature_image_url`, `proof_of_delivery_url`, `proof_of_delivery_document_id`) are optional but recommended. Use either a URL or an uploaded document ID, never both. The document ID must identify this shipment's approved POD with human signature verification; otherwise the request returns 409 `pod_review_required` before delivery.\n\n**State requirement:** The shipment must have been picked up before delivery confirmation.",
         "operationId": "confirmDelivery",
         "parameters": [
           {
@@ -521,7 +521,7 @@
             }
           },
           "400": {
-            "description": "Invalid request: deliveryTime is required",
+            "description": "Invalid request: delivery_time is required",
             "content": {
               "application/json": {
                 "schema": {
@@ -561,7 +561,7 @@
             }
           },
           "409": {
-            "description": "Shipment not in valid state for delivery confirmation",
+            "description": "Shipment not in valid state for delivery confirmation, or pod_review_required for a document ID without approval and human signature verification",
             "content": {
               "application/json": {
                 "schema": {
@@ -879,7 +879,7 @@
           "Carrier API"
         ],
         "summary": "Accept a bundle",
-        "description": "Accept a bundle of offers. You can optionally exclude specific offers from the bundle using `offerIdsToExclude`.\n\nCarrier tracking data (reference number, driver info) provided in the request body is applied to all accepted offers in the bundle.\n\n**State requirement:** The bundle must be in OPEN status.",
+        "description": "Accept a bundle of offers. You can optionally exclude specific offers from the bundle using `offer_ids_to_exclude`.\n\nCarrier tracking data (reference number, driver info) provided in the request body is applied to all accepted offers in the bundle.\n\n**State requirement:** The bundle must be in OPEN status.",
         "operationId": "acceptBundle",
         "parameters": [
           {
@@ -1047,7 +1047,7 @@
             }
           },
           "422": {
-            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
+            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit), or the load needs more pallet positions than one truck takes (violation `order.tooManyPallets`, whose message states the count and how pallets were counted); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1419,7 +1419,7 @@
             }
           },
           "422": {
-            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
+            "description": "Unprocessable Entity. `reason` carries the coverage denial code, unmodified. Possible reasons:\n\n- **Location Not Serviceable** (`reason: no_aggregate_coverage`, `no_eligible_carriers`, or the legacy `no_coverage`): no carrier is known to serve this lane yet.\n- **Below Pallet Minimum** (`reason: min_pallets`): the shipment is under the minimum pallet count for this lane.\n- **Above Pallet Maximum** (`reason: max_pallets`): the shipment is over the maximum pallet count for this lane.\n- **Lane Not Available For Your Account** (`reason: coverage_denied`, `origin_policy_denied`, or `destination_policy_denied`): a coverage rule on your account excludes this lane or one of its endpoints. Contact your Oway representative for details.\n- **Above Your Coverage Level** (`reason: max_tier_capped`): carriers serve this lane, but it does not yet meet the level of proven coverage your account is set to accept. Contact your Oway representative to review that setting.\n- **Outside Service Area** (`reason: outside_service_area`): a pickup or delivery point is outside an area Oway serves.\n- **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.\n- **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.\n- **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.\n- **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit), or the load needs more pallet positions than one truck takes (violation `order.tooManyPallets`, whose message states the count and how pallets were counted); per-field details are in `violations`.\n- **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.\n- **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1447,7 +1447,7 @@
           "Carrier API"
         ],
         "summary": "Request upload URL for signature or proof of delivery",
-        "description": "Returns a pre-signed URL for uploading a file directly to storage. Use HTTP PUT to upload the file to the returned URL with the specified content type.\n\n**Document types:** `SIGNATURE` (signature image), `PROOF_OF_DELIVERY` (POD document)\n\n**Content types:** `image/png`, `image/jpeg`, `application/pdf`\n\n**Upload flow:**\n1. Call this endpoint to get a pre-signed URL\n2. PUT your file to the returned `uploadUrl` with `Content-Type` header matching `contentType`\n3. URL expires in 15 minutes",
+        "description": "Returns a pre-signed URL for uploading a file directly to storage. Use HTTP PUT to upload the file to the returned URL with the specified content type.\n\n**Document types:** `SIGNATURE` (signature image), `PROOF_OF_DELIVERY` (POD document)\n\n**Content types:** `image/png`, `image/jpeg`, `application/pdf`\n\n**Upload flow:**\n1. Call this endpoint to get a pre-signed URL\n2. PUT your file to the returned `upload_url` with `Content-Type` header matching `content_type`\n3. Upload before `expires_at`, then PUT the same metadata to `/v1/carrier/shipments/{identifier}/uploads/{documentId}/confirm`. Completion currently supports PROOF_OF_DELIVERY only.\n4. Retain the registered document ID for delivery after review. Never use the PUT URL as a download or proof_of_delivery_url.",
         "operationId": "requestUploadUrl",
         "parameters": [
           {
@@ -1939,7 +1939,7 @@
           "Authentication"
         ],
         "summary": "Obtain access token",
-        "description": "Exchange client credentials for an access token.\n\nThe returned token includes scopes that determine API access:\n- `shipper` scope grants access to `/v1/shipper/**` endpoints\n- `carrier` scope grants access to `/v1/carrier/**` endpoints\n- Partners with both scopes can access both APIs with a single token\n\nThe returned token should be included in subsequent API requests as a Bearer token\nin the authorization header: `authorization: Bearer {access_token}`\n\nTokens are valid for the duration specified in `expires_in` (seconds).\nWe recommend caching tokens and refreshing them before expiration.\n",
+        "description": "Exchange client credentials for an access token.\n\nThe returned token includes scopes that determine API access:\n- `shipper` scope grants access to `/v1/shipper/**` endpoints\n- `carrier` scope grants access to `/v1/carrier/**` endpoints\n- Partners with both scopes can access both APIs with a single token\n\nThe returned token should be included in subsequent API requests as a Bearer token\nin the authorization header: `authorization: Bearer {accessToken}`\n\nTokens are valid for the duration specified in `expiresIn` (seconds).\nWe recommend caching tokens and refreshing them before expiration.\nExternal shipper and carrier requests also require an `x-oway-api-key` header for the company and role being accessed.\n",
         "operationId": "getToken",
         "requestBody": {
           "content": {
@@ -3186,6 +3186,196 @@
           }
         }
       }
+    },
+    "/v1/carrier/shipments/{identifier}/documents/{documentId}": {
+      "get": {
+        "description": "Returns a fresh temporary download URL and review status for this shipment's active uploaded POD. Archived, superseded and denied documents are not returned.",
+        "operationId": "getUploadedDocument",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadedDocumentResponse"
+                }
+              }
+            },
+            "description": "Active uploaded POD"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Invalid document UUID"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Missing or invalid bearer token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Missing or invalid carrier key"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Shipment or active owned document not found"
+          }
+        },
+        "summary": "Retrieve an uploaded proof of delivery",
+        "tags": [
+          "Carrier API"
+        ]
+      }
+    },
+    "/v1/carrier/shipments/{identifier}/uploads/{documentId}/confirm": {
+      "put": {
+        "description": "After uploading the file, freeze and register a POD of at most 10 MiB. Repeat with the same document ID and metadata to retrieve the same document. The POD enters PENDING review; delivery by document ID requires approval and human signature verification. SIGNATURE uploads are not completed by this endpoint.",
+        "operationId": "confirmUpload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadConfirmationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadedDocumentResponse"
+                }
+              }
+            },
+            "description": "POD registered or replayed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Invalid UUID, metadata, or file content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Missing or invalid bearer token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Missing or invalid carrier key"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Shipment or active owned document not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Upload missing, conflicting completion, invalid shipment state or POD capacity reached"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "File exceeds 10 MiB"
+          }
+        },
+        "summary": "Confirm an uploaded proof of delivery",
+        "tags": [
+          "Carrier API"
+        ]
+      }
     }
   },
   "components": {
@@ -3409,17 +3599,17 @@
           "id": {
             "type": "string",
             "description": "Unique identifier for the order",
-            "example": "67b6c5fcfbf1be6b24127646"
+            "example": "507f1f77bcf86cd799439023"
           },
           "companyId": {
             "type": "string",
             "description": "Company ID that owns this order",
-            "example": "67c0dfa95bff090747660465"
+            "example": "507f1f77bcf86cd799439021"
           },
           "userId": {
             "type": "string",
             "description": "User ID who created this order",
-            "example": "679410f5b074882a64b9ea7f"
+            "example": "507f1f77bcf86cd799439022"
           },
           "orderNumber": {
             "type": "string",
@@ -3548,7 +3738,7 @@
             "type": "string",
             "format": "email",
             "description": "Email address",
-            "example": "maria@aqua.com",
+            "example": "receiving@example.com",
             "maxLength": 320,
             "minLength": 0
           },
@@ -3743,7 +3933,7 @@
           "address1": {
             "type": "string",
             "description": "Primary street address",
-            "example": "1531 Junipero Avenue"
+            "example": "123 Example Street"
           },
           "address2": {
             "type": "string",
@@ -3819,12 +4009,12 @@
           "name": {
             "type": "string",
             "description": "Name of the location or business",
-            "example": "Fairgrounds Distribution Center"
+            "example": "Example Distribution Center"
           },
           "address1": {
             "type": "string",
             "description": "Primary street address",
-            "example": "1531 Junipero Avenue"
+            "example": "123 Example Street"
           },
           "address2": {
             "type": "string",
@@ -3856,7 +4046,7 @@
           "phone_number": {
             "type": "string",
             "description": "Contact phone number in E.164 format",
-            "example": "+18087857650",
+            "example": "+12125550100",
             "pattern": "^\\+[1-9]\\d{1,14}$"
           },
           "phone_extension": {
@@ -4180,6 +4370,10 @@
             "format": "date-time",
             "description": "When this confirmation was recorded",
             "example": "2026-01-15T14:35:00Z"
+          },
+          "proof_of_delivery_document_id": {
+            "type": "string",
+            "description": "Registered POD identity, when confirmed using an Oway-hosted upload"
           }
         }
       },
@@ -4389,6 +4583,12 @@
             "type": "string",
             "description": "Additional notes about the delivery",
             "maxLength": 1000,
+            "minLength": 0
+          },
+          "proof_of_delivery_document_id": {
+            "type": "string",
+            "description": "Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery.",
+            "maxLength": 36,
             "minLength": 0
           }
         },
@@ -4657,12 +4857,12 @@
           "name": {
             "type": "string",
             "description": "Name of the location or business",
-            "example": "Fairgrounds Distribution Center"
+            "example": "Example Distribution Center"
           },
           "address1": {
             "type": "string",
             "description": "Primary street address",
-            "example": "1531 Junipero Avenue"
+            "example": "123 Example Street"
           },
           "address2": {
             "type": "string",
@@ -4696,7 +4896,7 @@
           "phoneNumber": {
             "type": "string",
             "description": "Contact phone number in E.164 format",
-            "example": "+18087857650",
+            "example": "+12125550100",
             "pattern": "^\\+[1-9]\\d{1,14}$"
           },
           "contactPerson": {
@@ -6028,7 +6228,7 @@
           "orderId": {
             "type": "string",
             "description": "Order ID",
-            "example": "67b6c5fcfbf1be6b24127646"
+            "example": "507f1f77bcf86cd799439023"
           },
           "orderNumber": {
             "type": "string",
@@ -6279,6 +6479,66 @@
             "type": "string",
             "description": "Pre-signed download URL (valid for limited time)",
             "example": "https://s3.amazonaws.com/..."
+          }
+        }
+      },
+      "UploadConfirmationRequest": {
+        "type": "object",
+        "description": "Register an uploaded POD after the storage PUT succeeds",
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "image/png",
+              "image/jpeg"
+            ],
+            "minLength": 1,
+            "pattern": "application/pdf|image/png|image/jpeg"
+          },
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "PROOF_OF_DELIVERY"
+            ],
+            "minLength": 1,
+            "pattern": "PROOF_OF_DELIVERY"
+          },
+          "file_name": {
+            "type": "string",
+            "description": "Display filename; must match on retry",
+            "maxLength": 255,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "content_type",
+          "document_type",
+          "file_name"
+        ]
+      },
+      "UploadedDocumentResponse": {
+        "type": "object",
+        "description": "Immutable POD registration and a temporary download URL",
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "description": "Stable ID to pass as proof_of_delivery_document_id after review"
+          },
+          "download_url": {
+            "type": "string",
+            "description": "Temporary GET URL; never send it as the legacy proof_of_delivery_url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review_status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED"
+            ]
           }
         }
       }

@@ -76,8 +76,17 @@ export class Shipments {
     );
   }
 
-  async document(orderNumber: string, documentType: 'BOL' | 'INVOICE' | 'LABEL', companyApiKey?: string): Promise<{ url: string }> {
-    return this.client.get<{ url: string }>(`/v1/shipper/shipment/${orderNumber}/document/${documentType}`, undefined, companyApiKey);
+  async document(
+    orderNumber: string,
+    documentType: 'BOL' | 'INVOICE' | 'LABEL' | 'BILL_OF_LADING' | 'SHIPPING_LABEL' | 'POD',
+    companyApiKey?: string,
+  ): Promise<{ url: string }> {
+    const wireType = documentType === 'BOL' ? 'BILL_OF_LADING'
+      : documentType === 'LABEL' ? 'SHIPPING_LABEL' : documentType;
+    const response = await this.client.get<{ downloadLink: string }>(
+      `/v1/shipper/shipment/${orderNumber}/document/${wireType}`, undefined, companyApiKey,
+    );
+    return { url: response.downloadLink };
   }
 
   async invoice(orderNumber: string, companyApiKey?: string): Promise<Invoice> {
