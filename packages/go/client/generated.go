@@ -168,10 +168,10 @@ const (
 
 // Defines values for QuoteBatchItemResultStatus.
 const (
-	NOTQUOTED   QuoteBatchItemResultStatus = "NOT_QUOTED"
-	PENDING     QuoteBatchItemResultStatus = "PENDING"
-	QUOTED      QuoteBatchItemResultStatus = "QUOTED"
-	UNDERREVIEW QuoteBatchItemResultStatus = "UNDER_REVIEW"
+	QuoteBatchItemResultStatusNOTQUOTED   QuoteBatchItemResultStatus = "NOT_QUOTED"
+	QuoteBatchItemResultStatusPENDING     QuoteBatchItemResultStatus = "PENDING"
+	QuoteBatchItemResultStatusQUOTED      QuoteBatchItemResultStatus = "QUOTED"
+	QuoteBatchItemResultStatusUNDERREVIEW QuoteBatchItemResultStatus = "UNDER_REVIEW"
 )
 
 // Defines values for QuoteRequestShipmentMode.
@@ -233,17 +233,35 @@ const (
 	REJECTED    TrackingOrderStatus = "REJECTED"
 )
 
+// Defines values for UploadConfirmationRequestContentType.
+const (
+	UploadConfirmationRequestContentTypeApplicationpdf UploadConfirmationRequestContentType = "application/pdf"
+	UploadConfirmationRequestContentTypeImagejpeg      UploadConfirmationRequestContentType = "image/jpeg"
+	UploadConfirmationRequestContentTypeImagepng       UploadConfirmationRequestContentType = "image/png"
+)
+
+// Defines values for UploadConfirmationRequestDocumentType.
+const (
+	UploadConfirmationRequestDocumentTypePROOFOFDELIVERY UploadConfirmationRequestDocumentType = "PROOF_OF_DELIVERY"
+)
+
 // Defines values for UploadUrlRequestContentType.
 const (
-	Applicationpdf UploadUrlRequestContentType = "application/pdf"
-	Imagejpeg      UploadUrlRequestContentType = "image/jpeg"
-	Imagepng       UploadUrlRequestContentType = "image/png"
+	UploadUrlRequestContentTypeApplicationpdf UploadUrlRequestContentType = "application/pdf"
+	UploadUrlRequestContentTypeImagejpeg      UploadUrlRequestContentType = "image/jpeg"
+	UploadUrlRequestContentTypeImagepng       UploadUrlRequestContentType = "image/png"
 )
 
 // Defines values for UploadUrlRequestDocumentType.
 const (
-	PROOFOFDELIVERY UploadUrlRequestDocumentType = "PROOF_OF_DELIVERY"
-	SIGNATURE       UploadUrlRequestDocumentType = "SIGNATURE"
+	UploadUrlRequestDocumentTypePROOFOFDELIVERY UploadUrlRequestDocumentType = "PROOF_OF_DELIVERY"
+	UploadUrlRequestDocumentTypeSIGNATURE       UploadUrlRequestDocumentType = "SIGNATURE"
+)
+
+// Defines values for UploadedDocumentResponseReviewStatus.
+const (
+	UploadedDocumentResponseReviewStatusAPPROVED UploadedDocumentResponseReviewStatus = "APPROVED"
+	UploadedDocumentResponseReviewStatusPENDING  UploadedDocumentResponseReviewStatus = "PENDING"
 )
 
 // Defines values for GetShipmentDocumentParamsDocumentType.
@@ -819,6 +837,9 @@ type DeliveryConfirmation struct {
 	// Notes Additional notes about the delivery
 	Notes *string `json:"notes,omitempty"`
 
+	// ProofOfDeliveryDocumentId Registered POD identity, when confirmed using an Oway-hosted upload
+	ProofOfDeliveryDocumentId *string `json:"proof_of_delivery_document_id,omitempty"`
+
 	// ProofOfDeliveryUrl URL to proof of delivery document
 	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
 
@@ -845,6 +866,9 @@ type DeliveryConfirmationRequest struct {
 
 	// Notes Additional notes about the delivery
 	Notes *string `json:"notes,omitempty"`
+
+	// ProofOfDeliveryDocumentId Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery.
+	ProofOfDeliveryDocumentId *string `json:"proof_of_delivery_document_id,omitempty"`
 
 	// ProofOfDeliveryUrl URL to the proof of delivery document
 	ProofOfDeliveryUrl *string `json:"proof_of_delivery_url,omitempty"`
@@ -1764,6 +1788,21 @@ type TrackingResponse struct {
 	Points *[]TrackingPoint `json:"points,omitempty"`
 }
 
+// UploadConfirmationRequest Register an uploaded POD after the storage PUT succeeds
+type UploadConfirmationRequest struct {
+	ContentType  UploadConfirmationRequestContentType  `json:"content_type"`
+	DocumentType UploadConfirmationRequestDocumentType `json:"document_type"`
+
+	// FileName Display filename; must match on retry
+	FileName string `json:"file_name"`
+}
+
+// UploadConfirmationRequestContentType defines model for UploadConfirmationRequest.ContentType.
+type UploadConfirmationRequestContentType string
+
+// UploadConfirmationRequestDocumentType defines model for UploadConfirmationRequest.DocumentType.
+type UploadConfirmationRequestDocumentType string
+
 // UploadUrlRequest Request a pre-signed URL to upload a file (signature image or proof of delivery)
 type UploadUrlRequest struct {
 	// ContentType Content type of the file
@@ -1796,6 +1835,20 @@ type UploadUrlResponse struct {
 	// UploadUrl Pre-signed PUT URL — upload your file directly to this URL using HTTP PUT with the specified content type
 	UploadUrl *string `json:"upload_url,omitempty"`
 }
+
+// UploadedDocumentResponse Immutable POD registration and a temporary download URL
+type UploadedDocumentResponse struct {
+	// DocumentId Stable ID to pass as proof_of_delivery_document_id after review
+	DocumentId *string `json:"document_id,omitempty"`
+
+	// DownloadUrl Temporary GET URL; never send it as the legacy proof_of_delivery_url
+	DownloadUrl  *string                               `json:"download_url,omitempty"`
+	ExpiresAt    *time.Time                            `json:"expires_at,omitempty"`
+	ReviewStatus *UploadedDocumentResponseReviewStatus `json:"review_status,omitempty"`
+}
+
+// UploadedDocumentResponseReviewStatus defines model for UploadedDocumentResponse.ReviewStatus.
+type UploadedDocumentResponseReviewStatus string
 
 // Violation A single field-level validation failure.
 type Violation struct {
@@ -1927,6 +1980,9 @@ type ConfirmPickupJSONRequestBody = PickupConfirmationRequest
 
 // RequestUploadUrlJSONRequestBody defines body for RequestUploadUrl for application/json ContentType.
 type RequestUploadUrlJSONRequestBody = UploadUrlRequest
+
+// ConfirmUploadJSONRequestBody defines body for ConfirmUpload for application/json ContentType.
+type ConfirmUploadJSONRequestBody = UploadConfirmationRequest
 
 // RequestQuoteJSONRequestBody defines body for RequestQuote for application/json ContentType.
 type RequestQuoteJSONRequestBody = QuoteRequest
@@ -2070,6 +2126,9 @@ type ClientInterface interface {
 	// GetShipmentDocument request
 	GetShipmentDocument(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetUploadedDocument request
+	GetUploadedDocument(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ReportExceptionWithBody request with any body
 	ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2097,6 +2156,11 @@ type ClientInterface interface {
 	RequestUploadUrlWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	RequestUploadUrl(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmUploadWithBody request with any body
+	ConfirmUploadWithBody(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmUpload(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RequestQuoteWithBody request with any body
 	RequestQuoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2398,6 +2462,18 @@ func (c *Client) GetShipmentDocument(ctx context.Context, identifier string, doc
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetUploadedDocument(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUploadedDocumentRequest(c.Server, identifier, documentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ReportExceptionWithBody(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewReportExceptionRequestWithBody(c.Server, identifier, contentType, body)
 	if err != nil {
@@ -2520,6 +2596,30 @@ func (c *Client) RequestUploadUrlWithBody(ctx context.Context, identifier string
 
 func (c *Client) RequestUploadUrl(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRequestUploadUrlRequest(c.Server, identifier, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmUploadWithBody(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUploadRequestWithBody(c.Server, identifier, documentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmUpload(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUploadRequest(c.Server, identifier, documentId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3384,6 +3484,47 @@ func NewGetShipmentDocumentRequest(server string, identifier string, documentTyp
 	return req, nil
 }
 
+// NewGetUploadedDocumentRequest generates requests for GetUploadedDocument
+func NewGetUploadedDocumentRequest(server string, identifier string, documentId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "documentId", runtime.ParamLocationPath, documentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/documents/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewReportExceptionRequest calls the generic ReportException builder with application/json body
 func NewReportExceptionRequest(server string, identifier string, body ReportExceptionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3644,6 +3785,60 @@ func NewRequestUploadUrlRequestWithBody(server string, identifier string, conten
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewConfirmUploadRequest calls the generic ConfirmUpload builder with application/json body
+func NewConfirmUploadRequest(server string, identifier string, documentId string, body ConfirmUploadJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmUploadRequestWithBody(server, identifier, documentId, "application/json", bodyReader)
+}
+
+// NewConfirmUploadRequestWithBody generates requests for ConfirmUpload with any type of body
+func NewConfirmUploadRequestWithBody(server string, identifier string, documentId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "identifier", runtime.ParamLocationPath, identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "documentId", runtime.ParamLocationPath, documentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/carrier/shipments/%s/uploads/%s/confirm", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -4517,6 +4712,9 @@ type ClientWithResponsesInterface interface {
 	// GetShipmentDocumentWithResponse request
 	GetShipmentDocumentWithResponse(ctx context.Context, identifier string, documentType GetShipmentDocumentParamsDocumentType, reqEditors ...RequestEditorFn) (*GetShipmentDocumentResponse, error)
 
+	// GetUploadedDocumentWithResponse request
+	GetUploadedDocumentWithResponse(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*GetUploadedDocumentResponse, error)
+
 	// ReportExceptionWithBodyWithResponse request with any body
 	ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error)
 
@@ -4544,6 +4742,11 @@ type ClientWithResponsesInterface interface {
 	RequestUploadUrlWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error)
 
 	RequestUploadUrlWithResponse(ctx context.Context, identifier string, body RequestUploadUrlJSONRequestBody, reqEditors ...RequestEditorFn) (*RequestUploadUrlResponse, error)
+
+	// ConfirmUploadWithBodyWithResponse request with any body
+	ConfirmUploadWithBodyWithResponse(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error)
+
+	ConfirmUploadWithResponse(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error)
 
 	// RequestQuoteWithBodyWithResponse request with any body
 	RequestQuoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RequestQuoteResponse, error)
@@ -4975,6 +5178,32 @@ func (r GetShipmentDocumentResponse) StatusCode() int {
 	return 0
 }
 
+type GetUploadedDocumentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UploadedDocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUploadedDocumentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUploadedDocumentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ReportExceptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5134,6 +5363,34 @@ func (r RequestUploadUrlResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RequestUploadUrlResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfirmUploadResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UploadedDocumentResponse
+	JSON400      *ProblemDetail
+	JSON401      *ProblemDetail
+	JSON403      *ProblemDetail
+	JSON404      *ProblemDetail
+	JSON409      *ProblemDetail
+	JSON413      *ProblemDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmUploadResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmUploadResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5749,6 +6006,15 @@ func (c *ClientWithResponses) GetShipmentDocumentWithResponse(ctx context.Contex
 	return ParseGetShipmentDocumentResponse(rsp)
 }
 
+// GetUploadedDocumentWithResponse request returning *GetUploadedDocumentResponse
+func (c *ClientWithResponses) GetUploadedDocumentWithResponse(ctx context.Context, identifier string, documentId string, reqEditors ...RequestEditorFn) (*GetUploadedDocumentResponse, error) {
+	rsp, err := c.GetUploadedDocument(ctx, identifier, documentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUploadedDocumentResponse(rsp)
+}
+
 // ReportExceptionWithBodyWithResponse request with arbitrary body returning *ReportExceptionResponse
 func (c *ClientWithResponses) ReportExceptionWithBodyWithResponse(ctx context.Context, identifier string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReportExceptionResponse, error) {
 	rsp, err := c.ReportExceptionWithBody(ctx, identifier, contentType, body, reqEditors...)
@@ -5841,6 +6107,23 @@ func (c *ClientWithResponses) RequestUploadUrlWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseRequestUploadUrlResponse(rsp)
+}
+
+// ConfirmUploadWithBodyWithResponse request with arbitrary body returning *ConfirmUploadResponse
+func (c *ClientWithResponses) ConfirmUploadWithBodyWithResponse(ctx context.Context, identifier string, documentId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error) {
+	rsp, err := c.ConfirmUploadWithBody(ctx, identifier, documentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUploadResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmUploadWithResponse(ctx context.Context, identifier string, documentId string, body ConfirmUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUploadResponse, error) {
+	rsp, err := c.ConfirmUpload(ctx, identifier, documentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUploadResponse(rsp)
 }
 
 // RequestQuoteWithBodyWithResponse request with arbitrary body returning *RequestQuoteResponse
@@ -6826,6 +7109,60 @@ func ParseGetShipmentDocumentResponse(rsp *http.Response) (*GetShipmentDocumentR
 	return response, nil
 }
 
+// ParseGetUploadedDocumentResponse parses an HTTP response from a GetUploadedDocumentWithResponse call
+func ParseGetUploadedDocumentResponse(rsp *http.Response) (*GetUploadedDocumentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUploadedDocumentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UploadedDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseReportExceptionResponse parses an HTTP response from a ReportExceptionWithResponse call
 func ParseReportExceptionResponse(rsp *http.Response) (*ReportExceptionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -7207,6 +7544,74 @@ func ParseRequestUploadUrlResponse(rsp *http.Response) (*RequestUploadUrlRespons
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfirmUploadResponse parses an HTTP response from a ConfirmUploadWithResponse call
+func ParseConfirmUploadResponse(rsp *http.Response) (*ConfirmUploadResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmUploadResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UploadedDocumentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest ProblemDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
 
 	}
 

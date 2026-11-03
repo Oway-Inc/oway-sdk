@@ -47,7 +47,7 @@ export interface paths {
          *     - `palletDimensions` - Length, width and height in inches, each at least 1 and
          *       within the current maximums. These limits are configurable and change over
          *       time, so they are not restated here: a pallet that exceeds them is rejected
-         *       with a 422 whose violation message states the maximum that applied. A pallet
+         *       with a validation error whose violation message states the maximum that applied. A pallet
          *       larger than the standard footprint is still accepted and priced as oversized,
          *       and a stop that requires a liftgate applies a tighter maximum.
          *
@@ -119,9 +119,9 @@ export interface paths {
         get?: never;
         /**
          * Confirm shipment pickup
-         * @description Confirm that the shipment has been picked up. Transitions the order to IN_TRANSIT status.
+         * @description Confirm that the shipment has been picked up. The carrier shipment status becomes PICKED_UP; the nested order status is also PICKED_UP (IN_TRANSIT is an accepted alias in the order status schema).
          *
-         *     **Required fields:** `pickupTime` is required. All other fields (location, coordinates, signedBy, notes) are optional but recommended.
+         *     **Required fields:** `pickup_time` is required. All other fields (location, coordinates, driver_name, signed_by, notes) are optional but recommended.
          *
          *     **State requirement:** The shipment must be in ACCEPTED status.
          */
@@ -145,9 +145,9 @@ export interface paths {
          * Confirm shipment delivery
          * @description Confirm that the shipment has been delivered. Transitions the order to DELIVERED status and initiates carrier payout.
          *
-         *     **Required fields:** `deliveryTime` is required. Proof of delivery fields (`signedBy`, `signatureImageUrl`, `proofOfDeliveryUrl`) are optional but recommended.
+         *     **Required fields:** `delivery_time` is required. Proof of delivery fields (`signed_by`, `signature_image_url`, `proof_of_delivery_url`, `proof_of_delivery_document_id`) are optional but recommended. Use either a URL or an uploaded document ID, never both. The document ID must identify this shipment's approved POD with human signature verification; otherwise the request returns 409 `pod_review_required` before delivery.
          *
-         *     **State requirement:** The shipment must be in ACCEPTED or PICKED_UP status.
+         *     **State requirement:** The shipment must have been picked up before delivery confirmation.
          */
         put: operations["confirmDelivery"];
         post?: never;
@@ -234,7 +234,7 @@ export interface paths {
         get?: never;
         /**
          * Accept a bundle
-         * @description Accept a bundle of offers. You can optionally exclude specific offers from the bundle using `offerIdsToExclude`.
+         * @description Accept a bundle of offers. You can optionally exclude specific offers from the bundle using `offer_ids_to_exclude`.
          *
          *     Carrier tracking data (reference number, driver info) provided in the request body is applied to all accepted offers in the bundle.
          *
@@ -371,8 +371,9 @@ export interface paths {
          *
          *     **Upload flow:**
          *     1. Call this endpoint to get a pre-signed URL
-         *     2. PUT your file to the returned `uploadUrl` with `Content-Type` header matching `contentType`
-         *     3. URL expires in 15 minutes
+         *     2. PUT your file to the returned `upload_url` with `Content-Type` header matching `content_type`
+         *     3. Upload before `expires_at`, then PUT the same metadata to `/v1/carrier/shipments/{identifier}/uploads/{documentId}/confirm`. Completion currently supports PROOF_OF_DELIVERY only.
+         *     4. Retain the registered document ID for delivery after review. Never use the PUT URL as a download or proof_of_delivery_url.
          */
         post: operations["requestUploadUrl"];
         delete?: never;
@@ -484,10 +485,11 @@ export interface paths {
          *     - Partners with both scopes can access both APIs with a single token
          *
          *     The returned token should be included in subsequent API requests as a Bearer token
-         *     in the authorization header: `authorization: Bearer {access_token}`
+         *     in the authorization header: `authorization: Bearer {accessToken}`
          *
-         *     Tokens are valid for the duration specified in `expires_in` (seconds).
+         *     Tokens are valid for the duration specified in `expiresIn` (seconds).
          *     We recommend caching tokens and refreshing them before expiration.
+         *     External shipper and carrier requests also require an `x-oway-api-key` header for the company and role being accessed.
          */
         post: operations["getToken"];
         delete?: never;
@@ -831,6 +833,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/carrier/shipments/{identifier}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve an uploaded proof of delivery
+         * @description Returns a fresh temporary download URL and review status for this shipment's active uploaded POD. Archived, superseded and denied documents are not returned.
+         */
+        get: operations["getUploadedDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carrier/shipments/{identifier}/uploads/{documentId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Confirm an uploaded proof of delivery
+         * @description After uploading the file, freeze and register a POD of at most 10 MiB. Repeat with the same document ID and metadata to retrieve the same document. The POD enters PENDING review; delivery by document ID requires approval and human signature verification. SIGNATURE uploads are not completed by this endpoint.
+         */
+        put: operations["confirmUpload"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -912,17 +954,17 @@ export interface components {
             hazmatCertifiedAt?: string;
             /**
              * @description Unique identifier for the order
-             * @example 67b6c5fcfbf1be6b24127646
+             * @example 507f1f77bcf86cd799439023
              */
             id?: string;
             /**
              * @description Company ID that owns this order
-             * @example 67c0dfa95bff090747660465
+             * @example 507f1f77bcf86cd799439021
              */
             companyId?: string;
             /**
              * @description User ID who created this order
-             * @example 679410f5b074882a64b9ea7f
+             * @example 507f1f77bcf86cd799439022
              */
             userId?: string;
             /**
@@ -1014,7 +1056,7 @@ export interface components {
             /**
              * Format: email
              * @description Email address
-             * @example maria@aqua.com
+             * @example receiving@example.com
              */
             email?: string;
             /**
@@ -1119,7 +1161,7 @@ export interface components {
         EventLocation: {
             /**
              * @description Primary street address
-             * @example 1531 Junipero Avenue
+             * @example 123 Example Street
              */
             address1?: string;
             /**
@@ -1170,12 +1212,12 @@ export interface components {
         CarrierAddress: {
             /**
              * @description Name of the location or business
-             * @example Fairgrounds Distribution Center
+             * @example Example Distribution Center
              */
             name: string;
             /**
              * @description Primary street address
-             * @example 1531 Junipero Avenue
+             * @example 123 Example Street
              */
             address1: string;
             /**
@@ -1205,7 +1247,7 @@ export interface components {
             country?: string;
             /**
              * @description Contact phone number in E.164 format
-             * @example +18087857650
+             * @example +12125550100
              */
             phone_number: string;
             phone_extension?: string;
@@ -1444,6 +1486,8 @@ export interface components {
              * @example 2026-01-15T14:35:00Z
              */
             recorded_at?: string;
+            /** @description Registered POD identity, when confirmed using an Oway-hosted upload */
+            proof_of_delivery_document_id?: string;
         };
         /** @description Assigned driver information */
         Driver: {
@@ -1593,6 +1637,8 @@ export interface components {
             proof_of_delivery_url?: string;
             /** @description Additional notes about the delivery */
             notes?: string;
+            /** @description Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery. */
+            proof_of_delivery_document_id?: string;
         };
         /** @description Request body for rejecting an offer */
         RejectOfferRequest: {
@@ -1765,12 +1811,12 @@ export interface components {
         Address: {
             /**
              * @description Name of the location or business
-             * @example Fairgrounds Distribution Center
+             * @example Example Distribution Center
              */
             name: string;
             /**
              * @description Primary street address
-             * @example 1531 Junipero Avenue
+             * @example 123 Example Street
              */
             address1: string;
             /**
@@ -1801,7 +1847,7 @@ export interface components {
             country?: string;
             /**
              * @description Contact phone number in E.164 format
-             * @example +18087857650
+             * @example +12125550100
              */
             phoneNumber: string;
             /**
@@ -2726,7 +2772,7 @@ export interface components {
         InvoiceResponse: {
             /**
              * @description Order ID
-             * @example 67b6c5fcfbf1be6b24127646
+             * @example 507f1f77bcf86cd799439023
              */
             orderId?: string;
             /**
@@ -2940,6 +2986,26 @@ export interface components {
              */
             download_link?: string;
         };
+        /** @description Register an uploaded POD after the storage PUT succeeds */
+        UploadConfirmationRequest: {
+            /** @enum {string} */
+            content_type: "application/pdf" | "image/png" | "image/jpeg";
+            /** @enum {string} */
+            document_type: "PROOF_OF_DELIVERY";
+            /** @description Display filename; must match on retry */
+            file_name: string;
+        };
+        /** @description Immutable POD registration and a temporary download URL */
+        UploadedDocumentResponse: {
+            /** @description Stable ID to pass as proof_of_delivery_document_id after review */
+            document_id?: string;
+            /** @description Temporary GET URL; never send it as the legacy proof_of_delivery_url */
+            download_url?: string;
+            /** Format: date-time */
+            expires_at?: string;
+            /** @enum {string} */
+            review_status?: "PENDING" | "APPROVED";
+        };
     };
     responses: never;
     parameters: never;
@@ -2973,7 +3039,7 @@ export interface operations {
                     "application/json": components["schemas"]["Shipment"];
                 };
             };
-            /** @description Invalid request: orderNumber is required, order is not in INITIALIZED state, or is missing a quote */
+            /** @description Invalid request: orderNumber is required, order is not in INITIALIZED state, is missing a quote, or confirmation fields are invalid (`reason: invalid_fields` with violations) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3221,7 +3287,7 @@ export interface operations {
                     "application/json": components["schemas"]["CarrierShipment"];
                 };
             };
-            /** @description Invalid request: pickupTime is required */
+            /** @description Invalid request: pickup_time is required */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3305,7 +3371,7 @@ export interface operations {
                     "application/json": components["schemas"]["CarrierShipment"];
                 };
             };
-            /** @description Invalid request: deliveryTime is required */
+            /** @description Invalid request: delivery_time is required */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3341,7 +3407,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Shipment not in valid state for delivery confirmation */
+            /** @description Shipment not in valid state for delivery confirmation, or pod_review_required for a document ID without approval and human signature verification */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3755,7 +3821,7 @@ export interface operations {
              *     - **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.
              *     - **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
              *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
-             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit), or the load needs more pallet positions than one truck takes (violation `order.tooManyPallets`, whose message states the count and how pallets were counted); per-field details are in `violations`.
              *     - **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.
              *     - **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.
              */
@@ -4033,7 +4099,7 @@ export interface operations {
              *     - **Excluded Toll Region** (`reason: excluded_toll_region`): the lane crosses a region excluded for your account.
              *     - **Request Not Permitted** (`reason: account_restriction`): the requested truck type or accessorial is not enabled for your account. Contact your Oway representative to update your available options.
              *     - **Daily Trip Limit Reached** (`reason: daily_trip_limit`): your account has reached its maximum shipments for the requested pickup date. You can still place orders for other dates.
-             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, or a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit); per-field details are in `violations`.
+             *     - **Pallet Shape Not Shippable** (`reason: pallet_invalid`): one or more pallets exceed Oway's dimension or weight limits, a load with a liftgate at either stop is over the liftgate load weight limit (violation `order.liftgateTotalWeightTooHeavy`, whose message states the limit), or the load needs more pallet positions than one truck takes (violation `order.tooManyPallets`, whose message states the count and how pallets were counted); per-field details are in `violations`.
              *     - **Pricing Unavailable** (`reason: pricing_unavailable`): the lane could not be priced. Contact your Oway representative for assistance.
              *     - **No Road Route** (`reason: no_road_route`): no road connects the pickup and delivery locations (for example, the mainland and Hawaii or Puerto Rico), so the lane can't be served by truck.
              */
@@ -5434,6 +5500,146 @@ export interface operations {
             };
             /** @description Internal server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    getUploadedDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active uploaded POD */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadedDocumentResponse"];
+                };
+            };
+            /** @description Invalid document UUID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Missing or invalid carrier key */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment or active owned document not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    confirmUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadConfirmationRequest"];
+            };
+        };
+        responses: {
+            /** @description POD registered or replayed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadedDocumentResponse"];
+                };
+            };
+            /** @description Invalid UUID, metadata, or file content */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Missing or invalid bearer token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Missing or invalid carrier key */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Shipment or active owned document not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Upload missing, conflicting completion, invalid shipment state or POD capacity reached */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description File exceeds 10 MiB */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
