@@ -12,6 +12,7 @@ import type {
   ExceptionResponse,
   CarrierTripRequest,
   CarrierTracking,
+  UploadUrlRequest, UploadUrlResponse, UploadConfirmationRequest, UploadedDocumentResponse,
 } from '../types';
 
 function requireIdentifier(id: string): void {
@@ -92,6 +93,7 @@ export class Carrier {
    *
    * @example
    * await oway.carrier.confirmPickup('off-123', {
+   *   pickup_time: new Date().toISOString(),
    *   coordinates: { latitude: 34.05, longitude: -118.24 },
    * });
    */
@@ -105,6 +107,7 @@ export class Carrier {
    *
    * @example
    * await oway.carrier.confirmDelivery('off-123', {
+   *   delivery_time: new Date().toISOString(),
    *   coordinates: { latitude: 40.71, longitude: -74.0 },
    *   signed_by: 'J. Recipient',
    * });
@@ -119,7 +122,7 @@ export class Carrier {
    *
    * @example
    * // Call on your GPS update interval while in transit
-   * await oway.carrier.submitLocation('off-123', { latitude: 36.17, longitude: -115.14 });
+   * await oway.carrier.submitLocation('off-123', { latitude: 36.17, longitude: -115.14, timestamp: new Date().toISOString() });
    */
   async submitLocation(identifier: string, loc: OfferLocationUpdate, companyApiKey?: string): Promise<LocationAcknowledgment> {
     requireIdentifier(identifier);
@@ -161,4 +164,22 @@ export class Carrier {
     requireIdentifier(identifier);
     return this.client.get<CarrierTracking>(`/v1/carrier/shipments/${identifier}/tracking`, undefined, companyApiKey);
   }
+  /** Request a staging PUT URL; the file is not registered until confirmUpload succeeds. */
+  async requestUploadUrl(identifier: string, request: UploadUrlRequest, companyApiKey?: string): Promise<UploadUrlResponse> {
+    requireIdentifier(identifier);
+    return this.client.post<UploadUrlResponse>(`/v1/carrier/shipments/${encodeURIComponent(identifier)}/upload`, request, companyApiKey);
+  }
+
+  /** Freeze a POD after PUT. Retries must use the same ID and metadata. */
+  async confirmUpload(identifier: string, documentId: string, request: UploadConfirmationRequest, companyApiKey?: string): Promise<UploadedDocumentResponse> {
+    requireIdentifier(identifier); requireIdentifier(documentId);
+    return this.client.put<UploadedDocumentResponse>(`/v1/carrier/shipments/${encodeURIComponent(identifier)}/uploads/${encodeURIComponent(documentId)}/confirm`, request, companyApiKey);
+  }
+
+  /** Retrieve an active uploaded POD and a fresh expiring download URL. */
+  async uploadedDocument(identifier: string, documentId: string, companyApiKey?: string): Promise<UploadedDocumentResponse> {
+    requireIdentifier(identifier); requireIdentifier(documentId);
+    return this.client.get<UploadedDocumentResponse>(`/v1/carrier/shipments/${encodeURIComponent(identifier)}/documents/${encodeURIComponent(documentId)}`, undefined, companyApiKey);
+  }
+
 }

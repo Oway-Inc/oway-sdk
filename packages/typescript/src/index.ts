@@ -48,6 +48,10 @@ export type {
   ExceptionResponse,
   CarrierTripRequest,
   CarrierTracking,
+  UploadUrlRequest,
+  UploadUrlResponse,
+  UploadConfirmationRequest,
+  UploadedDocumentResponse,
 } from './types';
 
 // Export errors and config

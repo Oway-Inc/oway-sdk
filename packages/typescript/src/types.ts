@@ -45,3 +45,8 @@ export type HazmatCertification = components['schemas']['HazmatCertificationRequ
 export type HazmatFinding = components['schemas']['HazmatFindingResponse'];
 /** The services a quote was priced for at one stop, as the quote request asked for them. */
 export type QuoteStopAccessorials = components['schemas']['QuoteStopAccessorials'];
+
+export type UploadUrlRequest = components['schemas']['UploadUrlRequest'];
+export type UploadUrlResponse = components['schemas']['UploadUrlResponse'];
+export type UploadConfirmationRequest = components['schemas']['UploadConfirmationRequest'];
+export type UploadedDocumentResponse = components['schemas']['UploadedDocumentResponse'];
