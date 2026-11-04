@@ -47,7 +47,7 @@ export async function prepareCarrier(
 export async function deliverCarrier(oway: Oway, run: CarrierRun, progress: (stage: string) => void = () => {}): Promise<void> {
   progress('Check POD review');
   const document = await oway.carrier.uploadedDocument(run.offerId, run.documentId);
-  if (document.review_status !== 'APPROVED') throw new QuickstartError('POD review is pending; resume after authorized approval and human signature verification');
+  if (document.review_status !== 'APPROVED') throw new QuickstartError('POD review is pending; resume after authorized approval with a verified recipient signature');
   progress('Reconcile shipment status');
   const current = await oway.carrier.shipment(run.offerId);
   if (current.status === 'DELIVERED') return;
