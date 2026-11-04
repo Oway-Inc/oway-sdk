@@ -143,9 +143,9 @@ export interface paths {
         get?: never;
         /**
          * Confirm shipment delivery
-         * @description Confirm that the shipment has been delivered. Transitions the order to DELIVERED status and initiates carrier payout.
+         * @description Confirm that the shipment has been delivered. Sets the shipment status to DELIVERED and starts carrier payment processing, subject to applicable payment terms.
          *
-         *     **Required fields:** `delivery_time` is required. Proof of delivery fields (`signed_by`, `signature_image_url`, `proof_of_delivery_url`, `proof_of_delivery_document_id`) are optional but recommended. Use either a URL or an uploaded document ID, never both. The document ID must identify this shipment's approved POD with human signature verification; otherwise the request returns 409 `pod_review_required` before delivery.
+         *     **Required fields:** `delivery_time` is required. Proof of delivery fields (`signed_by`, `signature_image_url`, `proof_of_delivery_url`, `proof_of_delivery_document_id`) are optional but recommended. Use either a URL or an uploaded document ID, never both. The document ID must identify this shipment's approved POD with a verified recipient signature; otherwise the request returns 409 `pod_review_required` before delivery.
          *
          *     **State requirement:** The shipment must have been picked up before delivery confirmation.
          */
@@ -527,7 +527,7 @@ export interface paths {
         };
         /**
          * Track a shipment by order number
-         * @description Retrieves tracking information for a shipment by its order number (PRO number). Returns status and estimated/actual pickup and delivery dates. Pass `include=location` to embed the live position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius) in the response. It is omitted by default so status polling does not pay the position-computation cost.
+         * @description Retrieves tracking information for a shipment by its order number (PRO number). Returns status and estimated/actual pickup and delivery dates. Pass `include=location` to embed the live position estimate with an uncertainty radius in the response. Location is omitted by default.
          */
         get: operations["trackShipment"];
         put?: never;
@@ -615,7 +615,7 @@ export interface paths {
          *
          *     Read this before tendering a load whose tender cannot carry an Oway quote ID. `matchable` is true when the quote will back the booking as it stands: open, inside its 48-hour window, and carrying a price you can be charged.
          *
-         *     A load whose quote is missing, expired, or no longer matches the freight is still worth tendering. We re-price it and book at the new price rather than refusing it, and flag the difference for our operations team.
+         *     A load whose quote is missing, expired, or no longer matches the freight is still worth tendering. We re-price it and book at the new price rather than refusing it.
          *
          *     **Note:** The reference is scoped to the company behind your API key. A reference another company uses for a different load is never returned to you.
          */
@@ -863,7 +863,7 @@ export interface paths {
         get?: never;
         /**
          * Confirm an uploaded proof of delivery
-         * @description After uploading the file, freeze and register a POD of at most 10 MiB. Repeat with the same document ID and metadata to retrieve the same document. The POD enters PENDING review; delivery by document ID requires approval and human signature verification. SIGNATURE uploads are not completed by this endpoint.
+         * @description After uploading the file, complete a POD upload of at most 10 MiB. Repeat with the same document ID and metadata to retrieve the same document. The POD enters PENDING review; delivery by document ID requires an approved POD with a verified recipient signature. SIGNATURE uploads are not completed by this endpoint.
          */
         put: operations["confirmUpload"];
         post?: never;
@@ -1085,7 +1085,7 @@ export interface components {
             channel: "PHONE" | "EMAIL" | "PORTAL";
             /**
              * @description Portal URL where the carrier will book the appointment. Required when channel == PORTAL, must be omitted otherwise.
-             * @example https://retaillink.example.com/scheduling
+             * @example https://portal.example.com/scheduling
              */
             portalUrl?: string;
             /** @description Contacts the carrier can use to schedule the appointment */
@@ -1467,12 +1467,12 @@ export interface components {
             signed_by?: string;
             /**
              * @description URL to signature image
-             * @example https://storage.oway.io/signatures/sig-12345.png
+             * @example https://files.example.com/signatures/sig-12345.png
              */
             signature_image_url?: string;
             /**
              * @description URL to proof of delivery document
-             * @example https://storage.oway.io/pod/pod-12345.pdf
+             * @example https://files.example.com/pod/pod-12345.pdf
              */
             proof_of_delivery_url?: string;
             /**
@@ -1637,7 +1637,7 @@ export interface components {
             proof_of_delivery_url?: string;
             /** @description Additional notes about the delivery */
             notes?: string;
-            /** @description Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery. */
+            /** @description Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires an approved POD with a verified recipient signature before delivery. */
             proof_of_delivery_document_id?: string;
         };
         /** @description Request body for rejecting an offer */
@@ -2341,7 +2341,7 @@ export interface components {
             document_id?: string;
             /**
              * @description Pre-signed PUT URL — upload your file directly to this URL using HTTP PUT with the specified content type
-             * @example https://s3.amazonaws.com/oway-docs/...
+             * @example https://files.example.com/upload/example-document
              */
             upload_url?: string;
             /**
@@ -2415,7 +2415,7 @@ export interface components {
              */
             timestamp: string;
             /**
-             * @description Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. The position trail itself is keyed internally per shipment, so changing or omitting this never affects tracking history.
+             * @description Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. Changing or omitting the vehicle identifier does not affect tracking history.
              * @example TRUCK-42
              */
             vehicle_id?: string;
@@ -2645,7 +2645,7 @@ export interface components {
         };
         /** @description Current estimated shipment position with an uncertainty radius */
         ShipmentLocation: {
-            /** @description Estimated center point of the shipment's current position (route-interpolated, refined by recent vehicle positions when available) */
+            /** @description Estimated center point of the shipment's current position */
             center?: components["schemas"]["GpsData"];
             /**
              * Format: double
@@ -2682,7 +2682,7 @@ export interface components {
              */
             orderNumber?: string;
             /**
-             * @description Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
+             * @description Current status of the order. May be null when no status is available.
              * @example PICKED_UP
              * @enum {string|null}
              */
@@ -2851,7 +2851,7 @@ export interface components {
             fileType?: string;
             /**
              * @description Pre-signed download URL (valid for limited time)
-             * @example https://s3.amazonaws.com/...
+             * @example https://files.example.com/documents/example-document.pdf
              */
             downloadLink?: string;
         };
@@ -2982,7 +2982,7 @@ export interface components {
             file_type?: string;
             /**
              * @description Pre-signed download URL (valid for limited time)
-             * @example https://s3.amazonaws.com/...
+             * @example https://files.example.com/documents/example-document.pdf
              */
             download_link?: string;
         };
@@ -3407,7 +3407,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProblemDetail"];
                 };
             };
-            /** @description Shipment not in valid state for delivery confirmation, or pod_review_required for a document ID without approval and human signature verification */
+            /** @description Shipment not in valid state for delivery confirmation, or pod_review_required for a document ID without approval and a verified recipient signature */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4626,7 +4626,7 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius). Omitted by default so status polling does not pay the position-computation cost.
+                 * @description Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate with an uncertainty radius. Location is omitted by default.
                  * @example location
                  */
                 include?: string;

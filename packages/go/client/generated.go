@@ -867,7 +867,7 @@ type DeliveryConfirmationRequest struct {
 	// Notes Additional notes about the delivery
 	Notes *string `json:"notes,omitempty"`
 
-	// ProofOfDeliveryDocumentId Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires approval and human signature verification before delivery.
+	// ProofOfDeliveryDocumentId Registered POD document ID. Mutually exclusive with proof_of_delivery_url; requires an approved POD with a verified recipient signature before delivery.
 	ProofOfDeliveryDocumentId *string `json:"proof_of_delivery_document_id,omitempty"`
 
 	// ProofOfDeliveryUrl URL to the proof of delivery document
@@ -1265,7 +1265,7 @@ type OfferLocationUpdate struct {
 	// Timestamp Timestamp of this location reading
 	Timestamp time.Time `json:"timestamp"`
 
-	// VehicleId Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. The position trail itself is keyed internally per shipment, so changing or omitting this never affects tracking history.
+	// VehicleId Identifier of the vehicle reporting this position. Optional. Supply it here if the vehicle was not known at offer acceptance, or when the truck changes mid-shipment; the latest value is recorded as the shipment's assigned vehicle. Changing or omitting the vehicle identifier does not affect tracking history.
 	VehicleId *string `json:"vehicle_id,omitempty"`
 }
 
@@ -1751,11 +1751,11 @@ type Tracking struct {
 	// OrderNumber Human-readable PRO number for the shipment (5-character alphanumeric)
 	OrderNumber *string `json:"orderNumber,omitempty"`
 
-	// OrderStatus Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
+	// OrderStatus Current status of the order. May be null when no status is available.
 	OrderStatus *TrackingOrderStatus `json:"orderStatus"`
 }
 
-// TrackingOrderStatus Current status of the order. Null only for an order whose internal state is unset; every live state maps to a value.
+// TrackingOrderStatus Current status of the order. May be null when no status is available.
 type TrackingOrderStatus string
 
 // TrackingPoint A single GPS tracking data point
@@ -1944,7 +1944,7 @@ type GetDocumentParamsDocumentType string
 
 // TrackShipmentParams defines parameters for TrackShipment.
 type TrackShipmentParams struct {
-	// Include Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate (route-interpolated, refined by recent vehicle positions, with an uncertainty radius). Omitted by default so status polling does not pay the position-computation cost.
+	// Include Comma-separated optional sections to include. Currently supports 'location' to embed the live shipment position estimate with an uncertainty radius. Location is omitted by default.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
 
