@@ -50,7 +50,7 @@ Do not restart an uncertain create from the beginning: a fresh quote changes the
 
 A 400 confirmation response with `invalid_fields` requires correcting the reported fields. A 422 coverage/load refusal requires changing the shipment or account configuration, not repeated requests. For a safe validation exercise, omit a required create field in the synthetic scenario, inspect the refusal, restore it, and use a fresh key.
 
-Never put credentials, token responses, signed document URLs or real customer data into bug reports. Record the operation, timestamp, HTTP status/reason and request identifier. Scenario setup/reset remains an operator prerequisite; these examples do not delete shared data.
+Never put credentials, token responses, signed document URLs or real customer data into bug reports. Record the operation, timestamp, HTTP status/reason and request identifier. Contact support to set up or reset your sandbox scenario.
 
 ## Carrier hosted-POD journey
 
@@ -70,9 +70,9 @@ Run the TypeScript carrier example from a built checkout:
 npx --yes tsx@4.20.6 packages/typescript/examples/carrier-quickstart.ts
 ```
 
-It retrieves the assigned offer, accepts it, confirms pickup, reports location, requests a storage URL, PUTs the PDF, and completes the upload. It saves the document identity and metadata before the PUT; it does not save tokens or signed URLs. The state file must not already exist. Registered bytes are immutable, even if the original PUT URL has not expired.
+It retrieves the assigned offer, accepts it, confirms pickup, reports location, requests a storage URL, PUTs the PDF, and completes the upload. It saves the document identity and metadata before the PUT; it does not save tokens or signed URLs. The state file must not already exist. To submit a corrected POD after completion, register a new document.
 
-**Review is a real prerequisite.** Completion creates a PENDING POD. An authorized reviewer must approve it and verify the signature as HUMAN/SIGNED. No customer API call in this example bypasses that gate. Then set `OWAY_STEP=deliver` and rerun. The example reads shipment state first because review can already have triggered delivery. If still picked up, it submits `proof_of_delivery_document_id`. Never send both this field and `proof_of_delivery_url`, and never use a PUT URL as a POD URL.
+**Review is a real prerequisite.** Completion creates a PENDING POD. An authorized reviewer must approve it with a verified recipient signature before you can confirm delivery with the document. Then set `OWAY_STEP=deliver` and rerun. The example reads shipment state first because review can already have triggered delivery. If still picked up, it submits `proof_of_delivery_document_id`. Never send both this field and `proof_of_delivery_url`, and never use a PUT URL as a POD URL.
 
 After an uncertain completion, set `OWAY_STEP=confirm-upload` to retry the saved ID and metadata. If the initial storage PUT failed, request a new upload, save its new identity, and upload before confirmation; a saved ID alone does not mean bytes arrived. Do not reuse `prepare` blindly after an uncertain acceptance or delivery: retrieve the existing shipment and reconcile its state first.
 
