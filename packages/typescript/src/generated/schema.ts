@@ -982,7 +982,7 @@ export interface components {
              * @description Whether "Cargo straps required" is stated on the shipment, by the shipper at creation or by Oway afterwards.
              * @example true
              */
-            strapsRequired?: boolean;
+            readonly strapsRequired?: boolean;
             /**
              * Format: int64
              * @description Total price of the order in cents (USD)
