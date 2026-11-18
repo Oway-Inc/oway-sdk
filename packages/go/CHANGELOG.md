@@ -4,6 +4,8 @@ All notable changes to the Oway Go SDK will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-11-18
+
 ### Added
 
 - `StrapsRequired` on `ShipmentRequest`: set it to state that a load needs cargo straps. "Cargo straps required" is then printed on the shipment's documents and shown to the carrier. It adds no charge and does not change the quote. `Shipment` reports it back as `StrapsRequired`.

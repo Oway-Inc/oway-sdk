@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-18
+
 ### Added
 
 - `strapsRequired` on the create-shipment request: set it to state that a load needs cargo straps. "Cargo straps required" is then printed on the shipment's documents and shown to the carrier. It adds no charge and does not change the quote. A shipment reports it back as `strapsRequired`.
