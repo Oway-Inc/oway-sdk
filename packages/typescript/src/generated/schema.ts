@@ -979,6 +979,11 @@ export interface components {
              */
             orderStatus?: "INITIALIZED" | "CONFIRMED" | "ACCEPTED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "REJECTED";
             /**
+             * @description Whether "Cargo straps required" is stated on the shipment, by the shipper at creation or by Oway afterwards.
+             * @example true
+             */
+            strapsRequired?: boolean;
+            /**
              * Format: int64
              * @description Total price of the order in cents (USD)
              * @example 125000
@@ -1978,6 +1983,11 @@ export interface components {
             appointments?: components["schemas"]["AppointmentsBlock"];
             /** @description Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder. */
             shipperDispatch?: components["schemas"]["ShipperDispatch"];
+            /**
+             * @description Whether the load needs cargo straps. When true, "Cargo straps required" is printed on the shipment's documents and shown to the carrier. It adds no charge and does not change the quote. Left out means not required.
+             * @example true
+             */
+            strapsRequired?: boolean;
         };
         /** @description Pallet dimensions in inches. All fields optional: if any are omitted the entire dimensions object is treated as missing and the API default of 40 x 48 x 60 in. (length x width x height) is applied. */
         Dimensions: {

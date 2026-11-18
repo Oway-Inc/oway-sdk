@@ -3643,6 +3643,12 @@
               "REJECTED": "Shipment will not be carried — either declined by the shipper or dropped after no coverage was secured in time"
             }
           },
+          "strapsRequired": {
+            "type": "boolean",
+            "description": "Whether \"Cargo straps required\" is stated on the shipment, by the shipper at creation or by Oway afterwards.",
+            "example": true,
+            "readOnly": true
+          },
           "totalPriceInCents": {
             "type": "integer",
             "format": "int64",
@@ -5078,6 +5084,11 @@
           "shipperDispatch": {
             "$ref": "#/components/schemas/ShipperDispatch",
             "description": "Optional operational dispatch contact for this order. Distinct from the shipper company itself; useful when the desk handling questions about the load is different from the company account holder."
+          },
+          "strapsRequired": {
+            "type": "boolean",
+            "description": "Whether the load needs cargo straps. When true, \"Cargo straps required\" is printed on the shipment's documents and shown to the carrier. It adds no charge and does not change the quote. Left out means not required.",
+            "example": true
           }
         },
         "required": [

@@ -142,5 +142,6 @@ func fullyPopulatedShipmentRequest() ShipmentRequest {
 			Phone: &dispatchPhone,
 			Scac:  &scac,
 		},
+		StrapsRequired: func() *bool { value := true; return &value }(),
 	}
 }
