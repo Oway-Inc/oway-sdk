@@ -818,6 +818,9 @@ type CreateShipmentRequest struct {
 
 	// ShipperDispatch The operational dispatch contact for this shipment. Distinct from the shipper company itself, this is the desk or person responsible for answering questions about the load. At least one of email or phone must be present.
 	ShipperDispatch *ShipperDispatch `json:"shipperDispatch,omitempty"`
+
+	// StrapsRequired Whether the load needs cargo straps. When true, "Cargo straps required" is printed on the shipment's documents and shown to the carrier. It adds no charge and does not change the quote. Left out means not required.
+	StrapsRequired *bool `json:"strapsRequired,omitempty"`
 }
 
 // DeliveryConfirmation Carrier-reported delivery confirmation details
@@ -1632,6 +1635,9 @@ type Shipment struct {
 
 	// OrderStatus Current status of the order
 	OrderStatus *ShipmentOrderStatus `json:"orderStatus,omitempty"`
+
+	// StrapsRequired Whether "Cargo straps required" is stated on the shipment, by the shipper at creation or by Oway afterwards.
+	StrapsRequired *bool `json:"strapsRequired,omitempty"`
 
 	// TotalPriceInCents Total price of the order in cents (USD)
 	TotalPriceInCents *int64 `json:"totalPriceInCents,omitempty"`

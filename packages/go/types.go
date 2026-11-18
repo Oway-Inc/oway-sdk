@@ -145,6 +145,9 @@ type ShipmentRequest struct {
 	RequiredDeliveryBy *time.Time       `json:"requiredDeliveryBy,omitempty"`
 	Appointments       *Appointments    `json:"appointments,omitempty"`
 	ShipperDispatch    *ShipperDispatch `json:"shipperDispatch,omitempty"`
+	// StrapsRequired states that the load needs cargo straps. It prints
+	// "Cargo straps required" on the shipment's documents and adds no charge.
+	StrapsRequired *bool `json:"strapsRequired,omitempty"`
 }
 
 // Document type constants
@@ -198,5 +201,6 @@ func (s *ShipmentRequest) toClient() client.CreateShipmentRequest {
 		RequiredDeliveryBy: s.RequiredDeliveryBy,
 		Appointments:       s.Appointments,
 		ShipperDispatch:    s.ShipperDispatch,
+		StrapsRequired:     s.StrapsRequired,
 	}
 }
